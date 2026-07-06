@@ -131,6 +131,6 @@ export const generateQRCodeDataURL = async (options: QRGeneratorOptions): Promis
 
 /** Build the permanent printed URL for a Mochingo dynamic QR */
 export const buildMochingoDynamicQRURL = (token: string): string => {
-    const base = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    const base = process.env.NEXT_PUBLIC_APP_URL || 'https://www.mochingo.com';
     return `${base}/dq/${encodeURIComponent(token)}`;
 };
