@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, Loader2, Save, Download, Copy, ExternalLink, Link as LinkIcon, Palette } from 'lucide-react';
+import { ArrowLeft, Loader2, Save, Download, Copy, ExternalLink, Link as LinkIcon, Palette, Image as ImageIcon, X } from 'lucide-react';
 import api from '@/lib/api';
 import { getStatusColor, formatDateTime } from '@/lib/utils';
 import { downloadMochingoBulkQRPDF, downloadPlainBulkQRPDF, downloadStandBulkQRPDF } from '@/lib/qrPdfGenerator';
@@ -20,6 +20,7 @@ export default function BatchManagementPage() {
     const [manualUrl, setManualUrl] = useState('');
     const [status, setStatus] = useState<'assigned' | 'unassigned' | 'disabled'>('unassigned');
     const [batchTitle, setBatchTitle] = useState('');
+    const [logoUrl, setLogoUrl] = useState<string | undefined>();
     
     // Range State
     const [rangeStart, setRangeStart] = useState<number | ''>('');
@@ -90,6 +91,19 @@ export default function BatchManagementPage() {
         });
     }, [data, rangeStart, rangeEnd, hasValidRange]);
 
+    const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            if (ev.target?.result) {
+                setLogoUrl(ev.target.result as string);
+            }
+        };
+        reader.readAsDataURL(file);
+        e.target.value = '';
+    };
+
     const handleDownloadPdf = async (type: 'branded' | 'plain' | 'stand', mode: 'full' | 'range') => {
         if (!data) return;
         
@@ -114,17 +128,20 @@ export default function BatchManagementPage() {
                 await downloadMochingoBulkQRPDF({
                     title,
                     entries,
+                    logoUrl,
                     showTitle: !!batchTitle,
                     fileName: `${title.replace(/\s+/g, '-')}-${fileSuffix}-branded`
                 });
             } else if (type === 'plain') {
                 await downloadPlainBulkQRPDF({ 
                     entries,
+                    logoUrl,
                     fileName: `${title.replace(/\s+/g, '-')}-${fileSuffix}-plain`
                 });
             } else if (type === 'stand') {
                 await downloadStandBulkQRPDF({
                     entries,
+                    logoUrl,
                     fileName: `${title.replace(/\s+/g, '-')}-${fileSuffix}-stand`
                 });
             }
@@ -262,6 +279,23 @@ export default function BatchManagementPage() {
                     <div className="card" style={{ padding: 24 }}>
                         <h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 16 }}>Full Batch Actions</h2>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                            <div>
+                                <label className="label">Custom Center Logo (Optional)</label>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                                    <label className="btn btn-outline" style={{ cursor: 'pointer' }}>
+                                        <ImageIcon size={16} /> Upload Logo
+                                        <input type="file" accept="image/*" style={{ display: 'none' }} onChange={handleLogoUpload} />
+                                    </label>
+                                    {logoUrl && (
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                            <img src={logoUrl} alt="Logo Preview" style={{ width: 32, height: 32, objectFit: 'contain', background: 'white', borderRadius: 4 }} />
+                                            <button className="btn btn-outline" style={{ padding: '6px', color: '#ef4444', borderColor: '#ef4444' }} onClick={() => setLogoUrl(undefined)}>
+                                                <X size={14} />
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
                             <div>
                                 <label className="label">Custom PDF Title (Optional)</label>
                                 <input className="input" value={batchTitle} onChange={e => setBatchTitle(e.target.value)} placeholder="e.g. Summer Campaign" />
