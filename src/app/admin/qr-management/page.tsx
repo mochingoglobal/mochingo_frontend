@@ -11,6 +11,7 @@ import api from '@/lib/api';
 import { createStyledQRCodeCanvas } from '@/lib/qrCodeGenerator';
 import { formatDateTime, getStatusColor } from '@/lib/utils';
 import type { ListDynamicQRsResponse, DynamicQRGroupInventoryItem } from '@/types/qr.types';
+import type { DynamicQRCategory } from '@/types/category.types';
 
 // ─── Custom QR Tab ────────────────────────────────────────────────────────────
 
@@ -218,6 +219,15 @@ function DynamicQRTab() {
 
     const [label, setLabel] = useState('');
     const [count, setCount] = useState(1);
+    const [categoryId, setCategoryId] = useState<string>('');
+
+    const { data: categories } = useQuery({
+        queryKey: ['dynamic-qr-categories'],
+        queryFn: async () => {
+            const res = await api.get<DynamicQRCategory[]>('/admin/qr/categories');
+            return res.data;
+        }
+    });
 
     const { data, isLoading } = useQuery({
         queryKey: ['dynamic-qrs', page, debouncedSearch],
@@ -229,13 +239,20 @@ function DynamicQRTab() {
 
     const createMutation = useMutation({
         mutationFn: async () => {
-            const res = await api.post('/admin/qr/dynamic', { label, count, start_from: 1 });
+            const payload = { 
+                label, 
+                count, 
+                start_from: 1,
+                category_id: categoryId || undefined 
+            };
+            const res = await api.post('/admin/qr/dynamic', payload);
             return res.data.data;
         },
         onSuccess: (created) => {
             queryClient.invalidateQueries({ queryKey: ['dynamic-qrs'] });
             setLabel('');
             setCount(1);
+            setCategoryId('');
             if (created.batch_id && created.created_count > 1) {
                 router.push(`/admin/qr-management/dynamic/batch/${created.batch_id}`);
             } else if (created.dynamic_qrs?.[0]?._id) {
@@ -252,6 +269,15 @@ function DynamicQRTab() {
                     <div style={{ flex: 1, minWidth: 200 }}>
                         <label className="label">Group Label</label>
                         <input className="input" placeholder="e.g. Marketing Posters" value={label} onChange={e => setLabel(e.target.value)} />
+                    </div>
+                    <div style={{ flex: 1, minWidth: 200 }}>
+                        <label className="label">Category (Optional)</label>
+                        <select className="input" value={categoryId} onChange={e => setCategoryId(e.target.value)}>
+                            <option value="">-- No Category --</option>
+                            {categories?.map(cat => (
+                                <option key={cat._id} value={cat._id}>{cat.name}</option>
+                            ))}
+                        </select>
                     </div>
                     <div style={{ width: 100 }}>
                         <label className="label">Count</label>

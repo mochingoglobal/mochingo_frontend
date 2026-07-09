@@ -47,6 +47,7 @@ export interface DynamicQRGroupInventoryItem {
 export interface BatchResponse {
     batch_id: string;
     batch_label: string;
+    category_id?: string | null;
     qr_count: number;
     filtered_count: number;
     dynamic_qrs: DynamicQR[];
@@ -81,6 +82,7 @@ export interface CreateDynamicQRPayload {
     count: number;
     start_from: number;
     manual_redirect_url?: string | null;
+    category_id?: string | null;
     param_name?: string;
     value_prefix?: string;
     value_separator?: string;

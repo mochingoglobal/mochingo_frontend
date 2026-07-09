@@ -8,6 +8,7 @@ import api from '@/lib/api';
 import { getStatusColor, formatDateTime } from '@/lib/utils';
 import { downloadMochingoBulkQRPDF, downloadPlainBulkQRPDF, downloadStandBulkQRPDF } from '@/lib/qrPdfGenerator';
 import type { BatchResponse, DynamicQR } from '@/types/qr.types';
+import type { DynamicQRCategory } from '@/types/category.types';
 
 export default function BatchManagementPage() {
     const params = useParams();
@@ -21,6 +22,7 @@ export default function BatchManagementPage() {
     const [status, setStatus] = useState<'assigned' | 'unassigned' | 'disabled'>('unassigned');
     const [batchTitle, setBatchTitle] = useState('');
     const [logoUrl, setLogoUrl] = useState<string | undefined>();
+    const [categoryId, setCategoryId] = useState<string>('');
     
     // Range State
     const [rangeStart, setRangeStart] = useState<number | ''>('');
@@ -35,9 +37,20 @@ export default function BatchManagementPage() {
         enabled: !!batchId
     });
 
+    const { data: categories } = useQuery({
+        queryKey: ['dynamic-qr-categories'],
+        queryFn: async () => {
+            const res = await api.get<DynamicQRCategory[]>('/admin/qr/categories');
+            return res.data;
+        }
+    });
+
     useEffect(() => {
         if (data?.dynamic_qrs?.length && !selectedId) {
             setSelectedId(data.dynamic_qrs[0]._id);
+        }
+        if (data && data.category_id !== undefined) {
+            setCategoryId(data.category_id || '');
         }
     }, [data, selectedId]);
 
@@ -80,6 +93,23 @@ export default function BatchManagementPage() {
             alert('Applied to all QRs in this batch!');
         }
     });
+
+    const updateCategoryMutation = useMutation({
+        mutationFn: async (newCategoryId: string) => {
+            await api.patch(`/admin/qr/dynamic/batches/${batchId}/category`, {
+                category_id: newCategoryId || null
+            });
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['batch', batchId] });
+        }
+    });
+
+    const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const val = e.target.value;
+        setCategoryId(val);
+        updateCategoryMutation.mutate(val);
+    };
 
     const hasValidRange = typeof rangeStart === 'number' && typeof rangeEnd === 'number' && rangeStart <= rangeEnd && rangeStart > 0 && rangeEnd <= (data?.qr_count || 0);
 
@@ -168,11 +198,27 @@ export default function BatchManagementPage() {
 
     return (
         <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24, flexWrap: 'wrap' }}>
                 <button onClick={() => router.back()} className="btn btn-outline"><ArrowLeft size={16}/></button>
-                <div>
+                <div style={{ flex: 1 }}>
                     <h1 style={{ fontSize: 24, fontWeight: 700 }}>{data.batch_label}</h1>
                     <p style={{ color: '#94a3b8', fontSize: 14 }}>Batch ID: {batchId} • {data.qr_count} QRs</p>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <label style={{ fontSize: 14, color: '#94a3b8' }}>Category:</label>
+                    <select 
+                        className="input input-sm" 
+                        style={{ width: 200 }} 
+                        value={categoryId} 
+                        onChange={handleCategoryChange}
+                        disabled={updateCategoryMutation.isPending}
+                    >
+                        <option value="">-- No Category --</option>
+                        {categories?.map(cat => (
+                            <option key={cat._id} value={cat._id}>{cat.name}</option>
+                        ))}
+                    </select>
+                    {updateCategoryMutation.isPending && <Loader2 size={16} className="animate-spin" style={{ color: '#6366f1' }} />}
                 </div>
             </div>
 

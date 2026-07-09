@@ -42,6 +42,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
     const navigation = [
         { name: 'QR Management', href: '/admin/qr-management', icon: QrCode },
+        { name: 'Categories', href: '/admin/qr-category', icon: LayoutDashboard },
     ];
 
     return (
