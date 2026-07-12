@@ -49,6 +49,8 @@ export default function ProfileDashboard() {
     const [isResolvingToken, setIsResolvingToken] = useState(false);
     const [claimUrl, setClaimUrl] = useState('');
     const [claimError, setClaimError] = useState<string | null>(null);
+    const [isOwnQR, setIsOwnQR] = useState(false);
+    const [ownQRId, setOwnQRId] = useState<string | null>(null);
 
     useEffect(() => {
         if (isHydrated && !isAuthenticated) {
@@ -95,6 +97,8 @@ export default function ProfileDashboard() {
             setScannedCategory(null);
             setClaimUrl('');
             setClaimError(null);
+            setIsOwnQR(false);
+            setOwnQRId(null);
         },
         onError: (err: AxiosError<ApiErrorResponse>) => {
             setClaimError(err.response?.data?.message || 'Failed to claim QR');
@@ -119,9 +123,24 @@ export default function ProfileDashboard() {
         setIsResolvingToken(true);
         setScannedCategory(null);
         
+        const myExistingQR = (qrs as ConsumerQR[] || []).find(qr => qr.token === extractedToken);
+        if (myExistingQR) {
+            setIsOwnQR(true);
+            setOwnQRId(myExistingQR.id);
+            setClaimUrl(myExistingQR.manual_redirect_url || '');
+        } else {
+            setIsOwnQR(false);
+            setOwnQRId(null);
+            setClaimUrl('');
+        }
+        
         try {
             const res = await api.get(`/qr/dynamic/${extractedToken}/resolve`);
             const { status, redirect_url } = res.data?.data || {};
+
+            if (status === 'assigned' && !myExistingQR) {
+                setClaimError('This QR code is already assigned to someone else.');
+            }
             
             if (status === 'unassigned' && redirect_url) {
                 try {
@@ -444,7 +463,7 @@ export default function ProfileDashboard() {
                                 </div>
                                 <div>
                                     <h3 className="text-lg font-bold text-white tracking-tight">
-                                        {scannedCategory ? `Assign ${scannedCategory}` : 'Assign Destination'}
+                                        {isOwnQR ? 'Update Your Destination' : scannedCategory ? `Assign ${scannedCategory}` : 'Assign Destination'}
                                     </h3>
                                     <div className="flex items-center gap-2 mt-1">
                                         <span className="text-xs text-slate-500 font-medium">Token:</span>
@@ -503,15 +522,28 @@ export default function ProfileDashboard() {
 
                                 {/* Submit Button */}
                                 <button 
-                                    onClick={() => claimMutation.mutate()} 
-                                    disabled={!claimUrl || claimMutation.isPending}
-                                    className="w-full h-14 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-base flex items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-lg shadow-indigo-500/20"
+                                    onClick={() => {
+                                        if (isOwnQR && ownQRId) {
+                                            updateMutation.mutate({ id: ownQRId, url: claimUrl }, {
+                                                onSuccess: () => {
+                                                    setScannedToken(null);
+                                                    setScannedCategory(null);
+                                                    setClaimUrl('');
+                                                    setIsOwnQR(false);
+                                                    setOwnQRId(null);
+                                                },
+                                                onError: (err: any) => {
+                                                    setClaimError(err.response?.data?.message || 'Failed to update QR');
+                                                }
+                                            });
+                                        } else {
+                                            claimMutation.mutate();
+                                        }
+                                    }} 
+                                    disabled={claimMutation.isPending || updateMutation.isPending || !claimUrl}
+                                    className="w-full h-14 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold text-[15px] transition-all disabled:opacity-50 flex items-center justify-center shadow-lg shadow-indigo-500/20 active:scale-[0.98]"
                                 >
-                                    {claimMutation.isPending ? (
-                                        <><Loader2 size={20} className="animate-spin" /> Claiming...</>
-                                    ) : (
-                                        'Claim & Save'
-                                    )}
+                                    {(claimMutation.isPending || updateMutation.isPending) ? <Loader2 size={20} className="animate-spin" /> : isOwnQR ? 'Update Destination' : 'Claim & Save'}
                                 </button>
                                 
                             </div>
