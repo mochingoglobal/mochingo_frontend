@@ -121,10 +121,22 @@ export default function ProfileDashboard() {
         
         try {
             const res = await api.get(`/qr/dynamic/${extractedToken}/resolve`);
-            const redirectUrl = res.data?.data?.redirect_url || '';
-            const lowerUrl = redirectUrl.toLowerCase();
-            if (lowerUrl.includes('google-review') || lowerUrl.includes('google%20review') || lowerUrl.includes('google review')) {
-                setScannedCategory('google-review');
+            const { status, redirect_url } = res.data?.data || {};
+            
+            if (status === 'unassigned' && redirect_url) {
+                try {
+                    const parsedUrl = new URL(redirect_url);
+                    const pathParts = parsedUrl.pathname.split('/').filter(Boolean);
+                    if (pathParts.length > 0 && pathParts[0] !== 'setup' && pathParts[0] !== 'dq') {
+                        // Extract category slug from the path (e.g. 'instagram', 'google%20review')
+                        const rawCategory = decodeURIComponent(pathParts[0]);
+                        // Format it: 'google review' -> 'Google Review', 'instagram' -> 'Instagram'
+                        const formatted = rawCategory.split(/[- ]+/).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+                        setScannedCategory(formatted);
+                    }
+                } catch (e) {
+                    // Ignore parse errors, fallback to generic
+                }
             }
         } catch (e) {
             console.error("Failed to resolve token", e);
@@ -432,7 +444,7 @@ export default function ProfileDashboard() {
                                 </div>
                                 <div>
                                     <h3 className="text-lg font-bold text-white tracking-tight">
-                                        {scannedCategory === 'google-review' ? 'Assign Google Review' : 'Assign Destination'}
+                                        {scannedCategory ? `Assign ${scannedCategory}` : 'Assign Destination'}
                                     </h3>
                                     <div className="flex items-center gap-2 mt-1">
                                         <span className="text-xs text-slate-500 font-medium">Token:</span>
@@ -462,18 +474,24 @@ export default function ProfileDashboard() {
                                 {/* Input Field */}
                                 <div className="space-y-2">
                                     <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest">
-                                        {scannedCategory === 'google-review' ? 'Google Review URL' : 'Destination URL'}
+                                        {scannedCategory ? `${scannedCategory} URL` : 'Destination URL'}
                                     </label>
                                     <input 
                                         type="url"
                                         value={claimUrl}
                                         onChange={e => setClaimUrl(e.target.value)}
-                                        placeholder={scannedCategory === 'google-review' ? "https://g.page/review/..." : "https://..."}
+                                        placeholder={
+                                            scannedCategory?.toLowerCase().includes('google') 
+                                                ? "https://g.page/review/..." 
+                                                : scannedCategory?.toLowerCase().includes('instagram') 
+                                                ? "https://instagram.com/yourprofile" 
+                                                : "https://..."
+                                        }
                                         className="w-full h-14 px-4 rounded-xl bg-slate-950 border border-slate-700 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-white outline-none font-mono text-sm transition-all"
                                         autoFocus
                                     />
-                                    {scannedCategory === 'google-review' && !claimError && (
-                                        <p className="text-xs text-slate-500 mt-1">Assign your business Google Review URL to this QR code.</p>
+                                    {scannedCategory && !claimError && (
+                                        <p className="text-xs text-slate-500 mt-1">Assign your business {scannedCategory} URL to this QR code.</p>
                                     )}
                                     {claimError && (
                                         <p className="text-sm text-red-400 mt-2 flex items-center gap-2">

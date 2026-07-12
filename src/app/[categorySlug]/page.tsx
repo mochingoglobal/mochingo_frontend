@@ -240,7 +240,7 @@ function CategorySetupContent({ categorySlug }: { categorySlug: string }) {
                                 {/* Destination URL Input */}
                                 <div className="space-y-2">
                                     <label className="block text-[12px] font-bold text-slate-400 uppercase tracking-widest">
-                                        Destination URL
+                                        {formattedCategory} URL
                                     </label>
                                     <div className="relative">
                                         <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -249,7 +249,7 @@ function CategorySetupContent({ categorySlug }: { categorySlug: string }) {
                                         <input 
                                             type="url"
                                             className="w-full h-14 pl-11 pr-4 bg-slate-950 border border-slate-800 rounded-2xl focus:outline-none focus:border-indigo-500/60 focus:ring-2 focus:ring-indigo-500/20 transition-all text-white placeholder-slate-600 text-[15px] font-mono"
-                                            placeholder={`https://your-${categorySlug}-link.com`}
+                                            placeholder={categorySlug.toLowerCase().includes('instagram') ? 'https://instagram.com/yourprofile' : categorySlug.toLowerCase().includes('google') ? 'https://g.page/review/...' : `https://your-${categorySlug}-link.com`}
                                             value={destinationUrl}
                                             onChange={(e) => setDestinationUrl(e.target.value)}
                                             required
