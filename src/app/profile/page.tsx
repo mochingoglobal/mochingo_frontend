@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Loader2, ArrowLeft, QrCode, Link as LinkIcon, Edit2, X, ScanLine, Link2 } from 'lucide-react';
+import { Loader2, ArrowLeft, QrCode, Link as LinkIcon, Edit2, X, ScanLine, Link2, Copy } from 'lucide-react';
 import type { AxiosError } from 'axios';
 import { useConsumerAuthStore } from '@/store/consumerAuthStore';
 import api from '@/lib/api';
@@ -504,13 +504,36 @@ export default function ProfileDashboard() {
                                                 ? "https://g.page/review/..." 
                                                 : scannedCategory?.toLowerCase().includes('instagram') 
                                                 ? "https://instagram.com/yourprofile" 
+                                                : scannedCategory?.toLowerCase().includes('whatsapp')
+                                                ? "https://wa.me/1234567890 or https://chat.whatsapp.com/..."
                                                 : "https://..."
                                         }
                                         className="w-full h-14 px-4 rounded-xl bg-slate-950 border border-slate-700 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-white outline-none font-mono text-sm transition-all"
                                         autoFocus
                                     />
                                     {scannedCategory && !claimError && (
-                                        <p className="text-xs text-slate-500 mt-1">Assign your business {scannedCategory} URL to this QR code.</p>
+                                        <div className="mt-1">
+                                            <p className="text-xs text-slate-500">Assign your business {scannedCategory} URL to this QR code.</p>
+                                            {scannedCategory.toLowerCase().includes('whatsapp') && (
+                                                <div className="mt-2 flex items-center gap-2 flex-wrap">
+                                                    <span className="text-[11px] text-slate-400">Quick start:</span>
+                                                    <button 
+                                                        onClick={() => setClaimUrl('https://wa.me/')}
+                                                        className="flex items-center gap-1.5 px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-indigo-300 text-[11px] font-mono transition-colors"
+                                                    >
+                                                        https://wa.me/
+                                                        <Copy size={12} className="opacity-70" />
+                                                    </button>
+                                                    <button 
+                                                        onClick={() => setClaimUrl('https://chat.whatsapp.com/')}
+                                                        className="flex items-center gap-1.5 px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-indigo-300 text-[11px] font-mono transition-colors"
+                                                    >
+                                                        https://chat.whatsapp.com/
+                                                        <Copy size={12} className="opacity-70" />
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
                                     )}
                                     {claimError && (
                                         <p className="text-sm text-red-400 mt-2 flex items-center gap-2">
@@ -523,6 +546,19 @@ export default function ProfileDashboard() {
                                 {/* Submit Button */}
                                 <button 
                                     onClick={() => {
+                                        setClaimError(null);
+                                        if (scannedCategory?.toLowerCase().includes('whatsapp')) {
+                                            const url = claimUrl.trim();
+                                            if (url === 'https://wa.me/' || url === 'http://wa.me/') {
+                                                setClaimError('Please enter your mobile number after the link.');
+                                                return;
+                                            }
+                                            if (url === 'https://chat.whatsapp.com/' || url === 'http://chat.whatsapp.com/') {
+                                                setClaimError('Please enter the group invite code after the link.');
+                                                return;
+                                            }
+                                        }
+                                        
                                         if (isOwnQR && ownQRId) {
                                             updateMutation.mutate({ id: ownQRId, url: claimUrl }, {
                                                 onSuccess: () => {

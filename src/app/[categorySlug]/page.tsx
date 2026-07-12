@@ -3,7 +3,7 @@
 import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { GoogleLogin } from '@react-oauth/google';
-import { Loader2, CheckCircle2, AlertCircle, Link2, Smartphone, Globe, LogIn } from 'lucide-react';
+import { Loader2, CheckCircle2, AlertCircle, Link2, Smartphone, Globe, LogIn, Copy } from 'lucide-react';
 import { useConsumerAuthStore } from '@/store/consumerAuthStore';
 import api from '@/lib/api';
 
@@ -57,6 +57,18 @@ function CategorySetupContent({ categorySlug }: { categorySlug: string }) {
         if (!user?.mobile_number && !mobileNumber) {
             setError('Please enter your mobile number');
             return;
+        }
+
+        if (categorySlug.toLowerCase().includes('whatsapp')) {
+            const url = destinationUrl.trim();
+            if (url === 'https://wa.me/' || url === 'http://wa.me/') {
+                setError('Please enter your mobile number after the link.');
+                return;
+            }
+            if (url === 'https://chat.whatsapp.com/' || url === 'http://chat.whatsapp.com/') {
+                setError('Please enter the group invite code after the link.');
+                return;
+            }
         }
 
         setIsLoading(true);
@@ -249,7 +261,12 @@ function CategorySetupContent({ categorySlug }: { categorySlug: string }) {
                                         <input 
                                             type="url"
                                             className="w-full h-14 pl-11 pr-4 bg-slate-950 border border-slate-800 rounded-2xl focus:outline-none focus:border-indigo-500/60 focus:ring-2 focus:ring-indigo-500/20 transition-all text-white placeholder-slate-600 text-[15px] font-mono"
-                                            placeholder={categorySlug.toLowerCase().includes('instagram') ? 'https://instagram.com/yourprofile' : categorySlug.toLowerCase().includes('google') ? 'https://g.page/review/...' : `https://your-${categorySlug}-link.com`}
+                                            placeholder={
+                                                categorySlug.toLowerCase().includes('whatsapp') ? 'https://wa.me/1234567890 or https://chat.whatsapp.com/...' 
+                                                : categorySlug.toLowerCase().includes('instagram') ? 'https://instagram.com/yourprofile' 
+                                                : categorySlug.toLowerCase().includes('google') ? 'https://g.page/review/...' 
+                                                : `https://your-${categorySlug}-link.com`
+                                            }
                                             value={destinationUrl}
                                             onChange={(e) => setDestinationUrl(e.target.value)}
                                             required
@@ -258,6 +275,27 @@ function CategorySetupContent({ categorySlug }: { categorySlug: string }) {
                                     <p className="text-[12.5px] text-slate-500 leading-relaxed pt-1 px-1">
                                         When someone scans this QR code, they will be instantly redirected to this link.
                                     </p>
+                                    {categorySlug.toLowerCase().includes('whatsapp') && (
+                                        <div className="flex items-center gap-2 pt-1 px-1 flex-wrap">
+                                            <span className="text-[11px] text-slate-400">Quick start:</span>
+                                            <button 
+                                                type="button"
+                                                onClick={() => setDestinationUrl('https://wa.me/')}
+                                                className="flex items-center gap-1.5 px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-indigo-300 text-[11px] font-mono transition-colors"
+                                            >
+                                                https://wa.me/
+                                                <Copy size={12} className="opacity-70" />
+                                            </button>
+                                            <button 
+                                                type="button"
+                                                onClick={() => setDestinationUrl('https://chat.whatsapp.com/')}
+                                                className="flex items-center gap-1.5 px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-indigo-300 text-[11px] font-mono transition-colors"
+                                            >
+                                                https://chat.whatsapp.com/
+                                                <Copy size={12} className="opacity-70" />
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 
