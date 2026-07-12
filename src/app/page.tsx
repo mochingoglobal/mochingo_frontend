@@ -1,5 +1,6 @@
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
+import UserLoginButton from "@/components/UserLoginButton";
 
 export default function Home() {
   return (
@@ -9,6 +10,10 @@ export default function Home() {
         <ArrowRight className="w-8 h-8 md:w-12 md:h-12 group-hover:translate-x-2 transition-transform duration-300" />
       </div>
       
+      <div className="absolute top-6 right-6">
+        <UserLoginButton />
+      </div>
+
       <Link href="/admin/login" className="absolute bottom-6 right-6 p-3 text-slate-800 hover:text-slate-400 transition-colors" title="Admin Dashboard">
         <ArrowRight className="w-5 h-5" />
       </Link>

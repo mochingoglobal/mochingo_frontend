@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
     return (
         <html lang="en" className={inter.variable}>
-            <body>
+            <body className="overflow-x-hidden max-w-full">
                 <Providers>{children}</Providers>
             </body>
         </html>

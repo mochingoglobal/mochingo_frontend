@@ -98,7 +98,12 @@ export default function QRCategoryPage() {
                     </div>
                     <div style={{ flex: 1, minWidth: 200 }}>
                         <label className="label">Slug (Optional)</label>
-                        <input className="input" placeholder="e.g. google-review" value={slug} onChange={e => setSlug(e.target.value)} />
+                        <input 
+                            className="input" 
+                            placeholder="e.g. google-review" 
+                            value={slug} 
+                            onChange={e => setSlug(e.target.value.replace(/\s+/g, '-').toLowerCase())} 
+                        />
                     </div>
                     <div style={{ flex: 2, minWidth: 250 }}>
                         <label className="label">Description (Optional)</label>

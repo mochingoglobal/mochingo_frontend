@@ -1,0 +1,35 @@
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
+
+export interface ConsumerUser {
+    id: string;
+    name: string;
+    email: string;
+    mobile_number?: string;
+    profile_picture?: string;
+}
+
+interface ConsumerAuthState {
+    user: ConsumerUser | null;
+    token: string | null;
+    isAuthenticated: boolean;
+    login: (user: ConsumerUser, token: string) => void;
+    updateUser: (data: Partial<ConsumerUser>) => void;
+    logout: () => void;
+}
+
+export const useConsumerAuthStore = create<ConsumerAuthState>()(
+    persist(
+        (set) => ({
+            user: null,
+            token: null,
+            isAuthenticated: false,
+            login: (user, token) => set({ user, token, isAuthenticated: true }),
+            updateUser: (data) => set((state) => ({ user: state.user ? { ...state.user, ...data } : null })),
+            logout: () => set({ user: null, token: null, isAuthenticated: false }),
+        }),
+        {
+            name: 'mochingo-consumer-auth',
+        }
+    )
+);
