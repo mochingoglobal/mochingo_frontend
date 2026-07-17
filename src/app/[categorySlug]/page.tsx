@@ -6,8 +6,9 @@ import { GoogleLogin } from '@react-oauth/google';
 import { Loader2, CheckCircle2, AlertCircle, Link2, Smartphone, Globe, LogIn, Copy } from 'lucide-react';
 import { useConsumerAuthStore } from '@/store/consumerAuthStore';
 import api from '@/lib/api';
+import PetTagSetupWizard from '@/components/PetTagSetupWizard';
 
-function CategorySetupContent({ categorySlug }: { categorySlug: string }) {
+export function CategorySetupContent({ categorySlug }: { categorySlug: string }) {
     const searchParams = useSearchParams();
     const router = useRouter();
     const token = searchParams.get('token');
@@ -29,6 +30,10 @@ function CategorySetupContent({ categorySlug }: { categorySlug: string }) {
             setError('Invalid or missing QR token.');
         }
     }, [token]);
+
+    if (categorySlug?.toLowerCase() === 'pet-tag' || categorySlug?.toLowerCase() === 'pet') {
+        return <PetTagSetupWizard token={token} />;
+    }
 
     const handleGoogleSuccess = async (credentialResponse: any) => {
         setIsLoading(true);
@@ -59,7 +64,7 @@ function CategorySetupContent({ categorySlug }: { categorySlug: string }) {
             return;
         }
 
-        if (categorySlug.toLowerCase().includes('whatsapp')) {
+        if (categorySlug?.toLowerCase()?.includes('whatsapp')) {
             const url = destinationUrl.trim();
             if (url === 'https://wa.me/' || url === 'http://wa.me/') {
                 setError('Please enter your mobile number after the link.');
@@ -97,7 +102,7 @@ function CategorySetupContent({ categorySlug }: { categorySlug: string }) {
     };
 
     // Format category slug for display (e.g., "google-review" -> "Google Review")
-    const formattedCategory = categorySlug.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+    const formattedCategory = categorySlug ? categorySlug.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ') : 'Category';
 
     if (!isHydrated) {
         return (
@@ -203,7 +208,6 @@ function CategorySetupContent({ categorySlug }: { categorySlug: string }) {
                                     useOneTap
                                     shape="pill"
                                     theme="filled_black"
-                                    width="100%"
                                 />
                             </div>
                         </div>
@@ -325,10 +329,14 @@ function CategorySetupContent({ categorySlug }: { categorySlug: string }) {
     );
 }
 
-export default function CategorySetupPage({ params }: { params: { categorySlug: string } }) {
+import { useParams } from 'next/navigation';
+
+export default function CategorySetupPage() {
+    const params = useParams();
+    const categorySlug = typeof params?.categorySlug === 'string' ? params.categorySlug : 'General Setup';
     return (
         <Suspense fallback={<div className="min-h-screen bg-slate-950 flex items-center justify-center"><Loader2 className="animate-spin text-indigo-500" size={32} /></div>}>
-            <CategorySetupContent categorySlug={params.categorySlug} />
+            <CategorySetupContent categorySlug={categorySlug} />
         </Suspense>
     );
 }

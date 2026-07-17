@@ -491,20 +491,28 @@ export default function ProfileDashboard() {
                             <div className="space-y-6">
                                 
                                 {/* Input Field */}
-                                <div className="space-y-2">
-                                    <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest">
-                                        {scannedCategory ? `${scannedCategory} URL` : 'Destination URL'}
-                                    </label>
+                                {isOwnQR && claimUrl?.includes('/pet/') ? (
+                                    <div className="space-y-4">
+                                        <div className="p-4 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-center">
+                                            <p className="text-sm font-medium text-indigo-300">This is your Pet Tag.</p>
+                                            <p className="text-xs text-slate-400 mt-1">You can update the pet's photo, medical records, and your contact information.</p>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-2">
+                                        <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest">
+                                            {scannedCategory ? `${scannedCategory} URL` : 'Destination URL'}
+                                        </label>
                                     <input 
                                         type="url"
                                         value={claimUrl}
                                         onChange={e => setClaimUrl(e.target.value)}
                                         placeholder={
-                                            scannedCategory?.toLowerCase().includes('google') 
+                                            scannedCategory?.toLowerCase()?.includes('google') 
                                                 ? "https://g.page/review/..." 
-                                                : scannedCategory?.toLowerCase().includes('instagram') 
+                                                : scannedCategory?.toLowerCase()?.includes('instagram') 
                                                 ? "https://instagram.com/yourprofile" 
-                                                : scannedCategory?.toLowerCase().includes('whatsapp')
+                                                : scannedCategory?.toLowerCase()?.includes('whatsapp')
                                                 ? "https://wa.me/1234567890 or https://chat.whatsapp.com/..."
                                                 : "https://..."
                                         }
@@ -514,7 +522,7 @@ export default function ProfileDashboard() {
                                     {scannedCategory && !claimError && (
                                         <div className="mt-1">
                                             <p className="text-xs text-slate-500">Assign your business {scannedCategory} URL to this QR code.</p>
-                                            {scannedCategory.toLowerCase().includes('whatsapp') && (
+                                            {scannedCategory.toLowerCase()?.includes('whatsapp') && (
                                                 <div className="mt-2 flex items-center gap-2 flex-wrap">
                                                     <span className="text-[11px] text-slate-400">Quick start:</span>
                                                     <button 
@@ -542,45 +550,52 @@ export default function ProfileDashboard() {
                                         </p>
                                     )}
                                 </div>
+                                )}
 
                                 {/* Submit Button */}
-                                <button 
-                                    onClick={() => {
-                                        setClaimError(null);
-                                        if (scannedCategory?.toLowerCase().includes('whatsapp')) {
-                                            const url = claimUrl.trim();
-                                            if (url === 'https://wa.me/' || url === 'http://wa.me/') {
-                                                setClaimError('Please enter your mobile number after the link.');
-                                                return;
-                                            }
-                                            if (url === 'https://chat.whatsapp.com/' || url === 'http://chat.whatsapp.com/') {
-                                                setClaimError('Please enter the group invite code after the link.');
-                                                return;
-                                            }
-                                        }
-                                        
-                                        if (isOwnQR && ownQRId) {
-                                            updateMutation.mutate({ id: ownQRId, url: claimUrl }, {
-                                                onSuccess: () => {
-                                                    setScannedToken(null);
-                                                    setScannedCategory(null);
-                                                    setClaimUrl('');
-                                                    setIsOwnQR(false);
-                                                    setOwnQRId(null);
-                                                },
-                                                onError: (err: any) => {
-                                                    setClaimError(err.response?.data?.message || 'Failed to update QR');
+                                {isOwnQR && claimUrl?.includes('/pet/') ? (
+                                    <Link href={`/pet-tag?token=${scannedToken}`} className="w-full h-14 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold text-[15px] transition-all flex items-center justify-center shadow-lg shadow-indigo-500/20 active:scale-[0.98]">
+                                        Edit Pet Profile
+                                    </Link>
+                                ) : (
+                                    <button 
+                                        onClick={() => {
+                                            setClaimError(null);
+                                            if (scannedCategory?.toLowerCase()?.includes('whatsapp')) {
+                                                const url = claimUrl.trim();
+                                                if (url === 'https://wa.me/' || url === 'http://wa.me/') {
+                                                    setClaimError('Please enter your mobile number after the link.');
+                                                    return;
                                                 }
-                                            });
-                                        } else {
-                                            claimMutation.mutate();
-                                        }
-                                    }} 
-                                    disabled={claimMutation.isPending || updateMutation.isPending || !claimUrl}
-                                    className="w-full h-14 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold text-[15px] transition-all disabled:opacity-50 flex items-center justify-center shadow-lg shadow-indigo-500/20 active:scale-[0.98]"
-                                >
-                                    {(claimMutation.isPending || updateMutation.isPending) ? <Loader2 size={20} className="animate-spin" /> : isOwnQR ? 'Update Destination' : 'Claim & Save'}
-                                </button>
+                                                if (url === 'https://chat.whatsapp.com/' || url === 'http://chat.whatsapp.com/') {
+                                                    setClaimError('Please enter the group invite code after the link.');
+                                                    return;
+                                                }
+                                            }
+                                            
+                                            if (isOwnQR && ownQRId) {
+                                                updateMutation.mutate({ id: ownQRId, url: claimUrl }, {
+                                                    onSuccess: () => {
+                                                        setScannedToken(null);
+                                                        setScannedCategory(null);
+                                                        setClaimUrl('');
+                                                        setIsOwnQR(false);
+                                                        setOwnQRId(null);
+                                                    },
+                                                    onError: (err: any) => {
+                                                        setClaimError(err.response?.data?.message || 'Failed to update QR');
+                                                    }
+                                                });
+                                            } else {
+                                                claimMutation.mutate();
+                                            }
+                                        }} 
+                                        disabled={claimMutation.isPending || updateMutation.isPending || !claimUrl}
+                                        className="w-full h-14 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold text-[15px] transition-all disabled:opacity-50 flex items-center justify-center shadow-lg shadow-indigo-500/20 active:scale-[0.98]"
+                                    >
+                                        {(claimMutation.isPending || updateMutation.isPending) ? <Loader2 size={20} className="animate-spin" /> : isOwnQR ? 'Update Destination' : 'Claim & Save'}
+                                    </button>
+                                )}
                                 
                             </div>
                         )}

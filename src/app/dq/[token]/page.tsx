@@ -17,7 +17,7 @@ export default function DQRedirectPage() {
             try {
                 const res = await api.get<{ status: boolean; data: ResolveQRResponse }>(`/qr/dynamic/${token}/resolve`);
                 const data = res.data.data;
-                if (data.status === 'assigned' && data.redirect_url) {
+                if ((data.status === 'assigned' || data.status === 'unassigned') && data.redirect_url) {
                     setRedirectUrl(data.redirect_url);
                     setStatus('redirecting');
                     setTimeout(() => { window.location.replace(data.redirect_url); }, 500);

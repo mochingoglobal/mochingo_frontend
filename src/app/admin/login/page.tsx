@@ -65,11 +65,12 @@ export default function AdminLoginPage() {
                     <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
                         {/* Email */}
                         <div>
-                            <label className="label" htmlFor="email">Email address</label>
+                            <label className="label text-white" style={{ color: 'white' }} htmlFor="email">Email address</label>
                             <input
                                 id="email"
                                 type="email"
-                                className="input"
+                                className="input text-white placeholder:text-white/50"
+                                style={{ color: 'white' }}
                                 placeholder="admin@mochingo.com"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
@@ -80,13 +81,13 @@ export default function AdminLoginPage() {
 
                         {/* Password */}
                         <div>
-                            <label className="label" htmlFor="password">Password</label>
+                            <label className="label text-white" style={{ color: 'white' }} htmlFor="password">Password</label>
                             <div style={{ position: 'relative' }}>
                                 <input
                                     id="password"
                                     type={showPw ? 'text' : 'password'}
-                                    className="input"
-                                    style={{ paddingRight: 44 }}
+                                    className="input text-white placeholder:text-white/50"
+                                    style={{ paddingRight: 44, color: 'white' }}
                                     placeholder="••••••••"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
