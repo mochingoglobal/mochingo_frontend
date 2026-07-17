@@ -16,6 +16,8 @@ interface ConsumerAuthState {
     login: (user: ConsumerUser, token: string) => void;
     updateUser: (data: Partial<ConsumerUser>) => void;
     logout: () => void;
+    _hasHydrated: boolean;
+    setHasHydrated: (state: boolean) => void;
 }
 
 export const useConsumerAuthStore = create<ConsumerAuthState>()(
@@ -27,9 +29,14 @@ export const useConsumerAuthStore = create<ConsumerAuthState>()(
             login: (user, token) => set({ user, token, isAuthenticated: true }),
             updateUser: (data) => set((state) => ({ user: state.user ? { ...state.user, ...data } : null })),
             logout: () => set({ user: null, token: null, isAuthenticated: false }),
+            _hasHydrated: false,
+            setHasHydrated: (state) => set({ _hasHydrated: state }),
         }),
         {
             name: 'mochingo-consumer-auth',
+            onRehydrateStorage: () => (state) => {
+                if (state) state.setHasHydrated(true);
+            },
         }
     )
 );

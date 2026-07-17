@@ -12,8 +12,7 @@ export function CategorySetupContent({ categorySlug }: { categorySlug: string })
     const searchParams = useSearchParams();
     const router = useRouter();
     const token = searchParams.get('token');
-    
-    const { user, login, updateUser, isAuthenticated } = useConsumerAuthStore();
+    const { user, login, updateUser, isAuthenticated, _hasHydrated } = useConsumerAuthStore();
     
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -22,10 +21,7 @@ export function CategorySetupContent({ categorySlug }: { categorySlug: string })
     const [mobileNumber, setMobileNumber] = useState(user?.mobile_number || '');
     const [destinationUrl, setDestinationUrl] = useState('');
 
-    const [isHydrated, setIsHydrated] = useState(false);
-
     useEffect(() => {
-        setIsHydrated(true);
         if (!token) {
             setError('Invalid or missing QR token.');
         }
@@ -104,7 +100,7 @@ export function CategorySetupContent({ categorySlug }: { categorySlug: string })
     // Format category slug for display (e.g., "google-review" -> "Google Review")
     const formattedCategory = categorySlug ? categorySlug.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ') : 'Category';
 
-    if (!isHydrated) {
+    if (!_hasHydrated) {
         return (
             <div className="min-h-screen bg-slate-950 flex items-center justify-center">
                 <Loader2 size={32} className="animate-spin text-indigo-500" />
