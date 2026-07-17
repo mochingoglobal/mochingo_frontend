@@ -45,6 +45,34 @@ export default function DQRedirectPage() {
 
     const msg = messages[status] || messages.missing;
 
+    if (status === 'loading' || status === 'redirecting') {
+        return (
+            <div className="qr-loader-bg" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', position: 'relative' }}>
+                <style>{`
+                    .qr-loader-bg { background-color: #ffffff; }
+                    .qr-spinner { border: 3px solid #f1f5f9; border-top-color: #0f172a; width: 40px; height: 40px; border-radius: 50%; animation: spin 0.8s linear infinite; }
+                    .qr-powered { color: #94a3b8; }
+                    @media (prefers-color-scheme: dark) {
+                        .qr-loader-bg { background-color: #020617; }
+                        .qr-spinner { border: 3px solid #1e293b; border-top-color: #f8fafc; }
+                        .qr-powered { color: #475569; }
+                    }
+                    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+                `}</style>
+                
+                <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <div className="qr-spinner"></div>
+                </div>
+                
+                <div style={{ paddingBottom: '24px', textAlign: 'center' }}>
+                    <span className="qr-powered" style={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+                        Powered by Mochingo
+                    </span>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div style={{
             minHeight: '100vh',
@@ -59,21 +87,14 @@ export default function DQRedirectPage() {
                 maxWidth: 420,
                 animation: 'fadeIn 0.3s ease',
             }}>
-                {/* Spinner for loading */}
-                {status === 'loading' ? (
-                    <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 24 }}>
-                        <div className="spinner" style={{ width: 48, height: 48, borderTopColor: '#6366f1' }} />
-                    </div>
-                ) : (
-                    <div style={{
-                        width: 80, height: 80, borderRadius: '50%',
-                        background: `${msg.color}18`, border: `2px solid ${msg.color}40`,
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: 32, margin: '0 auto 24px',
-                    }}>
-                        {msg.icon}
-                    </div>
-                )}
+                <div style={{
+                    width: 80, height: 80, borderRadius: '50%',
+                    background: `${msg.color}18`, border: `2px solid ${msg.color}40`,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 32, margin: '0 auto 24px',
+                }}>
+                    {msg.icon}
+                </div>
 
                 <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 24 }}>
                     <div style={{
@@ -93,24 +114,6 @@ export default function DQRedirectPage() {
 
                 <h1 style={{ color: '#f1f5f9', fontSize: 22, fontWeight: 700, marginBottom: 10 }}>{msg.title}</h1>
                 <p style={{ color: '#64748b', fontSize: 14, lineHeight: 1.6, wordBreak: 'break-all' }}>{msg.desc}</p>
-
-                {status === 'redirecting' && (
-                    <div style={{ marginTop: 16 }}>
-                        <div style={{ height: 3, borderRadius: 999, background: '#1e2a3a', overflow: 'hidden' }}>
-                            <div style={{
-                                height: '100%', width: '100%', borderRadius: 999,
-                                background: 'linear-gradient(90deg, #6366f1, #8b5cf6)',
-                                animation: 'redirectBar 0.5s ease forwards',
-                            }}/>
-                        </div>
-                        <style>{`
-                            @keyframes redirectBar {
-                                from { transform: translateX(-100%); }
-                                to { transform: translateX(0); }
-                            }
-                        `}</style>
-                    </div>
-                )}
 
                 {(status === 'unassigned' || status === 'missing' || status === 'disabled') && (
                     <a href="/" style={{
