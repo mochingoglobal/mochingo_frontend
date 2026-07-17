@@ -11,6 +11,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     const pathname = usePathname();
     const { isAuthenticated, isLoading, checkAuth, logout, admin } = useAuthStore();
     const [mounted, setMounted] = useState(false);
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     useEffect(() => {
         setMounted(true);
@@ -46,39 +47,63 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     ];
 
     return (
-        <div style={{ minHeight: '100vh', display: 'flex', background: '#0a0d16', color: '#f1f5f9' }}>
+        <div className="min-h-screen bg-[#0a0d16] text-slate-100 flex flex-col md:flex-row">
+            {/* Mobile Header */}
+            <div className="md:hidden flex items-center justify-between p-4 border-b border-white/5 bg-[#161b27]/90 backdrop-blur-md sticky top-0 z-20">
+                <Link href="/admin/qr-management" className="flex items-center gap-2 text-white font-bold text-lg">
+                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center">
+                        <QrCode size={16} />
+                    </div>
+                    Mochingo
+                </Link>
+                <button 
+                    onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                    className="p-2 text-slate-300 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+                >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        {isMobileMenuOpen ? (
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        ) : (
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                        )}
+                    </svg>
+                </button>
+            </div>
+
+            {/* Sidebar Overlay (Mobile) */}
+            {isMobileMenuOpen && (
+                <div 
+                    className="fixed inset-0 bg-black/60 z-30 md:hidden backdrop-blur-sm"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                />
+            )}
+
             {/* Sidebar */}
-            <aside style={{
-                width: 'var(--sidebar-width)', flexShrink: 0,
-                borderRight: '1px solid rgba(255,255,255,0.05)',
-                background: 'rgba(22,27,39,0.5)',
-                display: 'flex', flexDirection: 'column'
-            }}>
-                <div style={{ padding: '24px 20px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                    <Link href="/admin/qr-management" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
-                        <div style={{
-                            width: 32, height: 32, borderRadius: 8,
-                            background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center'
-                        }}>
-                            <QrCode size={16} color="white" />
+            <aside className={`
+                fixed inset-y-0 left-0 z-40 w-64 bg-[#0a0d16] md:bg-[#161b27]/50 border-r border-white/5 flex flex-col transition-transform duration-300 ease-in-out md:relative md:translate-x-0
+                ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
+            `}>
+                <div className="p-6 border-b border-white/5 hidden md:block">
+                    <Link href="/admin/qr-management" className="flex items-center gap-2 text-white font-bold text-lg">
+                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center">
+                            <QrCode size={16} />
                         </div>
-                        <span style={{ color: '#f1f5f9', fontWeight: 700, fontSize: 16 }}>Mochingo</span>
+                        Mochingo
                     </Link>
                 </div>
 
-                <nav style={{ flex: 1, padding: '20px 12px', display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
                     {navigation.map((item) => {
                         const isActive = pathname.startsWith(item.href);
                         return (
-                            <Link key={item.name} href={item.href} style={{
-                                display: 'flex', alignItems: 'center', gap: 10,
-                                padding: '10px 12px', borderRadius: 8,
-                                background: isActive ? 'rgba(99,102,241,0.1)' : 'transparent',
-                                color: isActive ? '#818cf8' : '#94a3b8',
-                                textDecoration: 'none', fontSize: 14, fontWeight: 500,
-                                transition: 'all 0.15s'
-                            }}>
+                            <Link 
+                                key={item.name} 
+                                href={item.href} 
+                                onClick={() => setIsMobileMenuOpen(false)}
+                                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                                    isActive ? 'bg-indigo-500/10 text-indigo-400' : 'text-slate-400 hover:bg-white/5 hover:text-slate-200'
+                                }`}
+                            >
                                 <item.icon size={18} />
                                 {item.name}
                             </Link>
@@ -86,23 +111,19 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     })}
                 </nav>
 
-                <div style={{ padding: '20px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-                        <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#1e293b', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8', fontSize: 12, fontWeight: 600 }}>
+                <div className="p-4 border-t border-white/5">
+                    <div className="flex items-center gap-3 mb-4 px-2">
+                        <div className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 text-xs font-semibold shrink-0">
                             {admin?.name?.charAt(0).toUpperCase()}
                         </div>
-                        <div style={{ overflow: 'hidden' }}>
-                            <p style={{ color: '#f1f5f9', fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>{admin?.name}</p>
-                            <p style={{ color: '#64748b', fontSize: 11, whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>{admin?.email}</p>
+                        <div className="min-w-0">
+                            <p className="text-slate-100 text-[13px] font-semibold truncate">{admin?.name}</p>
+                            <p className="text-slate-500 text-[11px] truncate">{admin?.email}</p>
                         </div>
                     </div>
                     <button
                         onClick={() => logout()}
-                        style={{
-                            width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                            padding: '8px', borderRadius: 6, background: 'rgba(239,68,68,0.1)', color: '#ef4444',
-                            border: '1px solid rgba(239,68,68,0.2)', fontSize: 13, fontWeight: 500, cursor: 'pointer'
-                        }}
+                        className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-md bg-red-500/10 text-red-500 border border-red-500/20 text-[13px] font-medium hover:bg-red-500/20 transition-colors"
                     >
                         <LogOut size={14} />
                         Sign Out
@@ -111,9 +132,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </aside>
 
             {/* Main Content */}
-            <main style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
-                <div style={{ flex: 1, overflow: 'auto', padding: '32px' }}>
-                    <div style={{ maxWidth: 1200, margin: '0 auto' }}>
+            <main className="flex-1 flex flex-col min-w-0 h-[calc(100vh-65px)] md:h-screen">
+                <div className="flex-1 overflow-auto p-4 sm:p-6 md:p-8">
+                    <div className="max-w-6xl mx-auto">
                         {children}
                     </div>
                 </div>

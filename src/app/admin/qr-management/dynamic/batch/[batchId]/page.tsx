@@ -197,18 +197,19 @@ export default function BatchManagementPage() {
     if (!data) return <div>Batch not found</div>;
 
     return (
-        <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24, flexWrap: 'wrap' }}>
-                <button onClick={() => router.back()} className="btn btn-outline"><ArrowLeft size={16}/></button>
-                <div style={{ flex: 1 }}>
-                    <h1 style={{ fontSize: 24, fontWeight: 700 }}>{data.batch_label}</h1>
-                    <p style={{ color: '#94a3b8', fontSize: 14 }}>Batch ID: {batchId} • {data.qr_count} QRs</p>
+        <div className="flex flex-col max-w-full">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
+                <div className="flex items-center gap-4 flex-1">
+                    <button onClick={() => router.back()} className="btn btn-outline shrink-0"><ArrowLeft size={16}/></button>
+                    <div className="min-w-0">
+                        <h1 className="text-xl sm:text-2xl font-bold truncate">{data.batch_label}</h1>
+                        <p className="text-slate-400 text-sm truncate">Batch ID: {batchId} • {data.qr_count} QRs</p>
+                    </div>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <label style={{ fontSize: 14, color: '#94a3b8' }}>Category:</label>
+                <div className="flex items-center gap-2 w-full sm:w-auto">
+                    <label className="text-sm text-slate-400 whitespace-nowrap shrink-0">Category:</label>
                     <select 
-                        className="input input-sm" 
-                        style={{ width: 200 }} 
+                        className="input input-sm w-full sm:w-[200px]" 
                         value={categoryId} 
                         onChange={handleCategoryChange}
                         disabled={updateCategoryMutation.isPending}
@@ -218,124 +219,120 @@ export default function BatchManagementPage() {
                             <option key={cat._id} value={cat._id}>{cat.name}</option>
                         ))}
                     </select>
-                    {updateCategoryMutation.isPending && <Loader2 size={16} className="animate-spin" style={{ color: '#6366f1' }} />}
+                    {updateCategoryMutation.isPending && <Loader2 size={16} className="animate-spin text-indigo-500 shrink-0" />}
                 </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '300px 1fr', gap: 24, alignItems: 'start' }}>
+            <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-6 items-start">
                 {/* List */}
-                <div className="card" style={{ padding: 12, maxHeight: 'calc(100vh - 140px)', overflowY: 'auto' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <div className="card p-3 max-h-[400px] lg:max-h-[calc(100vh-140px)] overflow-y-auto">
+                    <div className="flex flex-col gap-2">
                         {data.dynamic_qrs.map(qr => (
                             <button
                                 key={qr._id}
                                 onClick={() => setSelectedId(qr._id)}
-                                style={{
-                                    display: 'flex', flexDirection: 'column', gap: 4, textAlign: 'left',
-                                    padding: '12px', borderRadius: 8, cursor: 'pointer', border: '1px solid',
-                                    background: selectedId === qr._id ? 'rgba(99,102,241,0.1)' : 'transparent',
-                                    borderColor: selectedId === qr._id ? '#6366f1' : 'transparent',
-                                    color: 'white'
-                                }}
+                                className={`flex flex-col gap-1 text-left p-3 rounded-lg cursor-pointer border transition-colors ${
+                                    selectedId === qr._id ? 'bg-indigo-500/10 border-indigo-500 text-white' : 'border-transparent text-slate-200 hover:bg-white/5'
+                                }`}
                             >
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <span style={{ fontWeight: 600, fontSize: 14 }}>{qr.label}</span>
-                                    <span className={`badge ${getStatusColor(qr.status)}`} style={{ fontSize: 10 }}>#{qr.batch_sequence}</span>
+                                <div className="flex justify-between items-center">
+                                    <span className="font-semibold text-sm truncate pr-2">{qr.label}</span>
+                                    <span className={`badge ${getStatusColor(qr.status)} text-[10px] shrink-0`}>#{qr.batch_sequence}</span>
                                 </div>
-                                <span style={{ fontSize: 12, color: '#94a3b8' }}>{qr.assignment_summary}</span>
+                                <span className="text-xs text-slate-400 truncate">{qr.assignment_summary}</span>
                             </button>
                         ))}
                     </div>
                 </div>
 
                 {/* Editor & Actions */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+                <div className="flex flex-col gap-6">
                     
                     {/* Range Selection */}
-                    <div className="card" style={{ padding: 24, background: 'rgba(99, 102, 241, 0.03)' }}>
-                        <h2 style={{ fontSize: 16, fontWeight: 600, marginBottom: 16 }}>Manage Range</h2>
-                        <div style={{ display: 'flex', gap: 16, alignItems: 'flex-end', flexWrap: 'wrap' }}>
-                            <div>
+                    <div className="card p-4 sm:p-6 bg-indigo-500/5">
+                        <h2 className="text-base font-semibold mb-4">Manage Range</h2>
+                        <div className="flex flex-col sm:flex-row gap-4 sm:items-end">
+                            <div className="flex-1 sm:flex-none">
                                 <label className="label">Start Sequence</label>
-                                <input type="number" className="input input-sm" style={{ width: 120 }} value={rangeStart} onChange={e => setRangeStart(e.target.value ? Number(e.target.value) : '')} placeholder="1" />
+                                <input type="number" className="input input-sm w-full sm:w-[120px]" value={rangeStart} onChange={e => setRangeStart(e.target.value ? Number(e.target.value) : '')} placeholder="1" />
                             </div>
-                            <div>
+                            <div className="flex-1 sm:flex-none">
                                 <label className="label">End Sequence</label>
-                                <input type="number" className="input input-sm" style={{ width: 120 }} value={rangeEnd} onChange={e => setRangeEnd(e.target.value ? Number(e.target.value) : '')} placeholder={String(data.qr_count)} />
+                                <input type="number" className="input input-sm w-full sm:w-[120px]" value={rangeEnd} onChange={e => setRangeEnd(e.target.value ? Number(e.target.value) : '')} placeholder={String(data.qr_count)} />
                             </div>
                             {hasValidRange && (
-                                <span style={{ paddingBottom: 8, fontSize: 13, color: '#10b981' }}>
+                                <span className="pb-2 text-[13px] text-emerald-500">
                                     Selecting {rangeEnd - rangeStart + 1} QRs
                                 </span>
                             )}
                         </div>
 
-                        <div style={{ display: 'flex', gap: 12, marginTop: 20 }}>
-                            <button className="btn btn-primary" onClick={() => handleOpenBuilder('range')} disabled={!hasValidRange}>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-5">
+                            <button className="btn btn-primary justify-center" onClick={() => handleOpenBuilder('range')} disabled={!hasValidRange}>
                                 <Palette size={16} /> Open Range Builder
                             </button>
-                            <button className="btn btn-outline" onClick={() => handleDownloadPdf('stand', 'range')} disabled={!hasValidRange}>
+                            <button className="btn btn-outline justify-center" onClick={() => handleDownloadPdf('stand', 'range')} disabled={!hasValidRange}>
                                 <Download size={16} /> Stand PDF (Range)
                             </button>
-                            <button className="btn btn-outline" onClick={() => handleDownloadPdf('branded', 'range')} disabled={!hasValidRange}>
+                            <button className="btn btn-outline justify-center" onClick={() => handleDownloadPdf('branded', 'range')} disabled={!hasValidRange}>
                                 <Download size={16} /> Branded PDF (Range)
                             </button>
-                            <button className="btn btn-outline" onClick={() => handleDownloadPdf('plain', 'range')} disabled={!hasValidRange}>
+                            <button className="btn btn-outline justify-center" onClick={() => handleDownloadPdf('plain', 'range')} disabled={!hasValidRange}>
                                 <Download size={16} /> Plain PDF (Range)
                             </button>
                         </div>
                     </div>
 
                     {/* Editor */}
-                    <div className="card" style={{ padding: 24 }}>
-                        <h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 16 }}>Edit Selected QR</h2>
+                    <div className="card p-4 sm:p-6">
+                        <h2 className="text-lg font-semibold mb-4">Edit Selected QR</h2>
                         {selectedQr ? (
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                            <div className="flex flex-col gap-4">
                                 <div>
                                     <label className="label">Label</label>
                                     <input className="input" value={label} onChange={e => setLabel(e.target.value)} />
                                 </div>
                                 <div>
                                     <label className="label">Permanent QR Link</label>
-                                    <div style={{ display: 'flex', gap: 8 }}>
-                                        <input className="input" value={selectedQr.qr_url} readOnly style={{ opacity: 0.7 }} />
-                                        <button className="btn btn-outline" onClick={() => { navigator.clipboard.writeText(selectedQr.qr_url); alert('Copied!'); }}><Copy size={14}/></button>
-                                        <a href={selectedQr.qr_url} target="_blank" className="btn btn-outline"><ExternalLink size={14}/></a>
+                                    <div className="flex gap-2">
+                                        <input className="input opacity-70 flex-1 min-w-0" value={selectedQr.qr_url} readOnly />
+                                        <button className="btn btn-outline shrink-0" onClick={() => { navigator.clipboard.writeText(selectedQr.qr_url); alert('Copied!'); }}><Copy size={14}/></button>
+                                        <a href={selectedQr.qr_url} target="_blank" className="btn btn-outline shrink-0"><ExternalLink size={14}/></a>
                                     </div>
                                 </div>
                                 <div>
                                     <label className="label">Destination URL</label>
                                     <input className="input" value={manualUrl} onChange={e => setManualUrl(e.target.value)} placeholder="https://" />
                                 </div>
-                                <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
-                                    <button className="btn btn-primary" onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending}>
+                                <div className="flex flex-col sm:flex-row gap-3 mt-2">
+                                    <button className="btn btn-primary flex-1 justify-center" onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending}>
                                         {saveMutation.isPending ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />} Save Changes
                                     </button>
-                                    <button className="btn btn-outline" onClick={() => applyTemplateMutation.mutate()} disabled={applyTemplateMutation.isPending}>
+                                    <button className="btn btn-outline flex-1 justify-center" onClick={() => applyTemplateMutation.mutate()} disabled={applyTemplateMutation.isPending}>
                                         Apply Destination to Entire Batch
                                     </button>
                                 </div>
                             </div>
                         ) : (
-                            <p style={{ color: '#94a3b8' }}>Select a QR from the list.</p>
+                            <p className="text-slate-400">Select a QR from the list.</p>
                         )}
                     </div>
 
                     {/* Batch Actions */}
-                    <div className="card" style={{ padding: 24 }}>
-                        <h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 16 }}>Full Batch Actions</h2>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                    <div className="card p-4 sm:p-6">
+                        <h2 className="text-lg font-semibold mb-4">Full Batch Actions</h2>
+                        <div className="flex flex-col gap-4">
                             <div>
                                 <label className="label">Custom Center Logo (Optional)</label>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                                    <label className="btn btn-outline" style={{ cursor: 'pointer' }}>
+                                <div className="flex items-center gap-3 flex-wrap">
+                                    <label className="btn btn-outline cursor-pointer shrink-0">
                                         <ImageIcon size={16} /> Upload Logo
-                                        <input type="file" accept="image/*" style={{ display: 'none' }} onChange={handleLogoUpload} />
+                                        <input type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} />
                                     </label>
                                     {logoUrl && (
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                            <img src={logoUrl} alt="Logo Preview" style={{ width: 32, height: 32, objectFit: 'contain', background: 'white', borderRadius: 4 }} />
-                                            <button className="btn btn-outline" style={{ padding: '6px', color: '#ef4444', borderColor: '#ef4444' }} onClick={() => setLogoUrl(undefined)}>
+                                        <div className="flex items-center gap-2">
+                                            <img src={logoUrl} alt="Logo Preview" className="w-8 h-8 object-contain bg-white rounded" />
+                                            <button className="btn btn-outline p-1.5 text-red-500 border-red-500/50 hover:bg-red-500/10 shrink-0" onClick={() => setLogoUrl(undefined)}>
                                                 <X size={14} />
                                             </button>
                                         </div>
@@ -346,17 +343,17 @@ export default function BatchManagementPage() {
                                 <label className="label">Custom PDF Title (Optional)</label>
                                 <input className="input" value={batchTitle} onChange={e => setBatchTitle(e.target.value)} placeholder="e.g. Summer Campaign" />
                             </div>
-                            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-                                <button className="btn btn-primary" onClick={() => handleOpenBuilder('full')}>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
+                                <button className="btn btn-primary justify-center" onClick={() => handleOpenBuilder('full')}>
                                     <Palette size={16} /> Open Full Batch Builder
                                 </button>
-                                <button className="btn btn-outline" onClick={() => handleDownloadPdf('stand', 'full')}>
+                                <button className="btn btn-outline justify-center" onClick={() => handleDownloadPdf('stand', 'full')}>
                                     <Download size={16} /> Download Stand PDF
                                 </button>
-                                <button className="btn btn-outline" onClick={() => handleDownloadPdf('branded', 'full')}>
+                                <button className="btn btn-outline justify-center" onClick={() => handleDownloadPdf('branded', 'full')}>
                                     <Download size={16} /> Download Branded PDF
                                 </button>
-                                <button className="btn btn-outline" onClick={() => handleDownloadPdf('plain', 'full')}>
+                                <button className="btn btn-outline justify-center" onClick={() => handleDownloadPdf('plain', 'full')}>
                                     <Download size={16} /> Download Plain PDF
                                 </button>
                             </div>

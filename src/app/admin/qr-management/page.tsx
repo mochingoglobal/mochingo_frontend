@@ -112,7 +112,7 @@ function CustomQRTab() {
     };
 
     return (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: 24 }}>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="card" style={{ padding: 24 }}>
                 <h2 style={{ fontSize: 18, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                     <Sparkles size={20} color="#8b5cf6" /> Custom QR Generator
@@ -262,15 +262,15 @@ function DynamicQRTab() {
     });
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+        <div className="flex flex-col gap-6">
             {/* Create Bar */}
-            <div className="card" style={{ padding: 20 }}>
-                <div style={{ display: 'flex', alignItems: 'flex-end', gap: 16, flexWrap: 'wrap' }}>
-                    <div style={{ flex: 1, minWidth: 200 }}>
+            <div className="card p-4 sm:p-5">
+                <div className="flex flex-col md:flex-row md:items-end gap-4 flex-wrap">
+                    <div className="flex-1 min-w-[200px]">
                         <label className="label">Group Label</label>
                         <input className="input" placeholder="e.g. Marketing Posters" value={label} onChange={e => setLabel(e.target.value)} />
                     </div>
-                    <div style={{ flex: 1, minWidth: 200 }}>
+                    <div className="flex-1 min-w-[200px]">
                         <label className="label">Category (Optional)</label>
                         <select className="input" value={categoryId} onChange={e => setCategoryId(e.target.value)}>
                             <option value="">-- No Category --</option>
@@ -279,36 +279,36 @@ function DynamicQRTab() {
                             ))}
                         </select>
                     </div>
-                    <div style={{ width: 100 }}>
+                    <div className="w-full md:w-[100px]">
                         <label className="label">Count</label>
                         <input type="number" min="1" max="1000" className="input" value={count} onChange={e => setCount(Number(e.target.value) || 1)} />
                     </div>
-                    <button 
-                        className="btn btn-primary" 
-                        onClick={() => createMutation.mutate()} 
-                        disabled={!label.trim() || createMutation.isPending}
-                        style={{ height: 38 }}
-                    >
-                        {createMutation.isPending ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}
-                        Create
-                    </button>
-                    <button 
-                        className="btn btn-outline" 
-                        onClick={() => router.push('/admin/qr-management/dynamic/start-scanning')}
-                        style={{ height: 38 }}
-                    >
-                        <ScanLine size={16} /> Scan Assign
-                    </button>
+                    <div className="flex gap-3 w-full md:w-auto">
+                        <button 
+                            className="btn btn-primary flex-1 md:flex-none justify-center h-[38px]" 
+                            onClick={() => createMutation.mutate()} 
+                            disabled={!label.trim() || createMutation.isPending}
+                        >
+                            {createMutation.isPending ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}
+                            Create
+                        </button>
+                        <button 
+                            className="btn btn-outline flex-1 md:flex-none justify-center h-[38px]" 
+                            onClick={() => router.push('/admin/qr-management/dynamic/start-scanning')}
+                        >
+                            <ScanLine size={16} /> Scan Assign
+                        </button>
+                    </div>
                 </div>
             </div>
 
             {/* List */}
-            <div className="card" style={{ padding: 20 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-                    <h3 style={{ fontSize: 16, fontWeight: 600 }}>Dynamic QR Groups ({data?.total || 0})</h3>
-                    <div style={{ position: 'relative', width: 240 }}>
-                        <Search size={14} style={{ position: 'absolute', left: 10, top: 11, color: '#64748b' }} />
-                        <input className="input input-sm" style={{ paddingLeft: 30 }} placeholder="Search labels..." value={search} onChange={e => setSearch(e.target.value)} />
+            <div className="card p-4 sm:p-5">
+                <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-4">
+                    <h3 className="text-base font-semibold">Dynamic QR Groups ({data?.total || 0})</h3>
+                    <div className="relative w-full sm:w-[240px]">
+                        <Search size={14} className="absolute left-3 top-[11px] text-slate-500" />
+                        <input className="input input-sm pl-8 w-full" placeholder="Search labels..." value={search} onChange={e => setSearch(e.target.value)} />
                     </div>
                 </div>
 
@@ -367,13 +367,13 @@ export default function QRManagementPage() {
     const [tab, setTab] = useState<'custom' | 'dynamic'>('custom');
 
     return (
-        <div>
-            <div style={{ marginBottom: 24 }}>
-                <h1 style={{ fontSize: 28, fontWeight: 700, marginBottom: 8 }}>QR Management</h1>
-                <p style={{ color: '#94a3b8' }}>Generate one-off branded QRs or manage permanent Dynamic QRs.</p>
+        <div className="flex flex-col max-w-full">
+            <div className="mb-6">
+                <h1 className="text-2xl sm:text-3xl font-bold mb-2">QR Management</h1>
+                <p className="text-slate-400 text-sm sm:text-base">Generate one-off branded QRs or manage permanent Dynamic QRs.</p>
             </div>
 
-            <div style={{ display: 'inline-flex', background: 'rgba(255,255,255,0.05)', padding: 4, borderRadius: 8, marginBottom: 24, gap: 4 }}>
+            <div className="inline-flex bg-white/5 p-1 rounded-lg mb-6 gap-1 self-start">
                 <button
                     onClick={() => setTab('custom')}
                     style={{

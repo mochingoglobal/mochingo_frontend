@@ -79,24 +79,24 @@ export default function QRCategoryPage() {
     };
 
     return (
-        <div>
-            <div style={{ marginBottom: 24 }}>
-                <h1 style={{ fontSize: 28, fontWeight: 700, marginBottom: 8 }}>QR Categories</h1>
-                <p style={{ color: '#94a3b8' }}>Manage categories for Dynamic QR groups.</p>
+        <div className="flex flex-col max-w-full">
+            <div className="mb-6">
+                <h1 className="text-2xl sm:text-3xl font-bold mb-2">QR Categories</h1>
+                <p className="text-slate-400 text-sm sm:text-base">Manage categories for Dynamic QR groups.</p>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+            <div className="flex flex-col gap-6">
                 {/* Form */}
-            <div className="card" style={{ padding: 20 }}>
-                <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 16 }}>
+            <div className="card p-4 sm:p-5">
+                <h3 className="text-base font-semibold mb-4">
                     {editingId ? 'Edit Category' : 'Create New Category'}
                 </h3>
-                <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'flex-end' }}>
-                    <div style={{ flex: 1, minWidth: 200 }}>
+                <div className="flex flex-col md:flex-row md:items-end gap-4 flex-wrap">
+                    <div className="flex-1 min-w-[200px]">
                         <label className="label">Name</label>
                         <input className="input" placeholder="e.g. Google Review" value={name} onChange={e => setName(e.target.value)} />
                     </div>
-                    <div style={{ flex: 1, minWidth: 200 }}>
+                    <div className="flex-1 min-w-[200px]">
                         <label className="label">Slug (Optional)</label>
                         <input 
                             className="input" 
@@ -105,21 +105,20 @@ export default function QRCategoryPage() {
                             onChange={e => setSlug(e.target.value.replace(/\s+/g, '-').toLowerCase())} 
                         />
                     </div>
-                    <div style={{ flex: 2, minWidth: 250 }}>
+                    <div className="flex-[2] min-w-[250px]">
                         <label className="label">Description (Optional)</label>
                         <input className="input" placeholder="Brief description..." value={description} onChange={e => setDescription(e.target.value)} />
                     </div>
-                    <div style={{ display: 'flex', gap: 8 }}>
+                    <div className="flex gap-2 w-full md:w-auto">
                         {editingId && (
-                            <button className="btn btn-outline" onClick={resetForm} style={{ height: 38 }}>
+                            <button className="btn btn-outline flex-1 md:flex-none justify-center h-[38px]" onClick={resetForm}>
                                 Cancel
                             </button>
                         )}
                         <button 
-                            className="btn btn-primary" 
+                            className="btn btn-primary flex-1 md:flex-none justify-center h-[38px]" 
                             onClick={handleSubmit} 
                             disabled={!name.trim() || createMutation.isPending || updateMutation.isPending}
-                            style={{ height: 38 }}
                         >
                             {(createMutation.isPending || updateMutation.isPending) ? (
                                 <Loader2 size={16} className="animate-spin" />
@@ -140,8 +139,8 @@ export default function QRCategoryPage() {
             </div>
 
             {/* List */}
-            <div className="card" style={{ padding: 20 }}>
-                <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 16 }}>Categories</h3>
+            <div className="card p-4 sm:p-5">
+                <h3 className="text-base font-semibold mb-4">Categories</h3>
                 <div className="table-wrapper">
                     <table>
                         <thead>
