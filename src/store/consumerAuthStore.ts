@@ -6,6 +6,8 @@ export interface ConsumerUser {
     name: string;
     email: string;
     mobile_number?: string;
+    place?: string;
+    business?: string;
     profile_picture?: string;
 }
 
