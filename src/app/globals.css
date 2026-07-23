@@ -299,3 +299,48 @@ tbody td {
 .animate-scan {
     animation: scan 2s linear infinite;
 }
+
+/* ── Google Places Autocomplete Dark Theme ── */
+.pac-container {
+    background-color: #0f172a;
+    border: 1px solid #1e293b;
+    border-radius: 16px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
+    margin-top: 6px;
+    padding: 8px;
+    font-family: inherit;
+    z-index: 50;
+}
+
+.pac-item {
+    padding: 10px 12px;
+    border-top: none;
+    border-radius: 10px;
+    color: #94a3b8;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+}
+
+.pac-item:hover, .pac-item.pac-item-selected {
+    background-color: rgba(99, 102, 241, 0.1); /* Indigo tint on hover */
+}
+
+.pac-item-query {
+    font-size: 15px;
+    font-weight: 600;
+    color: #f1f5f9;
+    padding-right: 4px;
+}
+
+.pac-icon {
+    filter: invert(0.6) sepia(1) saturate(3) hue-rotate(200deg);
+    margin-top: 0;
+    margin-right: 12px;
+}
+
+/* Hide the powered by google logo to make it cleaner */
+.pac-logo::after {
+    display: none !important;
+}

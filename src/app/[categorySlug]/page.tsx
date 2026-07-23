@@ -7,6 +7,7 @@ import { Loader2, CheckCircle2, AlertCircle, Link2, Smartphone, Globe, LogIn, Co
 import { useConsumerAuthStore } from '@/store/consumerAuthStore';
 import api from '@/lib/api';
 import PetTagSetupWizard from '@/components/PetTagSetupWizard';
+import GooglePlaceSearch from '@/components/GooglePlaceSearch';
 
 // ─── Field-level error map type ─────────────────────────────────────────────
 type FieldErrors = {
@@ -49,6 +50,8 @@ export function CategorySetupContent({ categorySlug }: { categorySlug: string })
     const needsMobile = !user?.mobile_number;
     const needsPlace = !user?.place;
     // Business is always shown but optional
+
+    const isGoogleCategory = categorySlug?.toLowerCase().includes('google');
 
     if (categorySlug?.toLowerCase() === 'pet-tag' || categorySlug?.toLowerCase() === 'pet') {
         return <PetTagSetupWizard token={token} />;
@@ -415,7 +418,7 @@ export function CategorySetupContent({ categorySlug }: { categorySlug: string })
                                 </div>
                             )}
 
-                            {/* ── Destination URL ── */}
+                            {/* ── Destination URL / Place Search ── */}
                             <div className="space-y-1.5">
                                 {(needsName || needsMobile || needsPlace) && (
                                     <div className="flex items-center gap-2 mb-1">
@@ -426,65 +429,84 @@ export function CategorySetupContent({ categorySlug }: { categorySlug: string })
                                         <div className="h-px flex-1 bg-slate-800" />
                                     </div>
                                 )}
-                                <label className="block text-[12px] font-bold text-slate-400 uppercase tracking-widest">
-                                    {formattedCategory} URL <span className="text-red-400">*</span>
-                                </label>
-                                <div className="relative">
-                                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                        <Globe size={18} className="text-slate-500" />
-                                    </div>
-                                    <input
-                                        type="url"
-                                        className={`w-full h-14 pl-11 pr-4 bg-slate-950 border rounded-2xl focus:outline-none focus:ring-2 transition-all text-white placeholder-slate-600 text-[15px] font-mono ${
-                                            fieldErrors.destination_url
-                                                ? 'border-red-500/60 focus:border-red-500/60 focus:ring-red-500/20'
-                                                : 'border-slate-800 focus:border-indigo-500/60 focus:ring-indigo-500/20'
-                                        }`}
-                                        placeholder={
-                                            categorySlug.toLowerCase().includes('whatsapp')
-                                                ? 'https://wa.me/1234567890 or https://chat.whatsapp.com/...'
-                                                : categorySlug.toLowerCase().includes('instagram')
-                                                ? 'https://instagram.com/yourprofile'
-                                                : categorySlug.toLowerCase().includes('google')
-                                                ? 'https://g.page/review/...'
-                                                : `https://your-${categorySlug}-link.com`
-                                        }
-                                        value={destinationUrl}
-                                        onChange={(e) => {
-                                            setDestinationUrl(e.target.value);
-                                            if (fieldErrors.destination_url) setFieldErrors(prev => ({ ...prev, destination_url: undefined }));
-                                        }}
-                                    />
-                                </div>
-                                {fieldErrors.destination_url && (
-                                    <p className="text-red-400 text-[12px] flex items-center gap-1.5 pl-1">
-                                        <AlertCircle size={13} className="shrink-0" />
-                                        {fieldErrors.destination_url}
-                                    </p>
-                                )}
-                                <p className="text-[12.5px] text-slate-500 leading-relaxed pt-0.5 px-1">
-                                    When someone scans this QR code, they will be instantly redirected to this link.
-                                </p>
-                                {categorySlug.toLowerCase().includes('whatsapp') && (
-                                    <div className="flex items-center gap-2 pt-1 px-1 flex-wrap">
-                                        <span className="text-[11px] text-slate-400">Quick start:</span>
-                                        <button
-                                            type="button"
-                                            onClick={() => setDestinationUrl('https://wa.me/')}
-                                            className="flex items-center gap-1.5 px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-indigo-300 text-[11px] font-mono transition-colors"
-                                        >
-                                            https://wa.me/
-                                            <Copy size={12} className="opacity-70" />
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={() => setDestinationUrl('https://chat.whatsapp.com/')}
-                                            className="flex items-center gap-1.5 px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-indigo-300 text-[11px] font-mono transition-colors"
-                                        >
-                                            https://chat.whatsapp.com/
-                                            <Copy size={12} className="opacity-70" />
-                                        </button>
-                                    </div>
+                                
+                                {isGoogleCategory ? (
+                                    <>
+                                        <label className="block text-[12px] font-bold text-slate-400 uppercase tracking-widest">
+                                            Find Your Business on Google <span className="text-red-400">*</span>
+                                        </label>
+                                        <GooglePlaceSearch 
+                                            onPlaceSelected={(placeId) => {
+                                                setDestinationUrl(`https://search.google.com/local/writereview?placeid=${placeId}`);
+                                            }}
+                                            error={fieldErrors.destination_url}
+                                            clearError={() => setFieldErrors(prev => ({ ...prev, destination_url: undefined }))}
+                                        />
+                                        <p className="text-[12.5px] text-slate-500 leading-relaxed pt-0.5 px-1">
+                                            Search for your business above. When someone scans this QR code, they will be sent directly to your Google Review page.
+                                        </p>
+                                    </>
+                                ) : (
+                                    <>
+                                        <label className="block text-[12px] font-bold text-slate-400 uppercase tracking-widest">
+                                            {formattedCategory} URL <span className="text-red-400">*</span>
+                                        </label>
+                                        <div className="relative">
+                                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                                <Globe size={18} className="text-slate-500" />
+                                            </div>
+                                            <input
+                                                type="url"
+                                                className={`w-full h-14 pl-11 pr-4 bg-slate-950 border rounded-2xl focus:outline-none focus:ring-2 transition-all text-white placeholder-slate-600 text-[15px] font-mono ${
+                                                    fieldErrors.destination_url
+                                                        ? 'border-red-500/60 focus:border-red-500/60 focus:ring-red-500/20'
+                                                        : 'border-slate-800 focus:border-indigo-500/60 focus:ring-indigo-500/20'
+                                                }`}
+                                                placeholder={
+                                                    categorySlug.toLowerCase().includes('whatsapp')
+                                                        ? 'https://wa.me/1234567890 or https://chat.whatsapp.com/...'
+                                                        : categorySlug.toLowerCase().includes('instagram')
+                                                        ? 'https://instagram.com/yourprofile'
+                                                        : `https://your-${categorySlug}-link.com`
+                                                }
+                                                value={destinationUrl}
+                                                onChange={(e) => {
+                                                    setDestinationUrl(e.target.value);
+                                                    if (fieldErrors.destination_url) setFieldErrors(prev => ({ ...prev, destination_url: undefined }));
+                                                }}
+                                            />
+                                        </div>
+                                        {fieldErrors.destination_url && (
+                                            <p className="text-red-400 text-[12px] flex items-center gap-1.5 pl-1">
+                                                <AlertCircle size={13} className="shrink-0" />
+                                                {fieldErrors.destination_url}
+                                            </p>
+                                        )}
+                                        <p className="text-[12.5px] text-slate-500 leading-relaxed pt-0.5 px-1">
+                                            When someone scans this QR code, they will be instantly redirected to this link.
+                                        </p>
+                                        {categorySlug.toLowerCase().includes('whatsapp') && (
+                                            <div className="flex items-center gap-2 pt-1 px-1 flex-wrap">
+                                                <span className="text-[11px] text-slate-400">Quick start:</span>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setDestinationUrl('https://wa.me/')}
+                                                    className="flex items-center gap-1.5 px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-indigo-300 text-[11px] font-mono transition-colors"
+                                                >
+                                                    https://wa.me/
+                                                    <Copy size={12} className="opacity-70" />
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setDestinationUrl('https://chat.whatsapp.com/')}
+                                                    className="flex items-center gap-1.5 px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-indigo-300 text-[11px] font-mono transition-colors"
+                                                >
+                                                    https://chat.whatsapp.com/
+                                                    <Copy size={12} className="opacity-70" />
+                                                </button>
+                                            </div>
+                                        )}
+                                    </>
                                 )}
                             </div>
 
