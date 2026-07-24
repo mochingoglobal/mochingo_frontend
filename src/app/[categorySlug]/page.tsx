@@ -445,6 +445,34 @@ export function CategorySetupContent({ categorySlug }: { categorySlug: string })
                                         <p className="text-[12.5px] text-slate-500 leading-relaxed pt-0.5 px-1">
                                             Search for your business above. When someone scans this QR code, they will be sent directly to your Google Review page.
                                         </p>
+
+                                        <div className="mt-4 pt-4 border-t border-slate-800/60">
+                                            <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">
+                                                Or Enter Place ID Manually
+                                            </label>
+                                            <div className="relative">
+                                                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                                                    <span className="text-slate-500 font-mono text-[13px] bg-slate-900 px-1 rounded">placeid=</span>
+                                                </div>
+                                                <input
+                                                    type="text"
+                                                    className={`w-full h-12 pl-[84px] pr-4 bg-slate-950/50 border rounded-xl focus:outline-none focus:ring-2 transition-all text-white font-mono text-[14px] ${
+                                                        fieldErrors.destination_url
+                                                            ? 'border-red-500/60 focus:border-red-500/60 focus:ring-red-500/20'
+                                                            : 'border-slate-800 focus:border-indigo-500/60 focus:ring-indigo-500/20'
+                                                    }`}
+                                                    placeholder="ChIJ..."
+                                                    value={destinationUrl.startsWith('https://search.google.com/local/writereview?placeid=') 
+                                                        ? destinationUrl.replace('https://search.google.com/local/writereview?placeid=', '') 
+                                                        : ''}
+                                                    onChange={(e) => {
+                                                        const val = e.target.value.trim();
+                                                        setDestinationUrl(val ? `https://search.google.com/local/writereview?placeid=${val}` : '');
+                                                        if (fieldErrors.destination_url) setFieldErrors(prev => ({ ...prev, destination_url: undefined }));
+                                                    }}
+                                                />
+                                            </div>
+                                        </div>
                                     </>
                                 ) : (
                                     <>

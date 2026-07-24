@@ -51,12 +51,7 @@ export default function DQRedirectPage() {
                 <style>{`
                     .qr-loader-bg { background-color: #ffffff; }
                     .qr-spinner { border: 3px solid #f1f5f9; border-top-color: #0f172a; width: 40px; height: 40px; border-radius: 50%; animation: spin 0.8s linear infinite; }
-                    .qr-powered { color: #94a3b8; }
-                    @media (prefers-color-scheme: dark) {
-                        .qr-loader-bg { background-color: #020617; }
-                        .qr-spinner { border: 3px solid #1e293b; border-top-color: #f8fafc; }
-                        .qr-powered { color: #475569; }
-                    }
+                    .qr-powered { color: #cbd5e1; }
                     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
                 `}</style>
                 
@@ -64,9 +59,9 @@ export default function DQRedirectPage() {
                     <div className="qr-spinner"></div>
                 </div>
                 
-                <div style={{ paddingBottom: '24px', textAlign: 'center' }}>
-                    <span className="qr-powered" style={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
-                        Powered by Mochingo
+                <div style={{ paddingBottom: '10px', textAlign: 'center' }}>
+                    <span className="qr-powered" style={{ fontSize: '9px', fontWeight: 500, letterSpacing: '0.05em' }}>
+                        powered by mochingo
                     </span>
                 </div>
             </div>
