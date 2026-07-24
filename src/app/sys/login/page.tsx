@@ -20,7 +20,7 @@ export default function AdminLoginPage() {
         setLoading(true);
         try {
             await login(email.trim(), password);
-            router.replace('/admin/qr-management');
+            router.replace('/sys/qr-management');
         } catch (err: any) {
             setError(err?.response?.data?.message || 'Invalid credentials. Please try again.');
         } finally {
@@ -136,9 +136,6 @@ export default function AdminLoginPage() {
                     </form>
                 </div>
 
-                <p style={{ textAlign: 'center', marginTop: 20, fontSize: 13, color: '#475569' }}>
-                    Default: <code style={{ color: '#818cf8' }}>admin@mochingo.com</code>
-                </p>
             </div>
         </div>
     );

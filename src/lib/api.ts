@@ -16,11 +16,11 @@ api.interceptors.response.use(
         if (
             error.response?.status === 401 &&
             typeof window !== 'undefined' &&
-            !window.location.pathname.includes('/admin/login') &&
+            !window.location.pathname.includes('/sys/login') &&
             !isRedirecting
         ) {
             isRedirecting = true;
-            window.location.href = '/admin/login';
+            window.location.href = '/sys/login';
         }
         return Promise.reject(error);
     }

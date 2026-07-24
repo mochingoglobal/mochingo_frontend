@@ -19,8 +19,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     }, [checkAuth]);
 
     useEffect(() => {
-        if (!isLoading && !isAuthenticated && pathname !== '/admin/login') {
-            router.replace('/admin/login');
+        if (!isLoading && !isAuthenticated && pathname !== '/sys/login') {
+            router.replace('/sys/login');
         }
     }, [isLoading, isAuthenticated, pathname, router]);
 
@@ -32,26 +32,26 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         );
     }
 
-    if (!isAuthenticated && pathname !== '/admin/login') {
+    if (!isAuthenticated && pathname !== '/sys/login') {
         return null;
     }
 
     // Don't wrap login page in sidebar
-    if (pathname === '/admin/login') {
+    if (pathname === '/sys/login') {
         return <>{children}</>;
     }
 
     const navigation = [
-        { name: 'QR Management', href: '/admin/qr-management', icon: QrCode },
-        { name: 'Categories', href: '/admin/qr-category', icon: LayoutDashboard },
-        { name: 'Users', href: '/admin/users', icon: Users },
+        { name: 'QR Management', href: '/sys/qr-management', icon: QrCode },
+        { name: 'Categories', href: '/sys/qr-category', icon: LayoutDashboard },
+        { name: 'Users', href: '/sys/users', icon: Users },
     ];
 
     return (
         <div className="min-h-screen bg-[#0a0d16] text-slate-100 flex flex-col md:flex-row">
             {/* Mobile Header */}
             <div className="md:hidden flex items-center justify-between p-4 border-b border-white/5 bg-[#161b27]/90 backdrop-blur-md sticky top-0 z-20">
-                <Link href="/admin/qr-management" className="flex items-center gap-2 text-white font-bold text-lg">
+                <Link href="/sys/qr-management" className="flex items-center gap-2 text-white font-bold text-lg">
                     <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center">
                         <QrCode size={16} />
                     </div>
@@ -85,7 +85,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
             `}>
                 <div className="p-6 border-b border-white/5 hidden md:block">
-                    <Link href="/admin/qr-management" className="flex items-center gap-2 text-white font-bold text-lg">
+                    <Link href="/sys/qr-management" className="flex items-center gap-2 text-white font-bold text-lg">
                         <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center">
                             <QrCode size={16} />
                         </div>

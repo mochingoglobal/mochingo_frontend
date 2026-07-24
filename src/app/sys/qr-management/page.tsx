@@ -255,9 +255,9 @@ function DynamicQRTab() {
             setCount(1);
             setCategoryId('');
             if (created.batch_id && created.created_count > 1) {
-                router.push(`/admin/qr-management/dynamic/batch/${created.batch_id}`);
+                router.push(`/sys/qr-management/dynamic/batch/${created.batch_id}`);
             } else if (created.dynamic_qrs?.[0]?._id) {
-                router.push(`/admin/qr-management/dynamic/${created.dynamic_qrs[0]._id}`);
+                router.push(`/sys/qr-management/dynamic/${created.dynamic_qrs[0]._id}`);
             }
         }
     });
@@ -295,7 +295,7 @@ function DynamicQRTab() {
                         </button>
                         <button
                             className="btn btn-outline flex-1 md:flex-none justify-center h-[38px]"
-                            onClick={() => router.push('/admin/qr-management/dynamic/start-scanning')}
+                            onClick={() => router.push('/sys/qr-management/dynamic/start-scanning')}
                         >
                             <ScanLine size={16} /> Scan Assign
                         </button>
@@ -334,7 +334,7 @@ function DynamicQRTab() {
                                     <tr
                                         key={row.batch_id}
                                         onClick={() => {
-                                            router.push(`/admin/qr-management/dynamic/batch/${row.batch_id}`);
+                                            router.push(`/sys/qr-management/dynamic/batch/${row.batch_id}`);
                                         }}
                                     >
                                         <td>
@@ -357,251 +357,6 @@ function DynamicQRTab() {
     );
 }
 
-// ─── Users Tab ────────────────────────────────────────────────────────────────
-
-interface AdminUser {
-    id: string;
-    name: string;
-    email: string;
-    mobile_number: string | null;
-    place: string | null;
-    business: string | null;
-    profile_picture: string | null;
-    missing_fields: string[];
-    created_at: string;
-    updated_at: string;
-}
-
-interface AdminUsersResponse {
-    users: AdminUser[];
-    total: number;
-    page: number;
-    limit: number;
-    total_pages: number;
-}
-
-function UsersTab() {
-    const [page, setPage] = useState(1);
-    const [search, setSearch] = useState('');
-    const debouncedSearch = useDebounce(search, 500);
-
-    const { data, isLoading, refetch } = useQuery({
-        queryKey: ['admin-users', page, debouncedSearch],
-        queryFn: async () => {
-            const res = await api.get<{ data: AdminUsersResponse }>(
-                `/admin/users?page=${page}&limit=50&search=${encodeURIComponent(debouncedSearch)}`
-            );
-            return res.data.data;
-        },
-    });
-
-    // Reset to page 1 when search changes
-    useEffect(() => {
-        setPage(1);
-    }, [debouncedSearch]);
-
-    const missingBadge = (fields: string[]) => {
-        if (!fields.length) return null;
-        const labels: Record<string, string> = {
-            mobile_number: 'Mobile',
-            place: 'Place',
-        };
-        return (
-            <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-                {fields.map((f) => (
-                    <span
-                        key={f}
-                        style={{
-                            display: 'inline-flex', alignItems: 'center', gap: 3,
-                            padding: '2px 7px', borderRadius: 999, fontSize: 11, fontWeight: 600,
-                            background: 'rgba(245,158,11,0.12)', color: '#f59e0b',
-                            border: '1px solid rgba(245,158,11,0.25)',
-                        }}
-                    >
-                        <AlertTriangle size={10} />
-                        {labels[f] ?? f} missing
-                    </span>
-                ))}
-            </div>
-        );
-    };
-
-    return (
-        <div className="flex flex-col gap-6">
-            <div className="card p-4 sm:p-5">
-                <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-5">
-                    <div>
-                        <h3 className="text-base font-semibold flex items-center gap-2">
-                            <Users size={18} color="#6366f1" />
-                            Registered Users ({data?.total ?? 0})
-                        </h3>
-                        <p style={{ fontSize: 13, color: '#64748b', marginTop: 2 }}>
-                            All customers who have scanned and claimed a QR code.
-                        </p>
-                    </div>
-                    <div className="flex items-center gap-3">
-                        <div className="relative w-full sm:w-[240px]">
-                            <Search size={14} className="absolute left-3 top-[11px] text-slate-500" />
-                            <input
-                                className="input input-sm pl-8 w-full"
-                                placeholder="Search name, mobile, place…"
-                                value={search}
-                                onChange={e => setSearch(e.target.value)}
-                            />
-                        </div>
-                        <button className="btn btn-outline h-[38px]" onClick={() => refetch()}>
-                            <RefreshCw size={14} />
-                        </button>
-                    </div>
-                </div>
-
-                <div className="table-wrapper">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>User</th>
-                                <th>Mobile</th>
-                                <th>Place</th>
-                                <th>Business</th>
-                                <th>Status</th>
-                                <th>Joined</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {isLoading ? (
-                                <tr>
-                                    <td colSpan={6} style={{ textAlign: 'center', padding: 48 }}>
-                                        <Loader2 className="animate-spin mx-auto" />
-                                    </td>
-                                </tr>
-                            ) : data?.users.length === 0 ? (
-                                <tr>
-                                    <td colSpan={6} style={{ textAlign: 'center', padding: 48, color: '#64748b' }}>
-                                        No users found
-                                    </td>
-                                </tr>
-                            ) : (
-                                data?.users.map((u) => (
-                                    <tr key={u.id}>
-                                        {/* User column */}
-                                        <td>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                                                {u.profile_picture ? (
-                                                    <img
-                                                        src={u.profile_picture}
-                                                        alt={u.name}
-                                                        style={{ width: 34, height: 34, borderRadius: '50%', objectFit: 'cover', border: '1px solid var(--card-border)', flexShrink: 0 }}
-                                                        referrerPolicy="no-referrer"
-                                                    />
-                                                ) : (
-                                                    <div style={{
-                                                        width: 34, height: 34, borderRadius: '50%', flexShrink: 0,
-                                                        background: 'rgba(99,102,241,0.15)', color: '#818cf8',
-                                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                        fontWeight: 700, fontSize: 13,
-                                                    }}>
-                                                        {u.name?.[0]?.toUpperCase()}
-                                                    </div>
-                                                )}
-                                                <div>
-                                                    <p style={{ fontWeight: 600, fontSize: 14, lineHeight: 1.3 }}>{u.name}</p>
-                                                    <p style={{ fontSize: 12, color: '#64748b', display: 'flex', alignItems: 'center', gap: 4 }}>
-                                                        <Mail size={11} />
-                                                        {u.email}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </td>
-
-                                        {/* Mobile */}
-                                        <td>
-                                            {u.mobile_number ? (
-                                                <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13 }}>
-                                                    <Phone size={13} color="#64748b" />
-                                                    {u.mobile_number}
-                                                </span>
-                                            ) : (
-                                                <span style={{ color: '#475569', fontSize: 13 }}>—</span>
-                                            )}
-                                        </td>
-
-                                        {/* Place */}
-                                        <td>
-                                            {u.place ? (
-                                                <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13 }}>
-                                                    <MapPin size={13} color="#64748b" />
-                                                    {u.place}
-                                                </span>
-                                            ) : (
-                                                <span style={{ color: '#475569', fontSize: 13 }}>—</span>
-                                            )}
-                                        </td>
-
-                                        {/* Business */}
-                                        <td>
-                                            {u.business ? (
-                                                <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13 }}>
-                                                    <Briefcase size={13} color="#64748b" />
-                                                    {u.business}
-                                                </span>
-                                            ) : (
-                                                <span style={{ color: '#475569', fontSize: 13 }}>—</span>
-                                            )}
-                                        </td>
-
-                                        {/* Missing fields badge */}
-                                        <td>{u.missing_fields.length > 0 ? missingBadge(u.missing_fields) : (
-                                            <span style={{
-                                                display: 'inline-flex', alignItems: 'center', gap: 4,
-                                                padding: '2px 8px', borderRadius: 999, fontSize: 11, fontWeight: 600,
-                                                background: 'rgba(16,185,129,0.12)', color: '#10b981',
-                                                border: '1px solid rgba(16,185,129,0.25)',
-                                            }}>
-                                                Complete
-                                            </span>
-                                        )}</td>
-
-                                        {/* Joined date */}
-                                        <td style={{ color: '#94a3b8', fontSize: 13 }}>
-                                            {formatDateTime(u.created_at)}
-                                        </td>
-                                    </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
-                </div>
-
-                {/* Pagination */}
-                {data && data.total_pages > 1 && (
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 16, paddingTop: 16, borderTop: '1px solid var(--card-border)' }}>
-                        <span style={{ fontSize: 13, color: '#64748b' }}>
-                            Page {data.page} of {data.total_pages} · {data.total} users
-                        </span>
-                        <div style={{ display: 'flex', gap: 8 }}>
-                            <button
-                                className="btn btn-outline"
-                                style={{ height: 34, padding: '0 12px' }}
-                                onClick={() => setPage(p => Math.max(1, p - 1))}
-                                disabled={page === 1}
-                            >
-                                <ChevronLeft size={15} /> Prev
-                            </button>
-                            <button
-                                className="btn btn-outline"
-                                style={{ height: 34, padding: '0 12px' }}
-                                onClick={() => setPage(p => Math.min(data.total_pages, p + 1))}
-                                disabled={page === data.total_pages}
-                            >
-                                Next <ChevronRight size={15} />
-                            </button>
-                        </div>
-                    </div>
-                )}
-            </div>
-        </div>
-    );
-}
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
@@ -611,14 +366,13 @@ export default function QRManagementPage() {
     const tabs: { key: typeof tab; label: string }[] = [
         { key: 'custom', label: 'Custom QR' },
         { key: 'dynamic', label: 'Dynamic QR' },
-        { key: 'users', label: 'Users' },
     ];
 
     return (
         <div className="flex flex-col max-w-full">
             <div className="mb-6">
                 <h1 className="text-2xl sm:text-3xl font-bold mb-2">QR Management</h1>
-                <p className="text-slate-400 text-sm sm:text-base">Generate one-off branded QRs, manage permanent Dynamic QRs, and view registered users.</p>
+                <p className="text-slate-400 text-sm sm:text-base">Generate one-off branded QRs, manage permanent Dynamic QRs.</p>
             </div>
 
             <div className="inline-flex bg-white/5 p-1 rounded-lg mb-6 gap-1 self-start">
@@ -640,7 +394,6 @@ export default function QRManagementPage() {
 
             {tab === 'custom' && <CustomQRTab />}
             {tab === 'dynamic' && <DynamicQRTab />}
-            {tab === 'users' && <UsersTab />}
         </div>
     );
 }

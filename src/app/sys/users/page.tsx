@@ -102,7 +102,7 @@ function UserDetailModal({ userId, onClose }: { userId: string; onClose: () => v
     const { data, isLoading } = useQuery({
         queryKey: ['admin-user-detail', userId],
         queryFn: async () => {
-            const res = await api.get<{ data: UserDetailResponse }>(`/admin/users/${userId}`);
+            const res = await api.get<{ data: UserDetailResponse }>(`/sys/users/${userId}`);
             return res.data.data;
         },
         staleTime: 30_000,
@@ -343,7 +343,7 @@ export default function AdminUsersPage() {
         queryKey: ['admin-users', page, debouncedSearch],
         queryFn: async () => {
             const res = await api.get<{ data: AdminUsersResponse }>(
-                `/admin/users?page=${page}&limit=50&search=${encodeURIComponent(debouncedSearch)}`
+                `/sys/users?page=${page}&limit=50&search=${encodeURIComponent(debouncedSearch)}`
             );
             return res.data.data;
         },
