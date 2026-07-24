@@ -71,7 +71,6 @@ export default function AdminLoginPage() {
                                 type="email"
                                 className="input text-white placeholder:text-white/50"
                                 style={{ color: 'white' }}
-                                placeholder="admin@mochingo.com"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 required
