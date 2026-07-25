@@ -107,12 +107,14 @@ export default function PetTagSetupWizard({ token }: PetTagSetupWizardProps) {
             const res = await api.post('/consumer/auth/google', {
                 credential: credentialResponse.credential
             });
-            login(res.data.user, res.data.token);
+            const userData = res.data.data.user;
+            const userToken = res.data.data.token;
+            login(userData, userToken);
             setFormData(prev => ({
                 ...prev,
-                full_name: res.data.user.name,
-                email: res.data.user.email,
-                phone_primary: res.data.user.mobile_number || prev.phone_primary
+                full_name: userData.name || '',
+                email: userData.email || '',
+                phone_primary: userData.mobile_number || prev.phone_primary
             }));
         } catch (err: any) {
             setError(err.response?.data?.message || 'Failed to authenticate');

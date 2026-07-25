@@ -79,18 +79,18 @@ export default function GooglePlaceSearch({ onPlaceSelected, error, clearError }
             <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                     {isScriptLoaded ? (
-                        <Search size={18} className={isFocused ? 'text-indigo-400' : 'text-slate-500'} />
+                        <Search size={18} className={isFocused ? 'text-indigo-600' : 'text-slate-400'} />
                     ) : (
-                        <Loader2 size={18} className="text-slate-500 animate-spin" />
+                        <Loader2 size={18} className="text-slate-400 animate-spin" />
                     )}
                 </div>
                 <input
                     ref={inputRef}
                     type="text"
-                    className={`w-full h-14 pl-11 pr-4 bg-slate-950 border rounded-2xl focus:outline-none focus:ring-2 transition-all text-white placeholder-slate-500 text-sm ${
+                    className={`w-full h-14 pl-11 pr-4 bg-[#fafafa] border rounded-2xl focus:outline-none focus:ring-4 transition-all text-slate-900 font-medium placeholder-slate-400 text-sm shadow-xs ${
                         error
-                            ? 'border-red-500/60 focus:border-red-500/60 focus:ring-red-500/20'
-                            : 'border-slate-800 focus:border-indigo-500/60 focus:ring-indigo-500/20'
+                            ? 'border-red-400 focus:border-red-500 focus:ring-red-100'
+                            : 'border-slate-300 focus:border-indigo-600 focus:ring-indigo-100/80'
                     }`}
                     placeholder="Search for your business (e.g., Dynleaf Technologies)"
                     value={inputValue}
