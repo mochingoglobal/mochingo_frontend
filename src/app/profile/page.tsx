@@ -166,7 +166,7 @@ export default function ProfileDashboard() {
 
     if (!isHydrated) {
         return (
-            <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+            <div className="min-h-screen bg-[#fafafa] flex items-center justify-center">
                 <Loader2 size={32} className="animate-spin text-indigo-500" />
             </div>
         );
@@ -174,19 +174,19 @@ export default function ProfileDashboard() {
 
     if (!isAuthenticated || !user) {
         return (
-            <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-                <p className="text-slate-400">Redirecting...</p>
+            <div className="min-h-screen bg-[#fafafa] flex items-center justify-center">
+                <p className="text-slate-500">Redirecting...</p>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-[radial-gradient(circle_at_top,#142033_0,#07101f_36%,#050914_100%)] flex flex-col font-sans selection:bg-cyan-500/30 selection:text-white overflow-x-hidden">
+        <div className="min-h-screen bg-[#fafafa] flex flex-col font-sans selection:bg-indigo-600/30 selection:text-slate-900 overflow-x-hidden">
             
             {/* ==========================================================
                 HEADER
                 ========================================================== */}
-            <header className="sticky top-0 z-40 w-full h-[68px] bg-slate-950/75 backdrop-blur-2xl border-b border-white/10">
+            <header className="sticky top-0 z-40 w-full h-[68px] bg-[#fcfcfc]/80 backdrop-blur-2xl border-b border-slate-200">
                 <div className="max-w-6xl mx-auto w-full h-full flex justify-center">
                     {/* Dashboard Content Container */}
                     <div className="w-full max-w-[430px] sm:max-w-2xl lg:max-w-5xl px-5 sm:px-6 lg:px-8 h-full flex items-center relative">
@@ -195,7 +195,7 @@ export default function ProfileDashboard() {
                         <div className="absolute left-5 sm:left-6 flex">
                             <Link 
                                 href="/" 
-                                className="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-full bg-white/[0.04] border border-white/10 text-slate-300 hover:text-white hover:bg-white/[0.08] hover:border-white/20 transition-all active:scale-95"
+                                className="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-full bg-[#fcfcfc] border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 hover:border-slate-300 transition-all active:scale-95"
                                 aria-label="Go back"
                             >
                                 <ArrowLeft size={18} strokeWidth={2.5} />
@@ -204,7 +204,7 @@ export default function ProfileDashboard() {
                         
                         {/* Title - Perfectly Centered */}
                         <div className="flex-1 flex justify-center pointer-events-none">
-                            <h1 className="text-[15px] sm:text-base font-semibold text-white tracking-tight">My Dashboard</h1>
+                            <h1 className="text-[15px] sm:text-base font-semibold text-slate-900 tracking-tight">My Dashboard</h1>
                         </div>
                         
                         {/* Avatar */}
@@ -213,11 +213,11 @@ export default function ProfileDashboard() {
                                 <img 
                                     src={user.profile_picture} 
                                     alt="Profile" 
-                                    className="w-9 h-9 sm:w-10 sm:h-10 rounded-full border border-white/15 object-cover shadow-sm" 
+                                    className="w-9 h-9 sm:w-10 sm:h-10 rounded-full border border-slate-200 object-cover shadow-sm" 
                                     referrerPolicy="no-referrer" 
                                 />
                             ) : (
-                                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-gradient-to-tr from-emerald-400 to-cyan-500 flex items-center justify-center text-slate-950 font-bold text-sm shadow-sm select-none">
+                                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-gradient-to-tr from-emerald-400 to-cyan-500 flex items-center justify-center text-white font-bold text-sm shadow-sm select-none">
                                     {user.name[0].toUpperCase()}
                                 </div>
                             )}
@@ -237,36 +237,35 @@ export default function ProfileDashboard() {
                         HERO SCAN CARD
                         ---------------------------------------------------- */}
                     <section>
-                        <div className="relative w-full rounded-2xl sm:rounded-3xl bg-slate-900/85 border border-white/10 p-3.5 sm:p-6 lg:p-8 min-h-[220px] sm:min-h-[280px] flex flex-col justify-between overflow-hidden shadow-2xl shadow-slate-950/50">
+                        <div className="relative w-full rounded-2xl sm:rounded-3xl bg-gradient-to-br from-indigo-50 via-white to-cyan-50 border border-indigo-100 p-3.5 sm:p-6 lg:p-8 min-h-[220px] sm:min-h-[280px] flex flex-col justify-between overflow-hidden shadow-xl shadow-indigo-100/50">
                             
-                            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-cyan-300/50 to-transparent pointer-events-none" />
-                            <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(14,165,233,0.13),transparent_42%,rgba(16,185,129,0.12))] pointer-events-none" />
+                            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-indigo-300/50 to-transparent pointer-events-none" />
                             
                             {/* Inner Content */}
                             <div className="relative z-10 flex flex-col h-full">
                                 
                                 {/* Top Row: Icon & Badge */}
                                 <div className="flex items-start justify-between gap-3 mb-6 sm:mb-10">
-                                    <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-[18px] sm:rounded-2xl bg-cyan-400/10 text-cyan-300 flex items-center justify-center border border-cyan-300/20 backdrop-blur-md shadow-inner shrink-0">
+                                    <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-[18px] sm:rounded-2xl bg-indigo-100 text-indigo-600 flex items-center justify-center border border-indigo-200 backdrop-blur-md shadow-inner shrink-0">
                                         <ScanLine size={26} strokeWidth={1.5} />
                                     </div>
                                     <div className="shrink-0">
-                                        <div className="inline-flex items-center gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/25 backdrop-blur-md">
+                                        <div className="inline-flex items-center gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full bg-emerald-50 border border-emerald-200 backdrop-blur-md">
                                             <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)] animate-pulse shrink-0" />
-                                            <span className="text-[9px] sm:text-[11px] font-bold text-emerald-300 uppercase tracking-wider whitespace-nowrap">Ready to scan</span>
+                                            <span className="text-[9px] sm:text-[11px] font-bold text-emerald-600 uppercase tracking-wider whitespace-nowrap">Ready to scan</span>
                                         </div>
                                     </div>
                                 </div>
                                 
                                 {/* Bottom Row: Text & CTA */}
                                 <div className="mt-auto">
-                                    <h2 className="text-[21px] sm:text-3xl lg:text-4xl font-bold text-white mb-2 sm:mb-3 tracking-tight leading-tight">Scan New QR Code</h2>
-                                    <p className="text-[13px] sm:text-base text-slate-300/85 mb-4 sm:mb-7 max-w-2xl leading-relaxed">
+                                    <h2 className="text-[21px] sm:text-3xl lg:text-4xl font-bold text-slate-900 mb-2 sm:mb-3 tracking-tight leading-tight">Scan New QR Code</h2>
+                                    <p className="text-[13px] sm:text-base text-slate-600/85 mb-4 sm:mb-7 max-w-2xl leading-relaxed">
                                         Tap here to open your camera, scan a dynamic QR code, and assign a destination URL instantly.
                                     </p>
                                     <button 
                                         onClick={() => setIsScanning(true)} 
-                                        className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 h-12 sm:h-14 px-5 sm:px-8 rounded-2xl bg-white hover:bg-slate-100 text-slate-950 font-bold text-[15px] sm:text-base shadow-[0_12px_30px_rgba(15,23,42,0.35)] transition-all active:scale-[0.98]"
+                                        className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 h-12 sm:h-14 px-5 sm:px-8 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[15px] sm:text-base shadow-lg shadow-indigo-600/20 transition-all active:scale-[0.98]"
                                     >
                                         <ScanLine size={20} strokeWidth={2.5} />
                                         <span>Open Scanner</span>
@@ -284,11 +283,11 @@ export default function ProfileDashboard() {
                         
                         {/* Section Header */}
                         <div className="flex items-center justify-between gap-3">
-                            <h3 className="text-[11px] sm:text-sm font-bold text-slate-400 uppercase tracking-[0.18em] sm:tracking-widest">
+                            <h3 className="text-[11px] sm:text-sm font-bold text-slate-500 uppercase tracking-[0.18em] sm:tracking-widest">
                                 Assigned QR Codes
                             </h3>
                             {qrs && qrs.length > 0 && (
-                                <span className="inline-flex items-center justify-center min-w-7 px-2 py-0.5 sm:min-w-8 sm:px-2.5 sm:py-1 rounded-full bg-white/[0.04] border border-white/10 text-[11px] sm:text-xs font-semibold text-slate-300">
+                                <span className="inline-flex items-center justify-center min-w-7 px-2 py-0.5 sm:min-w-8 sm:px-2.5 sm:py-1 rounded-full bg-[#fcfcfc] border border-slate-200 text-[11px] sm:text-xs font-semibold text-slate-600">
                                     {qrs.length}
                                 </span>
                             )}
@@ -304,12 +303,12 @@ export default function ProfileDashboard() {
 
                         {/* Empty State */}
                         {!isLoading && qrs?.length === 0 && (
-                            <div className="flex flex-col items-center justify-center py-20 sm:py-24 px-4 text-center rounded-3xl border border-dashed border-white/10 bg-slate-900/45">
-                                <div className="w-20 h-20 bg-white/[0.04] rounded-2xl flex items-center justify-center border border-white/10 mb-6 shadow-inner">
+                            <div className="flex flex-col items-center justify-center py-20 sm:py-24 px-4 text-center rounded-3xl border border-dashed border-slate-200 bg-slate-50">
+                                <div className="w-20 h-20 bg-[#fcfcfc] rounded-2xl flex items-center justify-center border border-slate-200 mb-6 shadow-inner">
                                     <QrCode size={36} className="text-slate-500" strokeWidth={1.5} />
                                 </div>
-                                <h4 className="text-lg font-semibold text-white mb-2">No QRs claimed yet</h4>
-                                <p className="text-sm text-slate-400 max-w-[280px] leading-relaxed">
+                                <h4 className="text-lg font-semibold text-slate-900 mb-2">No QRs claimed yet</h4>
+                                <p className="text-sm text-slate-500 max-w-[280px] leading-relaxed">
                                     Use the scanner above to claim your first dynamic QR code.
                                 </p>
                             </div>
@@ -321,13 +320,13 @@ export default function ProfileDashboard() {
                                 {qrs.map((qr: ConsumerQR) => (
                                     <div 
                                         key={qr.id} 
-                                        className="w-full min-w-0 bg-slate-900/70 border border-white/10 rounded-2xl sm:rounded-3xl p-3 sm:p-5 flex flex-col gap-3 sm:gap-5 transition-colors hover:border-white/20 hover:bg-slate-900/90"
+                                        className="w-full min-w-0 bg-[#fcfcfc] border border-slate-200 rounded-2xl sm:rounded-3xl p-3 sm:p-5 flex flex-col gap-3 sm:gap-5 transition-all shadow-sm hover:shadow-md hover:border-slate-300 hover:bg-white"
                                     >
                                         
                                         {/* Top Info Row */}
                                         <div className="flex items-start gap-2.5 sm:gap-4 min-w-0">
                                             {/* Icon */}
-                                            <div className="shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-[14px] sm:rounded-2xl bg-cyan-400/10 text-cyan-300 flex items-center justify-center border border-cyan-300/20">
+                                            <div className="shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-[14px] sm:rounded-2xl bg-cyan-50 text-cyan-600 flex items-center justify-center border border-cyan-200">
                                                 <QrCode size={21} strokeWidth={1.5} />
                                             </div>
                                             
@@ -335,10 +334,10 @@ export default function ProfileDashboard() {
                                             <div className="flex-1 min-w-0 flex flex-col justify-center min-h-10 sm:min-h-12">
                                                 {/* Title & Badge */}
                                                 <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mb-1 min-w-0">
-                                                    <h4 className="text-sm sm:text-base font-semibold text-white truncate leading-tight min-w-0">
+                                                    <h4 className="text-sm sm:text-base font-semibold text-slate-900 truncate leading-tight min-w-0">
                                                         {qr.label}
                                                     </h4>
-                                                    <span className="self-start sm:self-auto max-w-full overflow-hidden text-ellipsis whitespace-nowrap px-1.5 py-0.5 rounded-md bg-slate-950/80 text-cyan-300 text-[9px] sm:text-[10px] font-bold uppercase tracking-wider border border-white/10">
+                                                    <span className="self-start sm:self-auto max-w-full overflow-hidden text-ellipsis whitespace-nowrap px-1.5 py-0.5 rounded-md bg-slate-100 text-cyan-600 text-[9px] sm:text-[10px] font-bold uppercase tracking-wider border border-slate-200">
                                                         {qr.token}
                                                     </span>
                                                 </div>
@@ -349,14 +348,14 @@ export default function ProfileDashboard() {
                                                     <span className="hidden sm:inline-block">•</span>
                                                     <span className="flex items-center gap-1.5">
                                                         <span className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-emerald-500/80" />
-                                                        <span className="font-medium text-slate-400">{qr.scan_count}</span> {qr.scan_count === 1 ? 'scan' : 'scans'}
+                                                        <span className="font-medium text-slate-500">{qr.scan_count}</span> {qr.scan_count === 1 ? 'scan' : 'scans'}
                                                     </span>
                                                 </div>
                                             </div>
                                         </div>
 
                                         {/* Separator Line */}
-                                        <div className="w-full h-px bg-white/10" />
+                                        <div className="w-full h-px bg-slate-200" />
 
                                         {/* Bottom Action Row (Edit/View) */}
                                         <div className="w-full">
@@ -369,20 +368,20 @@ export default function ProfileDashboard() {
                                                         value={editUrl} 
                                                         onChange={(e) => setEditUrl(e.target.value)}
                                                         placeholder="https://..."
-                                                        className="flex-1 h-11 sm:h-12 px-3 sm:px-4 rounded-xl bg-slate-950/90 border border-white/10 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 text-white outline-none text-[12px] sm:text-sm font-mono min-w-0 transition-all" 
+                                                        className="flex-1 h-11 sm:h-12 px-3 sm:px-4 rounded-xl bg-slate-50 border border-slate-200 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 text-slate-900 outline-none text-[12px] sm:text-sm font-mono min-w-0 transition-all" 
                                                         autoFocus 
                                                     />
                                                     <div className="grid grid-cols-[1fr_44px] sm:grid-cols-[1fr_48px] sm:flex gap-2 shrink-0">
                                                         <button 
                                                             onClick={() => updateMutation.mutate({id: qr.id, url: editUrl})} 
                                                             disabled={updateMutation.isPending || !editUrl} 
-                                                            className="h-11 sm:h-12 px-5 sm:px-6 rounded-xl bg-cyan-500 hover:bg-cyan-400 disabled:opacity-50 disabled:cursor-not-allowed text-slate-950 font-semibold flex items-center justify-center min-w-0 sm:min-w-[100px] transition-colors active:scale-95"
+                                                            className="h-11 sm:h-12 px-5 sm:px-6 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold flex items-center justify-center min-w-0 sm:min-w-[100px] transition-colors active:scale-95"
                                                         >
                                                             {updateMutation.isPending ? <Loader2 size={18} className="animate-spin" /> : "Save"}
                                                         </button>
                                                         <button 
                                                             onClick={() => setEditingId(null)} 
-                                                            className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-slate-400 hover:text-white flex items-center justify-center transition-colors active:scale-95"
+                                                            className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-[#fcfcfc] hover:bg-slate-50 border border-slate-200 text-slate-500 hover:text-slate-900 flex items-center justify-center transition-colors active:scale-95"
                                                             aria-label="Cancel editing"
                                                         >
                                                             <X size={20} />
@@ -395,9 +394,9 @@ export default function ProfileDashboard() {
                                                 /* --- VIEW MODE --- */
                                                 <div className="grid grid-cols-[minmax(0,1fr)_44px] sm:grid-cols-[minmax(0,1fr)_48px] gap-2 sm:gap-3 w-full group min-w-0">
                                                     {/* URL Box */}
-                                                    <div className="min-w-0 flex items-center gap-2 sm:gap-3 h-11 sm:h-12 px-2.5 sm:px-4 rounded-xl bg-slate-950/90 border border-white/10 group-hover:border-white/20 transition-colors">
+                                                    <div className="min-w-0 flex items-center gap-2 sm:gap-3 h-11 sm:h-12 px-2.5 sm:px-4 rounded-xl bg-slate-50 border border-slate-200 group-hover:border-slate-300 transition-colors">
                                                         <LinkIcon size={15} className="text-slate-600 shrink-0" />
-                                                        <span className="flex-1 min-w-0 truncate font-mono text-[11px] sm:text-[13px] text-slate-400 group-hover:text-slate-300 transition-colors">
+                                                        <span className="flex-1 min-w-0 truncate font-mono text-[11px] sm:text-[13px] text-slate-500 group-hover:text-slate-600 transition-colors">
                                                             {qr.manual_redirect_url ? qr.manual_redirect_url : <span className="font-sans italic text-slate-600">No destination URL set</span>}
                                                         </span>
                                                     </div>
@@ -408,7 +407,7 @@ export default function ProfileDashboard() {
                                                             setEditingId(qr.id);
                                                             setEditUrl(qr.manual_redirect_url);
                                                         }}
-                                                        className="w-11 h-11 sm:w-12 sm:h-12 flex items-center justify-center rounded-xl bg-white/[0.04] border border-white/10 text-slate-400 hover:text-white hover:border-white/20 hover:bg-white/[0.08] transition-all active:scale-95"
+                                                        className="w-11 h-11 sm:w-12 sm:h-12 flex items-center justify-center rounded-xl bg-[#fcfcfc] border border-slate-200 text-slate-500 hover:text-slate-900 hover:border-slate-300 hover:bg-slate-50 transition-all active:scale-95"
                                                         aria-label="Edit destination URL"
                                                     >
                                                         <Edit2 size={18} />
@@ -443,31 +442,31 @@ export default function ProfileDashboard() {
                 <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-4 sm:p-0">
                     {/* Backdrop */}
                     <div 
-                        className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200" 
+                        className="absolute inset-0 bg-slate-100 backdrop-blur-sm animate-in fade-in duration-200" 
                         onClick={() => { setScannedToken(null); setClaimUrl(''); setClaimError(null); setScannedCategory(null); }} 
                     />
                     
                     {/* Modal Content */}
-                    <div className="relative w-full max-w-md bg-slate-900 border border-slate-800 rounded-[28px] sm:rounded-[24px] p-6 sm:p-8 shadow-2xl animate-in slide-in-from-bottom-8 sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-200">
+                    <div className="relative w-full max-w-md bg-[#fcfcfc] border border-slate-200 rounded-[28px] sm:rounded-[24px] p-6 sm:p-8 shadow-2xl animate-in slide-in-from-bottom-8 sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-200">
                         
                         {/* Mobile Pull Handle */}
                         <div className="flex justify-center mb-6 sm:hidden">
-                            <div className="w-12 h-1.5 bg-slate-800 rounded-full" />
+                            <div className="w-12 h-1.5 bg-slate-100 rounded-full" />
                         </div>
                         
                         {/* Modal Header */}
                         <div className="flex justify-between items-start mb-8">
                             <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl flex items-center justify-center text-emerald-400 shadow-inner">
+                                <div className="w-12 h-12 bg-emerald-50 border border-emerald-500/20 rounded-2xl flex items-center justify-center text-emerald-400 shadow-inner">
                                     <Link2 size={24} strokeWidth={2} />
                                 </div>
                                 <div>
-                                    <h3 className="text-lg font-bold text-white tracking-tight">
+                                    <h3 className="text-lg font-bold text-slate-900 tracking-tight">
                                         {isOwnQR ? 'Update Your Destination' : scannedCategory ? `Assign ${scannedCategory}` : 'Assign Destination'}
                                     </h3>
                                     <div className="flex items-center gap-2 mt-1">
                                         <span className="text-xs text-slate-500 font-medium">Token:</span>
-                                        <code className="px-2 py-0.5 rounded-md bg-slate-950 text-indigo-400 font-mono text-[11px] font-bold tracking-widest border border-slate-800 uppercase">
+                                        <code className="px-2 py-0.5 rounded-md bg-[#fafafa] text-indigo-700 font-mono text-[11px] font-bold tracking-widest border border-slate-200 uppercase">
                                             {scannedToken}
                                         </code>
                                     </div>
@@ -475,7 +474,7 @@ export default function ProfileDashboard() {
                             </div>
                             <button 
                                 onClick={() => { setScannedToken(null); setClaimUrl(''); setClaimError(null); setScannedCategory(null); }} 
-                                className="w-8 h-8 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+                                className="w-8 h-8 rounded-full bg-[#fcfcfc] border border-slate-200 flex items-center justify-center text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors"
                             >
                                 <X size={18} />
                             </button>
@@ -485,7 +484,7 @@ export default function ProfileDashboard() {
                         {isResolvingToken ? (
                             <div className="flex flex-col items-center justify-center py-6">
                                 <Loader2 size={32} className="animate-spin text-indigo-500 mb-4" />
-                                <p className="text-sm text-slate-400 font-medium">Analyzing QR Code...</p>
+                                <p className="text-sm text-slate-500 font-medium">Analyzing QR Code...</p>
                             </div>
                         ) : (
                             <div className="space-y-6">
@@ -494,13 +493,13 @@ export default function ProfileDashboard() {
                                 {isOwnQR && claimUrl?.includes('/pet/') ? (
                                     <div className="space-y-4">
                                         <div className="p-4 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-center">
-                                            <p className="text-sm font-medium text-indigo-300">This is your Pet Tag.</p>
-                                            <p className="text-xs text-slate-400 mt-1">You can update the pet's photo, medical records, and your contact information.</p>
+                                            <p className="text-sm font-medium text-indigo-700">This is your Pet Tag.</p>
+                                            <p className="text-xs text-slate-500 mt-1">You can update the pet's photo, medical records, and your contact information.</p>
                                         </div>
                                     </div>
                                 ) : (
                                     <div className="space-y-2">
-                                        <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest">
+                                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest">
                                             {scannedCategory ? `${scannedCategory} URL` : 'Destination URL'}
                                         </label>
                                     <input 
@@ -516,7 +515,7 @@ export default function ProfileDashboard() {
                                                 ? "https://wa.me/1234567890 or https://chat.whatsapp.com/..."
                                                 : "https://..."
                                         }
-                                        className="w-full h-14 px-4 rounded-xl bg-slate-950 border border-slate-700 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-white outline-none font-mono text-sm transition-all"
+                                        className="w-full h-14 px-4 rounded-xl bg-[#fafafa] border border-slate-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-slate-900 outline-none font-mono text-sm transition-all"
                                         autoFocus
                                     />
                                     {scannedCategory && !claimError && (
@@ -524,17 +523,17 @@ export default function ProfileDashboard() {
                                             <p className="text-xs text-slate-500">Assign your business {scannedCategory} URL to this QR code.</p>
                                             {scannedCategory.toLowerCase()?.includes('whatsapp') && (
                                                 <div className="mt-2 flex items-center gap-2 flex-wrap">
-                                                    <span className="text-[11px] text-slate-400">Quick start:</span>
+                                                    <span className="text-[11px] text-slate-500">Quick start:</span>
                                                     <button 
                                                         onClick={() => setClaimUrl('https://wa.me/')}
-                                                        className="flex items-center gap-1.5 px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-indigo-300 text-[11px] font-mono transition-colors"
+                                                        className="flex items-center gap-1.5 px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-indigo-700 text-[11px] font-mono transition-colors"
                                                     >
                                                         https://wa.me/
                                                         <Copy size={12} className="opacity-70" />
                                                     </button>
                                                     <button 
                                                         onClick={() => setClaimUrl('https://chat.whatsapp.com/')}
-                                                        className="flex items-center gap-1.5 px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-indigo-300 text-[11px] font-mono transition-colors"
+                                                        className="flex items-center gap-1.5 px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-indigo-700 text-[11px] font-mono transition-colors"
                                                     >
                                                         https://chat.whatsapp.com/
                                                         <Copy size={12} className="opacity-70" />

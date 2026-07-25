@@ -112,7 +112,7 @@ export default function QRScanner({ onScan, onClose }: QRScannerProps) {
                 <h2 className="text-white font-bold text-lg drop-shadow-md">Scan QR Code</h2>
                 <button 
                     onClick={handleClose} 
-                    className="p-2.5 bg-white/10 hover:bg-white/20 transition-colors rounded-full text-white backdrop-blur-md active:scale-95"
+                    className="p-2.5 bg-[#fcfcfc]/10 hover:bg-[#fcfcfc]/20 transition-colors rounded-full text-white backdrop-blur-md active:scale-95"
                     aria-label="Close Scanner"
                 >
                     <X size={20} strokeWidth={2.5} />

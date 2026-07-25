@@ -95,7 +95,7 @@ const Toggle = ({ label, value, onChange }: { label: string; value: boolean; onC
             className={`w-10 h-5 rounded-full transition-colors relative ${value ? 'bg-blue-600' : 'bg-gray-600'}`}
         >
             <span
-                className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${value ? 'translate-x-5' : ''}`}
+                className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-[#fcfcfc] transition-transform ${value ? 'translate-x-5' : ''}`}
             />
         </button>
     </Row>
@@ -238,7 +238,7 @@ export default function BuilderSidebar({ builder }: BuilderSidebarProps) {
                                 onClick={toggleNFC}
                                 className={`w-12 h-6 rounded-full transition-colors relative shrink-0 ${hasNFC ? 'bg-blue-600' : 'bg-gray-600'}`}
                             >
-                                <span className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform shadow ${hasNFC ? 'translate-x-6' : ''}`} />
+                                <span className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-[#fcfcfc] transition-transform shadow ${hasNFC ? 'translate-x-6' : ''}`} />
                             </button>
                         </Row>
                         {hasNFC && (
@@ -328,7 +328,7 @@ export default function BuilderSidebar({ builder }: BuilderSidebarProps) {
                         <div className="space-y-2">
                             {qrElement.centerLogoUrl ? (
                                 <div className="flex items-center gap-3">
-                                    <img src={qrElement.centerLogoUrl} alt="Logo" className="w-12 h-12 object-contain rounded border border-gray-600 bg-white p-1" />
+                                    <img src={qrElement.centerLogoUrl} alt="Logo" className="w-12 h-12 object-contain rounded border border-gray-600 bg-[#fcfcfc] p-1" />
                                     <div className="flex flex-col gap-1">
                                         <button
                                             onClick={() => qrLogoInputRef.current?.click()}

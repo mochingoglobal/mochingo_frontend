@@ -117,7 +117,7 @@ export default function GoogleTranslateWidget() {
                 <button
                     type="button"
                     onClick={() => setIsOpen(!isOpen)}
-                    className="flex items-center gap-2 bg-white/90 backdrop-blur-md border border-slate-200 rounded-full shadow-sm px-3.5 py-2 transition-all hover:bg-white hover:shadow-md h-[40px] cursor-pointer"
+                    className="flex items-center gap-2 bg-[#fcfcfc]/90 backdrop-blur-md border border-slate-200 rounded-full shadow-sm px-3.5 py-2 transition-all hover:bg-[#fcfcfc] hover:shadow-md h-[40px] cursor-pointer"
                 >
                     <Languages size={16} className="text-indigo-600 shrink-0" />
                     <span className="text-[13px] font-bold text-slate-700 truncate max-w-[90px]">
@@ -128,7 +128,7 @@ export default function GoogleTranslateWidget() {
 
                 {/* Custom Searchable Dropdown Modal */}
                 {isOpen && (
-                    <div className="absolute top-[48px] right-0 w-[240px] bg-white border border-slate-200 shadow-2xl rounded-2xl overflow-hidden flex flex-col animate-in fade-in slide-in-from-top-2 duration-200">
+                    <div className="absolute top-[48px] right-0 w-[240px] bg-[#fcfcfc] border border-slate-200 shadow-2xl rounded-2xl overflow-hidden flex flex-col animate-in fade-in slide-in-from-top-2 duration-200">
                         
                         {/* Search Bar */}
                         <div className="p-2 border-b border-slate-100 bg-slate-50/50">
@@ -139,14 +139,14 @@ export default function GoogleTranslateWidget() {
                                     placeholder="Search language..."
                                     value={search}
                                     onChange={(e) => setSearch(e.target.value)}
-                                    className="w-full h-9 pl-8 pr-3 text-[13px] font-medium bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all placeholder:text-slate-400"
+                                    className="w-full h-9 pl-8 pr-3 text-[13px] font-medium bg-[#fcfcfc] border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all placeholder:text-slate-400"
                                     autoFocus
                                 />
                             </div>
                         </div>
 
                         {/* Language Options */}
-                        <div className="max-h-[300px] overflow-y-auto p-1.5 custom-scrollbar bg-white">
+                        <div className="max-h-[300px] overflow-y-auto p-1.5 custom-scrollbar bg-[#fcfcfc]">
                             {filteredLanguages.length > 0 ? (
                                 filteredLanguages.map((lang) => (
                                     <button
