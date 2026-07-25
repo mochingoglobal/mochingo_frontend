@@ -20,7 +20,7 @@ export default function AdminLoginPage() {
         setLoading(true);
         try {
             await login(email.trim(), password);
-            router.replace('/sys/qr-management');
+            router.replace('/portal-x/qr-management');
         } catch (err: any) {
             setError(err?.response?.data?.message || 'Invalid credentials. Please try again.');
         } finally {
@@ -87,7 +87,6 @@ export default function AdminLoginPage() {
                                     type={showPw ? 'text' : 'password'}
                                     className="input text-white placeholder:text-white/50"
                                     style={{ paddingRight: 44, color: 'white' }}
-                                    placeholder="••••••••"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     required

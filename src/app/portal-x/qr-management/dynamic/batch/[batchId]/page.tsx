@@ -185,7 +185,7 @@ export default function BatchManagementPage() {
             alert('Please select a valid range first.');
             return;
         }
-        const url = new URL(window.location.origin + `/sys/qr-management/dynamic/batch/${batchId}/builder`);
+        const url = new URL(window.location.origin + `/portal-x/qr-management/dynamic/batch/${batchId}/builder`);
         if (mode === 'range') {
             url.searchParams.set('range_start', String(rangeStart));
             url.searchParams.set('range_end', String(rangeEnd));

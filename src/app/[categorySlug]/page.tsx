@@ -8,6 +8,7 @@ import { useConsumerAuthStore } from '@/store/consumerAuthStore';
 import api from '@/lib/api';
 import PetTagSetupWizard from '@/components/PetTagSetupWizard';
 import GooglePlaceSearch from '@/components/GooglePlaceSearch';
+import GoogleTranslateWidget from '@/components/GoogleTranslateWidget';
 
 // ─── Field-level error map type ─────────────────────────────────────────────
 type FieldErrors = {
@@ -738,6 +739,7 @@ export default function CategorySetupPage() {
     const categorySlug = typeof params?.categorySlug === 'string' ? params.categorySlug : 'General Setup';
     return (
         <Suspense fallback={<div className="min-h-screen bg-[#fafafa] flex items-center justify-center"><Loader2 className="animate-spin text-indigo-600" size={34} /></div>}>
+            <GoogleTranslateWidget />
             <CategorySetupContent categorySlug={categorySlug} />
         </Suspense>
     );

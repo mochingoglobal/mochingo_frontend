@@ -255,9 +255,9 @@ function DynamicQRTab() {
             setCount(1);
             setCategoryId('');
             if (created.batch_id && created.created_count > 1) {
-                router.push(`/sys/qr-management/dynamic/batch/${created.batch_id}`);
+                router.push(`/portal-x/qr-management/dynamic/batch/${created.batch_id}`);
             } else if (created.dynamic_qrs?.[0]?._id) {
-                router.push(`/sys/qr-management/dynamic/${created.dynamic_qrs[0]._id}`);
+                router.push(`/portal-x/qr-management/dynamic/${created.dynamic_qrs[0]._id}`);
             }
         }
     });
@@ -295,7 +295,7 @@ function DynamicQRTab() {
                         </button>
                         <button
                             className="btn btn-outline flex-1 md:flex-none justify-center h-[38px]"
-                            onClick={() => router.push('/sys/qr-management/dynamic/start-scanning')}
+                            onClick={() => router.push('/portal-x/qr-management/dynamic/start-scanning')}
                         >
                             <ScanLine size={16} /> Scan Assign
                         </button>
@@ -334,7 +334,7 @@ function DynamicQRTab() {
                                     <tr
                                         key={row.batch_id}
                                         onClick={() => {
-                                            router.push(`/sys/qr-management/dynamic/batch/${row.batch_id}`);
+                                            router.push(`/portal-x/qr-management/dynamic/batch/${row.batch_id}`);
                                         }}
                                     >
                                         <td>

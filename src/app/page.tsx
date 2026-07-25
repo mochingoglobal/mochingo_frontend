@@ -14,7 +14,7 @@ export default function Home() {
         <UserLoginButton />
       </div>
 
-      <Link href="/sys/login" className="absolute bottom-6 right-6 p-3 text-slate-800 hover:text-slate-400 transition-colors" title="System">
+      <Link href="/portal-x/login" className="absolute bottom-6 right-6 p-3 text-slate-800 hover:text-slate-400 transition-colors" title="System">
         <ArrowRight className="w-5 h-5" />
       </Link>
     </main>
