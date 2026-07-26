@@ -23,6 +23,8 @@ export default function BatchManagementPage() {
     const [batchTitle, setBatchTitle] = useState('');
     const [logoUrl, setLogoUrl] = useState<string | undefined>();
     const [categoryId, setCategoryId] = useState<string>('');
+    const [qrDesign, setQrDesign] = useState<'dots' | 'squares'>('dots');
+    const [qrColor, setQrColor] = useState<'black' | 'white'>('black');
     
     // Range State
     const [rangeStart, setRangeStart] = useState<number | ''>('');
@@ -160,18 +162,24 @@ export default function BatchManagementPage() {
                     entries,
                     logoUrl,
                     showTitle: !!batchTitle,
+                    qrDesignStyle: qrDesign,
+                    qrColorTheme: qrColor,
                     fileName: `${title.replace(/\s+/g, '-')}-${fileSuffix}-branded`
                 });
             } else if (type === 'plain') {
                 await downloadPlainBulkQRPDF({ 
                     entries,
                     logoUrl,
+                    qrDesignStyle: qrDesign,
+                    qrColorTheme: qrColor,
                     fileName: `${title.replace(/\s+/g, '-')}-${fileSuffix}-plain`
                 });
             } else if (type === 'stand') {
                 await downloadStandBulkQRPDF({
                     entries,
                     logoUrl,
+                    qrDesignStyle: qrDesign,
+                    qrColorTheme: qrColor,
                     fileName: `${title.replace(/\s+/g, '-')}-${fileSuffix}-stand`
                 });
             }
@@ -200,7 +208,7 @@ export default function BatchManagementPage() {
         <div className="flex flex-col max-w-full">
             <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
                 <div className="flex items-center gap-4 flex-1">
-                    <button onClick={() => router.back()} className="btn btn-outline shrink-0"><ArrowLeft size={16}/></button>
+                    <button onClick={() => router.back()} className="btn btn-outline shrink-0 bg-[#1e293b] hover:bg-[#334155] border border-[#334155] text-slate-200"><ArrowLeft size={16}/></button>
                     <div className="min-w-0">
                         <h1 className="text-xl sm:text-2xl font-bold truncate">{data.batch_label}</h1>
                         <p className="text-slate-400 text-sm truncate">Batch ID: {batchId} • {data.qr_count} QRs</p>
@@ -209,7 +217,7 @@ export default function BatchManagementPage() {
                 <div className="flex items-center gap-2 w-full sm:w-auto">
                     <label className="text-sm text-slate-400 whitespace-nowrap shrink-0">Category:</label>
                     <select 
-                        className="input input-sm w-full sm:w-[200px]" 
+                        className="input bg-[#0f172a] border border-[#1e293b] text-slate-200 input-sm w-full sm:w-[200px]" 
                         value={categoryId} 
                         onChange={handleCategoryChange}
                         disabled={updateCategoryMutation.isPending}
@@ -225,7 +233,7 @@ export default function BatchManagementPage() {
 
             <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-6 items-start">
                 {/* List */}
-                <div className="card p-3 max-h-[400px] lg:max-h-[calc(100vh-140px)] overflow-y-auto">
+                <div className="card bg-[#161b27] border border-[#1e293b] rounded-xl shadow-lg shadow-black/20 p-3 max-h-[400px] lg:max-h-[calc(100vh-140px)] overflow-y-auto">
                     <div className="flex flex-col gap-2">
                         {data.dynamic_qrs.map(qr => (
                             <button
@@ -248,17 +256,38 @@ export default function BatchManagementPage() {
                 {/* Editor & Actions */}
                 <div className="flex flex-col gap-6">
                     
+                    {/* Export Settings */}
+                    <div className="card bg-[#161b27] border border-[#1e293b] rounded-xl shadow-lg shadow-black/20 p-4 sm:p-6 ">
+                        <h2 className="text-base font-semibold mb-4">Export Styling</h2>
+                        <div className="flex flex-col sm:flex-row gap-4">
+                            <div className="flex-1">
+                                <label className="label">QR Design Pattern</label>
+                                <select className="input bg-[#0f172a] border border-[#1e293b] text-slate-200" value={qrDesign} onChange={e => setQrDesign(e.target.value as 'dots' | 'squares')}>
+                                    <option value="dots">Modern Dots</option>
+                                    <option value="squares">Standard Squares</option>
+                                </select>
+                            </div>
+                            <div className="flex-1">
+                                <label className="label">QR Color Theme</label>
+                                <select className="input bg-[#0f172a] border border-[#1e293b] text-slate-200" value={qrColor} onChange={e => setQrColor(e.target.value as 'black' | 'white')}>
+                                    <option value="black">Black on White (Standard)</option>
+                                    <option value="white">White on Black (Dark Surfaces)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
                     {/* Range Selection */}
-                    <div className="card p-4 sm:p-6 bg-indigo-500/5">
+                    <div className="card bg-[#161b27] border border-[#1e293b] rounded-xl shadow-lg shadow-black/20 p-4 sm:p-6 ">
                         <h2 className="text-base font-semibold mb-4">Manage Range</h2>
                         <div className="flex flex-col sm:flex-row gap-4 sm:items-end">
                             <div className="flex-1 sm:flex-none">
                                 <label className="label">Start Sequence</label>
-                                <input type="number" className="input input-sm w-full sm:w-[120px]" value={rangeStart} onChange={e => setRangeStart(e.target.value ? Number(e.target.value) : '')} placeholder="1" />
+                                <input type="number" className="input bg-[#0f172a] border border-[#1e293b] text-slate-200 input-sm w-full sm:w-[120px]" value={rangeStart} onChange={e => setRangeStart(e.target.value ? Number(e.target.value) : '')} placeholder="1" />
                             </div>
                             <div className="flex-1 sm:flex-none">
                                 <label className="label">End Sequence</label>
-                                <input type="number" className="input input-sm w-full sm:w-[120px]" value={rangeEnd} onChange={e => setRangeEnd(e.target.value ? Number(e.target.value) : '')} placeholder={String(data.qr_count)} />
+                                <input type="number" className="input bg-[#0f172a] border border-[#1e293b] text-slate-200 input-sm w-full sm:w-[120px]" value={rangeEnd} onChange={e => setRangeEnd(e.target.value ? Number(e.target.value) : '')} placeholder={String(data.qr_count)} />
                             </div>
                             {hasValidRange && (
                                 <span className="pb-2 text-[13px] text-emerald-500">
@@ -268,47 +297,47 @@ export default function BatchManagementPage() {
                         </div>
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-5">
-                            <button className="btn btn-primary justify-center" onClick={() => handleOpenBuilder('range')} disabled={!hasValidRange}>
+                            <button className="btn btn-primary justify-center bg-indigo-600 hover:bg-indigo-700 text-white border-none shadow-md shadow-indigo-500/20" onClick={() => handleOpenBuilder('range')} disabled={!hasValidRange}>
                                 <Palette size={16} /> Open Range Builder
                             </button>
-                            <button className="btn btn-outline justify-center" onClick={() => handleDownloadPdf('stand', 'range')} disabled={!hasValidRange}>
+                            <button className="btn btn-outline justify-center bg-[#1e293b] hover:bg-[#334155] border border-[#334155] text-slate-200" onClick={() => handleDownloadPdf('stand', 'range')} disabled={!hasValidRange}>
                                 <Download size={16} /> Stand PDF (Range)
                             </button>
-                            <button className="btn btn-outline justify-center" onClick={() => handleDownloadPdf('branded', 'range')} disabled={!hasValidRange}>
+                            <button className="btn btn-outline justify-center bg-[#1e293b] hover:bg-[#334155] border border-[#334155] text-slate-200" onClick={() => handleDownloadPdf('branded', 'range')} disabled={!hasValidRange}>
                                 <Download size={16} /> Branded PDF (Range)
                             </button>
-                            <button className="btn btn-outline justify-center" onClick={() => handleDownloadPdf('plain', 'range')} disabled={!hasValidRange}>
+                            <button className="btn btn-outline justify-center bg-[#1e293b] hover:bg-[#334155] border border-[#334155] text-slate-200" onClick={() => handleDownloadPdf('plain', 'range')} disabled={!hasValidRange}>
                                 <Download size={16} /> Plain PDF (Range)
                             </button>
                         </div>
                     </div>
 
                     {/* Editor */}
-                    <div className="card p-4 sm:p-6">
+                    <div className="card bg-[#161b27] border border-[#1e293b] rounded-xl shadow-lg shadow-black/20 p-4 sm:p-6">
                         <h2 className="text-lg font-semibold mb-4">Edit Selected QR</h2>
                         {selectedQr ? (
                             <div className="flex flex-col gap-4">
                                 <div>
                                     <label className="label">Label</label>
-                                    <input className="input" value={label} onChange={e => setLabel(e.target.value)} />
+                                    <input className="input bg-[#0f172a] border border-[#1e293b] text-slate-200" value={label} onChange={e => setLabel(e.target.value)} />
                                 </div>
                                 <div>
                                     <label className="label">Permanent QR Link</label>
                                     <div className="flex gap-2">
-                                        <input className="input opacity-70 flex-1 min-w-0" value={selectedQr.qr_url} readOnly />
-                                        <button className="btn btn-outline shrink-0" onClick={() => { navigator.clipboard.writeText(selectedQr.qr_url); alert('Copied!'); }}><Copy size={14}/></button>
-                                        <a href={selectedQr.qr_url} target="_blank" className="btn btn-outline shrink-0"><ExternalLink size={14}/></a>
+                                        <input className="input bg-[#0f172a] border border-[#1e293b] text-slate-200 opacity-70 flex-1 min-w-0" value={selectedQr.qr_url} readOnly />
+                                        <button className="btn btn-outline shrink-0 bg-[#1e293b] hover:bg-[#334155] border border-[#334155] text-slate-200" onClick={() => { navigator.clipboard.writeText(selectedQr.qr_url); alert('Copied!'); }}><Copy size={14}/></button>
+                                        <a href={selectedQr.qr_url} target="_blank" className="btn btn-outline shrink-0 bg-[#1e293b] hover:bg-[#334155] border border-[#334155] text-slate-200"><ExternalLink size={14}/></a>
                                     </div>
                                 </div>
                                 <div>
                                     <label className="label">Destination URL</label>
-                                    <input className="input" value={manualUrl} onChange={e => setManualUrl(e.target.value)} placeholder="https://" />
+                                    <input className="input bg-[#0f172a] border border-[#1e293b] text-slate-200" value={manualUrl} onChange={e => setManualUrl(e.target.value)} placeholder="https://" />
                                 </div>
                                 <div className="flex flex-col sm:flex-row gap-3 mt-2">
-                                    <button className="btn btn-primary flex-1 justify-center" onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending}>
+                                    <button className="btn btn-primary flex-1 justify-center bg-indigo-600 hover:bg-indigo-700 text-white border-none shadow-md shadow-indigo-500/20" onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending}>
                                         {saveMutation.isPending ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />} Save Changes
                                     </button>
-                                    <button className="btn btn-outline flex-1 justify-center" onClick={() => applyTemplateMutation.mutate()} disabled={applyTemplateMutation.isPending}>
+                                    <button className="btn btn-outline flex-1 justify-center bg-[#1e293b] hover:bg-[#334155] border border-[#334155] text-slate-200" onClick={() => applyTemplateMutation.mutate()} disabled={applyTemplateMutation.isPending}>
                                         Apply Destination to Entire Batch
                                     </button>
                                 </div>
@@ -319,20 +348,20 @@ export default function BatchManagementPage() {
                     </div>
 
                     {/* Batch Actions */}
-                    <div className="card p-4 sm:p-6">
+                    <div className="card bg-[#161b27] border border-[#1e293b] rounded-xl shadow-lg shadow-black/20 p-4 sm:p-6">
                         <h2 className="text-lg font-semibold mb-4">Full Batch Actions</h2>
                         <div className="flex flex-col gap-4">
                             <div>
                                 <label className="label">Custom Center Logo (Optional)</label>
                                 <div className="flex items-center gap-3 flex-wrap">
-                                    <label className="btn btn-outline cursor-pointer shrink-0">
+                                    <label className="btn btn-outline cursor-pointer shrink-0 bg-[#1e293b] hover:bg-[#334155] border border-[#334155] text-slate-200">
                                         <ImageIcon size={16} /> Upload Logo
                                         <input type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} />
                                     </label>
                                     {logoUrl && (
                                         <div className="flex items-center gap-2">
                                             <img src={logoUrl} alt="Logo Preview" className="w-8 h-8 object-contain bg-white rounded" />
-                                            <button className="btn btn-outline p-1.5 text-red-500 border-red-500/50 hover:bg-red-500/10 shrink-0" onClick={() => setLogoUrl(undefined)}>
+                                            <button className="btn btn-outline p-1.5 text-red-500 border-red-500/50 hover:bg-red-500/10 shrink-0 bg-[#1e293b] hover:bg-[#334155] border border-[#334155] text-slate-200" onClick={() => setLogoUrl(undefined)}>
                                                 <X size={14} />
                                             </button>
                                         </div>
@@ -341,19 +370,19 @@ export default function BatchManagementPage() {
                             </div>
                             <div>
                                 <label className="label">Custom PDF Title (Optional)</label>
-                                <input className="input" value={batchTitle} onChange={e => setBatchTitle(e.target.value)} placeholder="e.g. Summer Campaign" />
+                                <input className="input bg-[#0f172a] border border-[#1e293b] text-slate-200" value={batchTitle} onChange={e => setBatchTitle(e.target.value)} placeholder="e.g. Summer Campaign" />
                             </div>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
-                                <button className="btn btn-primary justify-center" onClick={() => handleOpenBuilder('full')}>
+                                <button className="btn btn-primary justify-center bg-indigo-600 hover:bg-indigo-700 text-white border-none shadow-md shadow-indigo-500/20" onClick={() => handleOpenBuilder('full')}>
                                     <Palette size={16} /> Open Full Batch Builder
                                 </button>
-                                <button className="btn btn-outline justify-center" onClick={() => handleDownloadPdf('stand', 'full')}>
+                                <button className="btn btn-outline justify-center bg-[#1e293b] hover:bg-[#334155] border border-[#334155] text-slate-200" onClick={() => handleDownloadPdf('stand', 'full')}>
                                     <Download size={16} /> Download Stand PDF
                                 </button>
-                                <button className="btn btn-outline justify-center" onClick={() => handleDownloadPdf('branded', 'full')}>
+                                <button className="btn btn-outline justify-center bg-[#1e293b] hover:bg-[#334155] border border-[#334155] text-slate-200" onClick={() => handleDownloadPdf('branded', 'full')}>
                                     <Download size={16} /> Download Branded PDF
                                 </button>
-                                <button className="btn btn-outline justify-center" onClick={() => handleDownloadPdf('plain', 'full')}>
+                                <button className="btn btn-outline justify-center bg-[#1e293b] hover:bg-[#334155] border border-[#334155] text-slate-200" onClick={() => handleDownloadPdf('plain', 'full')}>
                                     <Download size={16} /> Download Plain PDF
                                 </button>
                             </div>

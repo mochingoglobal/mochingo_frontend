@@ -87,19 +87,19 @@ export default function QRCategoryPage() {
 
             <div className="flex flex-col gap-6">
                 {/* Form */}
-            <div className="card p-4 sm:p-5">
+            <div className="card bg-[#161b27] border border-[#1e293b] rounded-xl shadow-lg shadow-black/20 p-4 sm:p-5">
                 <h3 className="text-base font-semibold mb-4">
                     {editingId ? 'Edit Category' : 'Create New Category'}
                 </h3>
                 <div className="flex flex-col md:flex-row md:items-end gap-4 flex-wrap">
                     <div className="flex-1 min-w-[200px]">
                         <label className="label">Name</label>
-                        <input className="input" placeholder="e.g. Google Review" value={name} onChange={e => setName(e.target.value)} />
+                        <input className="input bg-[#0f172a] border border-[#1e293b] text-slate-200" placeholder="e.g. Google Review" value={name} onChange={e => setName(e.target.value)} />
                     </div>
                     <div className="flex-1 min-w-[200px]">
                         <label className="label">Slug (Optional)</label>
                         <input 
-                            className="input" 
+                            className="input bg-[#0f172a] border border-[#1e293b] text-slate-200" 
                             placeholder="e.g. google-review" 
                             value={slug} 
                             onChange={e => setSlug(e.target.value.replace(/\s+/g, '-').toLowerCase())} 
@@ -107,16 +107,16 @@ export default function QRCategoryPage() {
                     </div>
                     <div className="flex-[2] min-w-[250px]">
                         <label className="label">Description (Optional)</label>
-                        <input className="input" placeholder="Brief description..." value={description} onChange={e => setDescription(e.target.value)} />
+                        <input className="input bg-[#0f172a] border border-[#1e293b] text-slate-200" placeholder="Brief description..." value={description} onChange={e => setDescription(e.target.value)} />
                     </div>
                     <div className="flex gap-2 w-full md:w-auto">
                         {editingId && (
-                            <button className="btn btn-outline flex-1 md:flex-none justify-center h-[38px]" onClick={resetForm}>
+                            <button className="btn btn-outline flex-1 md:flex-none justify-center h-[38px] bg-[#1e293b] hover:bg-[#334155] border border-[#334155] text-slate-200" onClick={resetForm}>
                                 Cancel
                             </button>
                         )}
                         <button 
-                            className="btn btn-primary flex-1 md:flex-none justify-center h-[38px]" 
+                            className="btn btn-primary flex-1 md:flex-none justify-center h-[38px] bg-indigo-600 hover:bg-indigo-700 text-white border-none shadow-md shadow-indigo-500/20" 
                             onClick={handleSubmit} 
                             disabled={!name.trim() || createMutation.isPending || updateMutation.isPending}
                         >
@@ -139,7 +139,7 @@ export default function QRCategoryPage() {
             </div>
 
             {/* List */}
-            <div className="card p-4 sm:p-5">
+            <div className="card bg-[#161b27] border border-[#1e293b] rounded-xl shadow-lg shadow-black/20 p-4 sm:p-5">
                 <h3 className="text-base font-semibold mb-4">Categories</h3>
                 <div className="table-wrapper">
                     <table>

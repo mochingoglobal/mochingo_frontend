@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-
+@layer components {
 /* ── Scrollbar ── */
 ::-webkit-scrollbar {
     width: 6px;
@@ -343,4 +343,5 @@ tbody td {
 /* Hide the powered by google logo to make it cleaner */
 .pac-logo::after {
     display: none !important;
+}
 }

@@ -114,7 +114,7 @@ function CustomQRTab() {
 
     return (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="card" style={{ padding: 24 }}>
+            <div className="card bg-[#161b27] border border-[#1e293b] rounded-xl shadow-lg shadow-black/20" style={{ padding: 24 }}>
                 <h2 style={{ fontSize: 18, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                     <Sparkles size={20} color="#8b5cf6" /> Custom QR Generator
                 </h2>
@@ -126,7 +126,7 @@ function CustomQRTab() {
                         <div style={{ position: 'relative' }}>
                             <LinkIcon size={16} style={{ position: 'absolute', left: 12, top: 10, color: '#64748b' }} />
                             <input
-                                className="input" style={{ paddingLeft: 36, fontFamily: 'monospace' }}
+                                className="input bg-[#0f172a] border border-[#1e293b] text-slate-200" style={{ paddingLeft: 36, fontFamily: 'monospace' }}
                                 placeholder="https://example.com" value={url} onChange={e => setUrl(e.target.value)}
                             />
                         </div>
@@ -135,7 +135,7 @@ function CustomQRTab() {
 
                     <div>
                         <label className="label">File Label (Optional)</label>
-                        <input className="input" placeholder="e.g. Campaign Link" value={label} onChange={e => setLabel(e.target.value)} />
+                        <input className="input bg-[#0f172a] border border-[#1e293b] text-slate-200" placeholder="e.g. Campaign Link" value={label} onChange={e => setLabel(e.target.value)} />
                     </div>
 
                     <div>
@@ -172,7 +172,7 @@ function CustomQRTab() {
                 </div>
             </div>
 
-            <div className="card" style={{ padding: 24 }}>
+            <div className="card bg-[#161b27] border border-[#1e293b] rounded-xl shadow-lg shadow-black/20" style={{ padding: 24 }}>
                 <h2 style={{ fontSize: 18, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 8, marginBottom: 24 }}>
                     <QrCode size={20} color="#6366f1" /> Preview
                 </h2>
@@ -191,8 +191,8 @@ function CustomQRTab() {
                             {label && <p style={{ fontSize: 14, fontWeight: 600 }}>{label}</p>}
                             <p style={{ fontSize: 12, color: '#94a3b8', wordBreak: 'break-all', textAlign: 'center', maxWidth: 300 }}>{url}</p>
                             <div style={{ display: 'flex', gap: 8, width: '100%', maxWidth: 300 }}>
-                                <button onClick={handleDownloadPng} className="btn btn-outline" style={{ flex: 1 }}><Download size={14}/> PNG</button>
-                                <button onClick={handleDownloadJpeg} className="btn btn-primary" style={{ flex: 1 }} disabled={isExportingJpeg}>
+                                <button onClick={handleDownloadPng} className="btn btn-outline bg-[#1e293b] hover:bg-[#334155] border border-[#334155] text-slate-200" style={{ flex: 1 }}><Download size={14}/> PNG</button>
+                                <button onClick={handleDownloadJpeg} className="btn btn-primary bg-indigo-600 hover:bg-indigo-700 text-white border-none shadow-md shadow-indigo-500/20" style={{ flex: 1 }} disabled={isExportingJpeg}>
                                     {isExportingJpeg ? <Loader2 size={14} className="animate-spin" /> : <Download size={14}/>} JPEG
                                 </button>
                             </div>
@@ -265,15 +265,15 @@ function DynamicQRTab() {
     return (
         <div className="flex flex-col gap-6">
             {/* Create Bar */}
-            <div className="card p-4 sm:p-5">
+            <div className="card bg-[#161b27] border border-[#1e293b] rounded-xl shadow-lg shadow-black/20 p-4 sm:p-5">
                 <div className="flex flex-col md:flex-row md:items-end gap-4 flex-wrap">
                     <div className="flex-1 min-w-[200px]">
                         <label className="label">Group Label</label>
-                        <input className="input" placeholder="e.g. Marketing Posters" value={label} onChange={e => setLabel(e.target.value)} />
+                        <input className="input bg-[#0f172a] border border-[#1e293b] text-slate-200" placeholder="e.g. Marketing Posters" value={label} onChange={e => setLabel(e.target.value)} />
                     </div>
                     <div className="flex-1 min-w-[200px]">
                         <label className="label">Category (Optional)</label>
-                        <select className="input" value={categoryId} onChange={e => setCategoryId(e.target.value)}>
+                        <select className="input bg-[#0f172a] border border-[#1e293b] text-slate-200" value={categoryId} onChange={e => setCategoryId(e.target.value)}>
                             <option value="">-- No Category --</option>
                             {categories?.map(cat => (
                                 <option key={cat._id} value={cat._id}>{cat.name}</option>
@@ -282,11 +282,11 @@ function DynamicQRTab() {
                     </div>
                     <div className="w-full md:w-[100px]">
                         <label className="label">Count</label>
-                        <input type="number" min="1" max="1000" className="input" value={count} onChange={e => setCount(Number(e.target.value) || 1)} />
+                        <input type="number" min="1" max="1000" className="input bg-[#0f172a] border border-[#1e293b] text-slate-200" value={count} onChange={e => setCount(Number(e.target.value) || 1)} />
                     </div>
                     <div className="flex gap-3 w-full md:w-auto">
                         <button
-                            className="btn btn-primary flex-1 md:flex-none justify-center h-[38px]"
+                            className="btn btn-primary flex-1 md:flex-none justify-center h-[38px] bg-indigo-600 hover:bg-indigo-700 text-white border-none shadow-md shadow-indigo-500/20"
                             onClick={() => createMutation.mutate()}
                             disabled={!label.trim() || createMutation.isPending}
                         >
@@ -294,7 +294,7 @@ function DynamicQRTab() {
                             Create
                         </button>
                         <button
-                            className="btn btn-outline flex-1 md:flex-none justify-center h-[38px]"
+                            className="btn btn-outline flex-1 md:flex-none justify-center h-[38px] bg-[#1e293b] hover:bg-[#334155] border border-[#334155] text-slate-200"
                             onClick={() => router.push('/portal-x/qr-management/dynamic/start-scanning')}
                         >
                             <ScanLine size={16} /> Scan Assign
@@ -304,12 +304,12 @@ function DynamicQRTab() {
             </div>
 
             {/* List */}
-            <div className="card p-4 sm:p-5">
+            <div className="card bg-[#161b27] border border-[#1e293b] rounded-xl shadow-lg shadow-black/20 p-4 sm:p-5">
                 <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-4">
                     <h3 className="text-base font-semibold">Dynamic QR Groups ({data?.total || 0})</h3>
                     <div className="relative w-full sm:w-[240px]">
                         <Search size={14} className="absolute left-3 top-[11px] text-slate-500" />
-                        <input className="input input-sm pl-8 w-full" placeholder="Search labels..." value={search} onChange={e => setSearch(e.target.value)} />
+                        <input className="input bg-[#0f172a] border border-[#1e293b] text-slate-200 input-sm pl-8 w-full" placeholder="Search labels..." value={search} onChange={e => setSearch(e.target.value)} />
                     </div>
                 </div>
 

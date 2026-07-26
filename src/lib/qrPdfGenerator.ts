@@ -18,12 +18,16 @@ interface BulkPDFOptions {
     markerColor?: string;
     showTitle?: boolean;
     showLabel?: boolean;
+    qrDesignStyle?: 'dots' | 'squares';
+    qrColorTheme?: 'black' | 'white';
 }
 
 interface PlainBulkPDFOptions {
     entries: Array<{ qrUrl: string }>;
     fileName?: string;
     logoUrl?: string;
+    qrDesignStyle?: 'dots' | 'squares';
+    qrColorTheme?: 'black' | 'white';
 }
 
 // ─── Plain QR-only PDF ───────────────────────────────────────────────────────
@@ -31,6 +35,8 @@ interface PlainBulkPDFOptions {
 export const generatePlainBulkQRPDF = async ({
     entries,
     logoUrl,
+    qrDesignStyle = 'dots',
+    qrColorTheme = 'black'
 }: PlainBulkPDFOptions): Promise<Blob> => {
     const pageSizeMM = QR_PAGE_SIZE_MM;
     const pdf = new jsPDF({
@@ -47,9 +53,10 @@ export const generatePlainBulkQRPDF = async ({
             size: 2200,
             padding: 140,
             logoUrl,
-            foregroundColor: '#000000',
-            backgroundColor: '#ffffff',
-            markerColor: '#000000',
+            foregroundColor: qrColorTheme === 'white' ? '#ffffff' : '#000000',
+            backgroundColor: qrColorTheme === 'white' ? '#000000' : '#ffffff',
+            markerColor: qrColorTheme === 'white' ? '#ffffff' : '#000000',
+            designStyle: qrDesignStyle,
         });
         if (!qrCanvas) continue;
 
@@ -57,7 +64,7 @@ export const generatePlainBulkQRPDF = async ({
         wrapper.width = 2400;
         wrapper.height = 2400;
         const ctx = wrapper.getContext('2d')!;
-        ctx.fillStyle = '#ffffff';
+        ctx.fillStyle = qrColorTheme === 'white' ? '#000000' : '#ffffff';
         ctx.fillRect(0, 0, 2400, 2400);
         ctx.drawImage(qrCanvas, (2400 - qrCanvas.width) / 2, (2400 - qrCanvas.height) / 2);
         pdf.addImage(wrapper.toDataURL('image/png'), 'PNG', 0, 0, pageSizeMM, pageSizeMM);
@@ -87,6 +94,8 @@ export const generateMochingoBulkQRPDF = async ({
     markerColor = '#000000',
     showTitle = true,
     showLabel = true,
+    qrDesignStyle = 'dots',
+    qrColorTheme = 'black'
 }: BulkPDFOptions): Promise<Blob> => {
     const pageSizeMM = QR_PAGE_SIZE_MM;
     const pdf = new jsPDF({
@@ -104,7 +113,7 @@ export const generateMochingoBulkQRPDF = async ({
         wrapper.width = outputSize;
         wrapper.height = outputSize;
         const ctx = wrapper.getContext('2d')!;
-        ctx.fillStyle = '#ffffff';
+        ctx.fillStyle = qrColorTheme === 'white' ? '#000000' : '#ffffff';
         ctx.fillRect(0, 0, outputSize, outputSize);
 
         // Header text region (if title enabled)
@@ -120,7 +129,10 @@ export const generateMochingoBulkQRPDF = async ({
             size: qrPaddedSize,
             padding: Math.floor(qrPaddedSize * 0.04),
             logoUrl,
-            markerColor,
+            markerColor: qrColorTheme === 'white' ? '#ffffff' : markerColor,
+            foregroundColor: qrColorTheme === 'white' ? '#ffffff' : '#000000',
+            backgroundColor: qrColorTheme === 'white' ? '#000000' : '#ffffff',
+            designStyle: qrDesignStyle,
         });
         if (!qrCanvas) continue;
 
@@ -131,7 +143,7 @@ export const generateMochingoBulkQRPDF = async ({
         if (hasTopText) {
             const fontSize = Math.round(outputSize * 0.045);
             ctx.font = `bold ${fontSize}px Arial, sans-serif`;
-            ctx.fillStyle = '#111827';
+            ctx.fillStyle = qrColorTheme === 'white' ? '#ffffff' : '#111827';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.fillText(title.toUpperCase(), outputSize / 2, topReserve / 2);
@@ -141,7 +153,7 @@ export const generateMochingoBulkQRPDF = async ({
             const labelText = String(entry.displayLabel || entry.idValue || '');
             const fontSize = Math.round(outputSize * 0.038);
             ctx.font = `${fontSize}px Arial, sans-serif`;
-            ctx.fillStyle = '#6b7280';
+            ctx.fillStyle = qrColorTheme === 'white' ? '#d1d5db' : '#6b7280';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.fillText(labelText, outputSize / 2, outputSize - bottomReserve / 2);
@@ -170,17 +182,28 @@ export const downloadMochingoBulkQRPDF = async (options: BulkPDFOptions): Promis
 export const downloadSingleDynamicQRPDF = async (
     qrUrl: string,
     label: string,
-    logoUrl?: string
+    logoUrl?: string,
+    qrDesignStyle: 'dots' | 'squares' = 'dots',
+    qrColorTheme: 'black' | 'white' = 'black'
 ): Promise<void> => {
     const pageSizeMM = QR_PAGE_SIZE_MM;
     const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: [pageSizeMM, pageSizeMM], compress: true });
-    const qrCanvas = await createStyledQRCodeCanvas({ text: qrUrl, size: 2200, padding: 140, logoUrl });
+    const qrCanvas = await createStyledQRCodeCanvas({ 
+        text: qrUrl, 
+        size: 2200, 
+        padding: 140, 
+        logoUrl,
+        foregroundColor: qrColorTheme === 'white' ? '#ffffff' : '#000000',
+        backgroundColor: qrColorTheme === 'white' ? '#000000' : '#ffffff',
+        markerColor: qrColorTheme === 'white' ? '#ffffff' : '#000000',
+        designStyle: qrDesignStyle
+    });
     if (!qrCanvas) return;
     const wrapper = document.createElement('canvas');
     wrapper.width = 2400;
     wrapper.height = 2400;
     const ctx = wrapper.getContext('2d')!;
-    ctx.fillStyle = '#ffffff';
+    ctx.fillStyle = qrColorTheme === 'white' ? '#000000' : '#ffffff';
     ctx.fillRect(0, 0, 2400, 2400);
     ctx.drawImage(qrCanvas, (2400 - qrCanvas.width) / 2, (2400 - qrCanvas.height) / 2);
     pdf.addImage(wrapper.toDataURL('image/png'), 'PNG', 0, 0, pageSizeMM, pageSizeMM);
@@ -202,6 +225,8 @@ interface StandBulkQRPDFOptions {
     fileName?: string;
     backgroundUrl?: string;
     logoUrl?: string;
+    qrDesignStyle?: 'dots' | 'squares';
+    qrColorTheme?: 'black' | 'white';
 }
 
 const loadImage = async (src: string): Promise<HTMLImageElement> => {
@@ -240,6 +265,8 @@ export const generateStandBulkQRPDF = async ({
     entries,
     backgroundUrl = '/qr-stand-background.jpg',
     logoUrl,
+    qrDesignStyle = 'dots',
+    qrColorTheme = 'black'
 }: StandBulkQRPDFOptions): Promise<Blob> => {
     const pdf = new jsPDF({
         orientation: 'portrait',
@@ -265,9 +292,11 @@ export const generateStandBulkQRPDF = async ({
             size: 1280,
             padding: 74,
             logoUrl,
-            markerColor: '#000000',
+            markerColor: qrColorTheme === 'white' ? '#ffffff' : '#000000',
+            foregroundColor: qrColorTheme === 'white' ? '#ffffff' : '#000000',
             backgroundColor: 'transparent',
-            markerInnerBackgroundColor: '#ffffff',
+            markerInnerBackgroundColor: qrColorTheme === 'white' ? 'transparent' : '#ffffff',
+            designStyle: qrDesignStyle,
         });
 
         if (qrCanvas) {
