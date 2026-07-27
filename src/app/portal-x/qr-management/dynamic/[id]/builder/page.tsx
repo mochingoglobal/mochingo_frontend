@@ -33,15 +33,13 @@ function DynamicBuilderInner({ qr }: { qr: DynamicQR }) {
         );
         const fallbackLabel = qr.id_value
             ? formatIdLabel(qr.id_value).toUpperCase()
-            : qr.assignment_type === 'mall'
-                ? (qr.mall_key || 'MALL').toUpperCase()
-                : 'DYNAMIC QR';
+            : qr.label ? qr.label.toUpperCase() : 'DYNAMIC QR';
 
         if (tableTextEl) {
             builder.updateElement(tableTextEl.id, { content: fallbackLabel });
         }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [qr.id_value, qr.assignment_type, qr.mall_key]);
+    }, [qr.id_value, qr.label]);
 
     const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
