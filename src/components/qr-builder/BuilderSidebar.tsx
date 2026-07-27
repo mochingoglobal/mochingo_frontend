@@ -159,13 +159,12 @@ export default function BuilderSidebar({ builder }: BuilderSidebarProps) {
                 const src = ev.target.result as string;
                 updateBackground({ backgroundImageUrl: src, showScanCorners: false, borderWidth: 0, borderRadius: 0 });
                 
-                // Remove the default "TAP OR SCAN OUR MENU" text to avoid clutter
-                const textToRemove = state.elements.find(
-                    el => el.type === 'text' && (el as TextElement).content.includes('TAP OR SCAN OUR MENU')
-                );
-                if (textToRemove) {
-                    deleteElement(textToRemove.id);
-                }
+                // Remove all text elements to avoid clutter when uploading a custom template
+                state.elements.forEach(el => {
+                    if (el.type === 'text') {
+                        deleteElement(el.id);
+                    }
+                });
             }
         };
         reader.readAsDataURL(file);
