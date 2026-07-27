@@ -44,6 +44,8 @@ export interface QRElement extends BaseElement {
     cornerColor: string;  // color for the 3 position marker squares
     centerLogoUrl?: string;
     padding: number; // px internal padding
+    designStyle?: 'dots' | 'squares';
+    markerInnerBgColor?: string;
 }
 
 export interface ImageElement extends BaseElement {
@@ -66,6 +68,8 @@ export interface BackgroundStyle {
     gradientColor1: string;
     gradientColor2: string;
     gradientDirection: GradientDirection;
+    // Template Image
+    backgroundImageUrl?: string;
     // Border
     borderColor: string;
     borderWidth: number;  // px
@@ -81,6 +85,9 @@ export interface BackgroundStyle {
     scanCornerThickness: number; // stroke width in px
     scanCornerBend: number; // inner bend radius in px
     scanCornerMode: 'qr' | 'card';
+    // PDF Export Settings
+    exportWidthMM?: number;
+    exportHeightMM?: number;
 }
 
 // ── Builder Global State ─────────────────────────────────────
@@ -157,6 +164,8 @@ export const DEFAULT_QR_ELEMENT: Omit<QRElement, 'id' | 'x' | 'y'> = {
     cornerStyle: 'rounded',
     cornerColor: '#000000',
     padding: 10,
+    designStyle: 'dots',
+    markerInnerBgColor: '#ffffff',
 };
 
 export const SHADOW_PRESETS = [

@@ -1,5 +1,5 @@
 'use client';
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import {
     BuilderState,
     DesignElement,
@@ -121,6 +121,27 @@ export function useBuilderState(outletName: string, tableURL: string) {
         createInitialState(outletName, tableURL)
     );
 
+    // Auto-sync canvas size with background image
+    useEffect(() => {
+        if (state.background.exportWidthMM && state.background.exportHeightMM) {
+            const ratio = state.background.exportHeightMM / state.background.exportWidthMM;
+            const expectedHeight = state.canvasWidth * ratio;
+            if (Math.abs(state.canvasHeight - expectedHeight) > 1) {
+                setState(s => ({ ...s, canvasHeight: expectedHeight }));
+            }
+        } else if (state.background.backgroundImageUrl) {
+            const img = new globalThis.Image();
+            img.onload = () => {
+                const ratio = img.height / img.width;
+                const expectedHeight = state.canvasWidth * ratio;
+                if (Math.abs(state.canvasHeight - expectedHeight) > 1) {
+                    setState(s => ({ ...s, canvasHeight: expectedHeight }));
+                }
+            };
+            img.src = state.background.backgroundImageUrl;
+        }
+    }, [state.background.backgroundImageUrl, state.background.exportWidthMM, state.background.exportHeightMM, state.canvasWidth, state.canvasHeight]);
+
     // Undo history
     const historyRef = useRef<BuilderState[]>([]);
     const pushHistory = useCallback((prev: BuilderState) => {
@@ -138,6 +159,10 @@ export function useBuilderState(outletName: string, tableURL: string) {
             ...s,
             background: { ...s.background, ...patch },
         }));
+    }, []);
+
+    const updateCanvasSize = useCallback((width: number, height: number) => {
+        setState(s => ({ ...s, canvasWidth: width, canvasHeight: height }));
     }, []);
 
     const updateElement = useCallback(<T extends DesignElement>(id: string, patch: Partial<T>) => {
@@ -351,7 +376,7 @@ export function useBuilderState(outletName: string, tableURL: string) {
     ): Promise<HTMLCanvasElement | null> => {
         const canvas = document.createElement('canvas');
         canvas.width = size;
-        canvas.height = size;
+        canvas.height = size * (state.canvasHeight / state.canvasWidth);
         const ctx = canvas.getContext('2d');
         if (!ctx) return null;
 
@@ -362,13 +387,17 @@ export function useBuilderState(outletName: string, tableURL: string) {
         const r = background.borderRadius * scale;
         const bw = background.borderWidth * scale;
 
-        // 1. Fill entire canvas with border colour → sharp outer corners
-        ctx.fillStyle = background.borderColor;
-        ctx.fillRect(0, 0, size, size);
+        // 1. Fill entire canvas with border colour → sharp outer corners (if border > 0)
+        if (background.borderWidth > 0) {
+            ctx.fillStyle = background.borderColor;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        } else {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
 
         // 2. Fill inner rounded rect with card background color
         const innerX = bw, innerY = bw;
-        const innerW = size - bw * 2, innerH = size - bw * 2;
+        const innerW = canvas.width - bw * 2, innerH = canvas.height - bw * 2;
 
         if (background.useGradient) {
             const gx1 = background.gradientDirection.includes('right') ? innerX + innerW : innerX;
@@ -383,6 +412,43 @@ export function useBuilderState(outletName: string, tableURL: string) {
         ctx.beginPath();
         ctx.roundRect(innerX, innerY, innerW, innerH, r);
         ctx.fill();
+
+        if (background.backgroundImageUrl) {
+            try {
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+                await new Promise<void>((res, rej) => {
+                    img.onload = () => res();
+                    img.onerror = () => rej();
+                    img.src = background.backgroundImageUrl!;
+                });
+                
+                ctx.save();
+                ctx.beginPath();
+                ctx.roundRect(innerX, innerY, innerW, innerH, r);
+                ctx.clip();
+                
+                const imgRatio = img.width / img.height;
+                const canvasRatio = innerW / innerH;
+                let drawW = innerW;
+                let drawH = innerH;
+                let drawX = innerX;
+                let drawY = innerY;
+                
+                if (imgRatio > canvasRatio) {
+                    drawW = innerH * imgRatio;
+                    drawX = innerX + (innerW - drawW) / 2;
+                } else {
+                    drawH = innerW / imgRatio;
+                    drawY = innerY + (innerH - drawH) / 2;
+                }
+                
+                ctx.drawImage(img, drawX, drawY, drawW, drawH);
+                ctx.restore();
+            } catch (err) {
+                console.error('Failed to load background template', err);
+            }
+        }
 
 
         // Scan corners — respects scanCornerMode, offsets, size from state
@@ -404,8 +470,8 @@ export function useBuilderState(outletName: string, tableURL: string) {
             } else {
                 frameLeft = offX;
                 frameTop = offY;
-                frameW = size - offX * 2;
-                frameH = size - offY * 2;
+                frameW = canvas.width - offX * 2;
+                frameH = canvas.height - offY * 2;
             }
 
             ctx.strokeStyle = background.scanCornerColor;
@@ -507,11 +573,15 @@ export function useBuilderState(outletName: string, tableURL: string) {
                     foregroundColor: el.fgColor,
                     backgroundColor: el.bgColor,
                     markerColor: el.cornerColor,
+                    markerInnerBackgroundColor: el.markerInnerBgColor,
+                    designStyle: el.designStyle,
                 });
                 if (qrCanvas) {
-                    // White background for QR area
-                    ctx.fillStyle = el.bgColor;
-                    ctx.fillRect(0, 0, w, h);
+                    // White background for QR area (if not transparent)
+                    if (el.bgColor !== 'transparent') {
+                        ctx.fillStyle = el.bgColor;
+                        ctx.fillRect(0, 0, w, h);
+                    }
                     ctx.drawImage(qrCanvas, 0, 0, w, h);
                 }
             }
@@ -522,14 +592,48 @@ export function useBuilderState(outletName: string, tableURL: string) {
         return canvas;
     }, [state]);
 
+    const getExportDimensions = useCallback(async (forPDF = false) => {
+        if (forPDF) {
+            const w = state.background.exportWidthMM;
+            const h = state.background.exportHeightMM;
+            if (w && h) {
+                return { width: w, height: h, unit: 'mm' as 'pt' | 'px' | 'mm' };
+            }
+        }
+
+        if (state.background.backgroundImageUrl) {
+            try {
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+                await new Promise<void>((res, rej) => {
+                    img.onload = () => res();
+                    img.onerror = () => rej();
+                    img.src = state.background.backgroundImageUrl!;
+                });
+                return { width: img.width, height: img.height, unit: (forPDF ? 'pt' : 'px') as 'pt' | 'px' | 'mm' };
+            } catch (e) { }
+        }
+        
+        if (forPDF) {
+            const w = state.background.exportWidthMM || QR_PAGE_SIZE_MM;
+            const h = state.background.exportHeightMM || (w * (state.canvasHeight / state.canvasWidth));
+            return { width: w, height: h, unit: 'mm' as 'pt' | 'px' | 'mm' };
+        } else {
+            const w = 2000;
+            const h = w * (state.canvasHeight / state.canvasWidth);
+            return { width: w, height: h, unit: 'px' as 'pt' | 'px' | 'mm' };
+        }
+    }, [state.background.backgroundImageUrl, state.canvasWidth, state.canvasHeight, state.background.exportWidthMM, state.background.exportHeightMM]);
+
     const exportPNG = useCallback(async (outletName: string) => {
-        const canvas = await renderToCanvas(2000);
+        const dims = await getExportDimensions(false);
+        const canvas = await renderToCanvas(dims.width);
         if (!canvas) return;
         const link = document.createElement('a');
         link.download = `${outletName}-QR-branded.png`;
         link.href = canvas.toDataURL('image/png');
         link.click();
-    }, [renderToCanvas]);
+    }, [renderToCanvas, getExportDimensions]);
 
     const exportBulkPDF = useCallback(async (
         outletName: string,
@@ -541,7 +645,9 @@ export function useBuilderState(outletName: string, tableURL: string) {
     ) => {
         const baseURL = 'https://www.dynleaf.com';
 
-        const pageSizeMM = QR_PAGE_SIZE_MM;
+        const dims = await getExportDimensions(true);
+        const pageWidthMM = dims.width;
+        const pageHeightMM = dims.height;
 
         // Convert the card border colour (hex) to RGB so the PDF page background
         // matches it — any sub-pixel gap between pages won't appear black
@@ -551,20 +657,22 @@ export function useBuilderState(outletName: string, tableURL: string) {
         const bgB = parseInt(borderHex.substring(4, 6), 16);
 
         const pdf = new jsPDF({
-            orientation: 'portrait',
-            unit: 'mm',
-            format: [pageSizeMM, pageSizeMM],
+            orientation: pageHeightMM > pageWidthMM ? 'portrait' : 'landscape',
+            unit: dims.unit,
+            format: [pageWidthMM, pageHeightMM],
             compress: true,
         });
 
         for (let i = 0; i < tableCount; i++) {
             const currentNum = startFrom + i;
             // Each QR gets its own page
-            if (i > 0) pdf.addPage([pageSizeMM, pageSizeMM]);
+            if (i > 0) pdf.addPage([pageWidthMM, pageHeightMM], pageHeightMM > pageWidthMM ? 'portrait' : 'landscape');
 
             // Paint page background with the card border colour
-            pdf.setFillColor(bgR, bgG, bgB);
-            pdf.rect(0, 0, pageSizeMM, pageSizeMM, 'F');
+            if (state.background.borderWidth > 0) {
+                pdf.setFillColor(bgR, bgG, bgB);
+                pdf.rect(0, 0, pageWidthMM, pageHeightMM, 'F');
+            }
 
             const idValue = `${idPrefix}-${currentNum}`;
             const idLabel = `#${currentNum}`;
@@ -577,12 +685,15 @@ export function useBuilderState(outletName: string, tableURL: string) {
             // Temporarily set the current ID label for text replacement
             (state as any)._currentIdLabel = idLabel;
 
-            const canvas = await renderToCanvas(2400, currentNum, tableURLForTable);
+            // If we have an exact unit like pt (for exact template size), render canvas exactly at that size!
+            // No unnecessary upscaling to 2400 which causes PDF glitches.
+            const canvasRenderW = dims.unit === 'pt' ? dims.width : 2000;
+            const canvas = await renderToCanvas(canvasRenderW, currentNum, tableURLForTable);
             if (!canvas) continue;
 
-            const imgData = canvas.toDataURL('image/png');
+            const imgData = canvas.toDataURL('image/png', 1.0);
             // Fill the entire page — no margins, no whitespace
-            pdf.addImage(imgData, 'PNG', 0, 0, pageSizeMM, pageSizeMM);
+            pdf.addImage(imgData, 'PNG', 0, 0, pageWidthMM, pageHeightMM, '', 'FAST');
         }
 
         // Clear temp label
@@ -603,36 +714,43 @@ export function useBuilderState(outletName: string, tableURL: string) {
         entries: Array<{ label: string; qrUrl: string; displayLabel?: string | null }>,
         fileName?: string
     ) => {
-        const pageSizeMM = QR_PAGE_SIZE_MM;
+        const dims = await getExportDimensions(true);
+        const pageWidthMM = dims.width;
+        const pageHeightMM = dims.height;
+
         const borderHex = state.background.borderColor.replace('#', '');
         const bgR = parseInt(borderHex.substring(0, 2), 16);
         const bgG = parseInt(borderHex.substring(2, 4), 16);
         const bgB = parseInt(borderHex.substring(4, 6), 16);
 
         const pdf = new jsPDF({
-            orientation: 'portrait',
-            unit: 'mm',
-            format: [pageSizeMM, pageSizeMM],
+            orientation: pageHeightMM > pageWidthMM ? 'portrait' : 'landscape',
+            unit: dims.unit,
+            format: [pageWidthMM, pageHeightMM],
             compress: true,
         });
 
         for (let i = 0; i < entries.length; i++) {
             const entry = entries[i];
             const displayLabel = String(entry.displayLabel || '').trim();
-            if (i > 0) pdf.addPage([pageSizeMM, pageSizeMM]);
+            if (i > 0) pdf.addPage([pageWidthMM, pageHeightMM], pageHeightMM > pageWidthMM ? 'portrait' : 'landscape');
 
-            pdf.setFillColor(bgR, bgG, bgB);
-            pdf.rect(0, 0, pageSizeMM, pageSizeMM, 'F');
+            if (state.background.borderWidth > 0) {
+                pdf.setFillColor(bgR, bgG, bgB);
+                pdf.rect(0, 0, pageWidthMM, pageHeightMM, 'F');
+            }
 
             if (displayLabel) {
                 (state as any)._currentIdLabel = displayLabel;
             } else {
                 delete (state as any)._currentIdLabel;
             }
-            const canvas = await renderToCanvas(2400, displayLabel ? i + 1 : undefined, entry.qrUrl);
+
+            const canvasRenderW = dims.unit === 'pt' ? dims.width : 2000;
+            const canvas = await renderToCanvas(canvasRenderW, displayLabel ? i + 1 : undefined, entry.qrUrl);
             if (!canvas) continue;
 
-            pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, pageSizeMM, pageSizeMM);
+            pdf.addImage(canvas.toDataURL('image/png', 1.0), 'PNG', 0, 0, pageWidthMM, pageHeightMM, '', 'FAST');
         }
 
         delete (state as any)._currentIdLabel;
@@ -651,6 +769,8 @@ export function useBuilderState(outletName: string, tableURL: string) {
         state,
         // Selection
         selectElement,
+        // Canvas Size
+        updateCanvasSize,
         // Background
         updateBackground,
         // Elements

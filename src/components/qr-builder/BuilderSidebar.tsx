@@ -112,6 +112,7 @@ export default function BuilderSidebar({ builder }: BuilderSidebarProps) {
     const [activeTab, setActiveTab] = useState<SidebarTab>('background');
     const imageInputRef = useRef<HTMLInputElement>(null);
     const logoInputRef = useRef<HTMLInputElement>(null);
+    const bgImageInputRef = useRef<HTMLInputElement>(null);
     const qrLogoInputRef = useRef<HTMLInputElement>(null);
 
     // ── Tab config ────────────────────────────────────────────
@@ -143,6 +144,28 @@ export default function BuilderSidebar({ builder }: BuilderSidebarProps) {
             const qrEl = state.elements.find(el => el.type === 'qr');
             if (qrEl && ev.target?.result) {
                 updateElement<QRElement>(qrEl.id, { centerLogoUrl: ev.target.result as string });
+            }
+        };
+        reader.readAsDataURL(file);
+        e.target.value = '';
+    };
+
+    const handleBgImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            if (ev.target?.result) {
+                const src = ev.target.result as string;
+                updateBackground({ backgroundImageUrl: src, showScanCorners: false, borderWidth: 0, borderRadius: 0 });
+                
+                // Remove the default "TAP OR SCAN OUR MENU" text to avoid clutter
+                const textToRemove = state.elements.find(
+                    el => el.type === 'text' && (el as TextElement).content.includes('TAP OR SCAN OUR MENU')
+                );
+                if (textToRemove) {
+                    deleteElement(textToRemove.id);
+                }
             }
         };
         reader.readAsDataURL(file);
@@ -219,6 +242,66 @@ export default function BuilderSidebar({ builder }: BuilderSidebarProps) {
                                 </div>
                             </>
                         )}
+
+                        <SectionDivider title="Template" />
+                        <div className="space-y-2">
+                            {background.backgroundImageUrl ? (
+                                <div className="flex flex-col gap-2">
+                                    <div className="h-20 w-full rounded border border-gray-600 bg-black/50 flex items-center justify-center overflow-hidden relative group">
+                                        <img src={background.backgroundImageUrl} alt="Template" className="w-full h-full object-cover opacity-70" />
+                                        <button 
+                                            onClick={() => bgImageInputRef.current?.click()}
+                                            className="absolute inset-0 bg-blue-900/60 opacity-0 group-hover:opacity-100 flex items-center justify-center text-xs font-medium text-white transition-opacity"
+                                        >
+                                            Change Template
+                                        </button>
+                                    </div>
+                                    <button
+                                        onClick={() => {
+                                            updateBackground({ backgroundImageUrl: undefined });
+                                            builder.updateCanvasSize(state.canvasWidth, state.canvasWidth);
+                                        }}
+                                        className="text-xs text-red-400 hover:text-red-300 underline self-start"
+                                    >Remove Template</button>
+                                </div>
+                            ) : (
+                                <button
+                                    onClick={() => bgImageInputRef.current?.click()}
+                                    className="w-full h-16 border-2 border-dashed border-gray-600 rounded flex flex-col items-center justify-center gap-1 hover:border-blue-500 hover:bg-blue-900/20 transition-colors"
+                                >
+                                    <Upload size={16} className="text-gray-400" />
+                                    <span className="text-xs text-gray-400">Upload Background Image</span>
+                                </button>
+                            )}
+                            <input ref={bgImageInputRef} type="file" accept="image/*" className="hidden" onChange={handleBgImageUpload} />
+                        </div>
+
+                        <SectionDivider title="PDF Export Size" />
+                        <div className="mb-4">
+                            <p className="text-xs text-gray-400 mb-2">Overrides the default template PDF physical size if both are set.</p>
+                            <div className="flex gap-2">
+                                <div className="flex-1">
+                                    <Label>Width (cm)</Label>
+                                    <input
+                                        type="number"
+                                        placeholder="Auto"
+                                        value={background.exportWidthMM ? background.exportWidthMM / 10 : ''}
+                                        onChange={e => updateBackground({ exportWidthMM: e.target.value ? Number(e.target.value) * 10 : undefined })}
+                                        className="w-full bg-gray-700 text-white rounded px-2 py-1.5 text-xs"
+                                    />
+                                </div>
+                                <div className="flex-1">
+                                    <Label>Height (cm)</Label>
+                                    <input
+                                        type="number"
+                                        placeholder="Auto"
+                                        value={background.exportHeightMM ? background.exportHeightMM / 10 : ''}
+                                        onChange={e => updateBackground({ exportHeightMM: e.target.value ? Number(e.target.value) * 10 : undefined })}
+                                        className="w-full bg-gray-700 text-white rounded px-2 py-1.5 text-xs"
+                                    />
+                                </div>
+                            </div>
+                        </div>
 
                         <SectionDivider title="Border" />
                         <ColorSwatch color={background.borderColor} onChange={c => updateBackground({ borderColor: c })} label="Border Color" />
@@ -303,10 +386,13 @@ export default function BuilderSidebar({ builder }: BuilderSidebarProps) {
                         <SectionDivider title="QR Colors" />
                         <ColorSwatch color={qrElement.fgColor} onChange={c => updateElement<QRElement>(qrElement.id, { fgColor: c })} label="Foreground" />
                         <ColorSwatch color={qrElement.bgColor} onChange={c => updateElement<QRElement>(qrElement.id, { bgColor: c })} label="Background" />
+                        <Row className="mb-2">
+                            <span className="text-xs text-gray-400 w-24 shrink-0">Transparent BG</span>
+                            <Toggle label="" value={qrElement.bgColor === 'transparent'} onChange={v => updateElement<QRElement>(qrElement.id, { bgColor: v ? 'transparent' : '#ffffff' })} />
+                        </Row>
                         <ColorSwatch color={qrElement.cornerColor} onChange={c => updateElement<QRElement>(qrElement.id, { cornerColor: c })} label="Corner Eyes" />
-
-                        {/* Corner eye presets */}
-                        <div className="flex gap-1.5 flex-wrap">
+                        
+                        <div className="flex gap-1.5 flex-wrap mb-4">
                             {['#298000', '#1d4ed8', '#dc2626', '#9333ea', '#ea580c', '#000000'].map(c => (
                                 <button
                                     key={c}
@@ -315,6 +401,28 @@ export default function BuilderSidebar({ builder }: BuilderSidebarProps) {
                                     style={{ backgroundColor: c }}
                                 />
                             ))}
+                        </div>
+
+                        <ColorSwatch color={qrElement.markerInnerBgColor || '#ffffff'} onChange={c => updateElement<QRElement>(qrElement.id, { markerInnerBgColor: c })} label="Eye Inner BG" />
+                        <Row className="mb-2">
+                            <span className="text-xs text-gray-400 w-24 shrink-0">Transparent Eye BG</span>
+                            <Toggle label="" value={qrElement.markerInnerBgColor === 'transparent'} onChange={v => updateElement<QRElement>(qrElement.id, { markerInnerBgColor: v ? 'transparent' : '#ffffff' })} />
+                        </Row>
+
+                        <SectionDivider title="QR Style" />
+                        <div className="mb-4">
+                            <Label>Dot Style</Label>
+                            <div className="flex gap-1 mt-1">
+                                {(['dots', 'squares'] as const).map(s => (
+                                    <button
+                                        key={s}
+                                        onClick={() => updateElement<QRElement>(qrElement.id, { designStyle: s })}
+                                        className={`flex-1 py-1.5 rounded text-xs font-medium capitalize transition-colors ${(qrElement.designStyle ?? 'dots') === s ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`}
+                                    >
+                                        {s}
+                                    </button>
+                                ))}
+                            </div>
                         </div>
 
                         <SectionDivider title="QR Size" />

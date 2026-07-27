@@ -183,8 +183,10 @@ export default function BuilderCanvas({ builder, previewMode, guidesEnabled = tr
     const selectedEl = selectedId ? state.elements.find(e => e.id === selectedId) : null;
 
     const getDisplayDimensions = () => {
-        if (previewMode === 'a4') return { w: CANVAS_DISPLAY_SIZE, h: Math.round(CANVAS_DISPLAY_SIZE * 1.414) };
-        return { w: CANVAS_DISPLAY_SIZE, h: CANVAS_DISPLAY_SIZE };
+        const ratio = canvasHeight / canvasWidth;
+        const w = CANVAS_DISPLAY_SIZE;
+        const h = w * ratio;
+        return { w, h };
     };
     const { w: displayW, h: displayH } = getDisplayDimensions();
     const scale = displayW / canvasWidth;
@@ -206,15 +208,22 @@ export default function BuilderCanvas({ builder, previewMode, guidesEnabled = tr
         position: 'relative',
         width: displayW,
         height: displayH,
-        backgroundColor: background.borderColor,
+        backgroundColor: background.borderWidth > 0 ? background.borderColor : 'transparent',
+        borderRadius: background.borderRadius,
         boxShadow: shadow,
         flexShrink: 0,
-        // NO borderRadius → sharp outer corners
     };
 
-    const innerBg: React.CSSProperties = background.useGradient
-        ? { background: `linear-gradient(${background.gradientDirection}, ${background.gradientColor1}, ${background.gradientColor2})` }
-        : { backgroundColor: background.backgroundColor };
+    const innerBg: React.CSSProperties = background.backgroundImageUrl
+        ? {
+              backgroundImage: `url(${background.backgroundImageUrl})`,
+              backgroundSize: '100% 100%', // Use 100% 100% since canvas matches image ratio exactly now
+              backgroundPosition: 'center',
+              backgroundColor: background.backgroundColor
+          }
+        : background.useGradient
+            ? { background: `linear-gradient(${background.gradientDirection}, ${background.gradientColor1}, ${background.gradientColor2})` }
+            : { backgroundColor: background.backgroundColor };
 
     const innerCSS: React.CSSProperties = {
         position: 'absolute',
@@ -380,7 +389,7 @@ export default function BuilderCanvas({ builder, previewMode, guidesEnabled = tr
                                                 }
                                                 const cx = canvasWidth / 2, cy = canvasHeight / 2;
                                                 const elCX = x + el.width / 2, elCY = y + el.height / 2;
-                                                const snapThreshold = 10;
+                                                const snapThreshold = 2;
                                                 const snapH = Math.abs(elCY - cy) < snapThreshold;
                                                 const snapV = Math.abs(elCX - cx) < snapThreshold;
                                                 setGuides({ h: snapH, v: snapV });

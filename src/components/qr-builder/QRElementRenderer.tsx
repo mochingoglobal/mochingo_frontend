@@ -27,6 +27,8 @@ export default function QRElementRenderer({ element, tableURL, displayW, display
                 foregroundColor: element.fgColor,
                 backgroundColor: element.bgColor,
                 markerColor: element.cornerColor,
+                markerInnerBackgroundColor: element.markerInnerBgColor,
+                designStyle: element.designStyle,
             });
 
             if (cancelled || !canvasRef.current) return;
@@ -40,8 +42,11 @@ export default function QRElementRenderer({ element, tableURL, displayW, display
             if (!ctx) return;
             canvasRef.current.width = Math.round(displayW);
             canvasRef.current.height = Math.round(displayH);
-            ctx.fillStyle = element.bgColor;
-            ctx.fillRect(0, 0, displayW, displayH);
+            ctx.clearRect(0, 0, displayW, displayH);
+            if (element.bgColor !== 'transparent') {
+                ctx.fillStyle = element.bgColor;
+                ctx.fillRect(0, 0, displayW, displayH);
+            }
             ctx.drawImage(qrCanvas, 0, 0, displayW, displayH);
         };
 
@@ -50,7 +55,8 @@ export default function QRElementRenderer({ element, tableURL, displayW, display
     }, [
         tableURL, element.fgColor, element.bgColor,
         element.cornerColor, element.centerLogoUrl,
-        element.padding, displayW, displayH,
+        element.padding, element.designStyle,
+        element.markerInnerBgColor, displayW, displayH,
     ]);
 
     if (error) {
