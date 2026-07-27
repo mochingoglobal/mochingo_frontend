@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, Loader2, Save, Download, Copy, ExternalLink, Link as LinkIcon, Trash2 } from 'lucide-react';
+import { ArrowLeft, Loader2, Save, Download, Copy, ExternalLink, Link as LinkIcon, Trash2, Palette } from 'lucide-react';
 import api from '@/lib/api';
 import { getStatusColor, formatDateTime } from '@/lib/utils';
 import { downloadSingleDynamicQRPDF } from '@/lib/qrPdfGenerator';
@@ -129,11 +129,18 @@ export default function SingleQRPage() {
                             </select>
                         </div>
                         <button 
+                            className="btn btn-primary bg-indigo-600 hover:bg-indigo-700 text-white border-none shadow-md shadow-indigo-500/20" 
+                            style={{ width: '100%', marginBottom: '8px' }}
+                            onClick={() => router.push(`/portal-x/qr-management/dynamic/${id}/builder`)}
+                        >
+                            <Palette size={14} /> Open Interactive Builder
+                        </button>
+                        <button 
                             className="btn btn-outline bg-[#1e293b] hover:bg-[#334155] border border-[#334155] text-slate-200" 
                             style={{ width: '100%' }}
                             onClick={() => downloadSingleDynamicQRPDF(data.qr_url, data.label, undefined, qrDesign, qrColor)}
                         >
-                            <Download size={14} /> Download PDF
+                            <Download size={14} /> Quick Download PDF
                         </button>
                     </div>
                 </div>

@@ -169,3 +169,32 @@ export const buildMochingoDynamicQRURL = (token: string): string => {
     const base = process.env.NEXT_PUBLIC_APP_URL || 'https://www.mochingo.com';
     return `${base}/dq/${encodeURIComponent(token)}`;
 };
+
+/**
+ * Build an id value string from prefix and number, e.g. "room%100"
+ */
+export const buildIdValue = (prefix: string, number: number): string => {
+    return `${prefix}%${number}`;
+};
+
+/**
+ * Parse an id value string back to prefix and number
+ * e.g. "room%100" => { prefix: "room", number: 100 }
+ */
+export const parseIdValue = (idValue: string): { prefix: string; number: number } | null => {
+    const idx = idValue.indexOf('%');
+    if (idx === -1) return null;
+    const prefix = idValue.substring(0, idx);
+    const num = parseInt(idValue.substring(idx + 1), 10);
+    if (isNaN(num)) return null;
+    return { prefix, number: num };
+};
+
+/**
+ * Format an id value for display, e.g. "room%100" => "Room 100"
+ */
+export const formatIdLabel = (idValue: string): string => {
+    const parsed = parseIdValue(idValue);
+    if (!parsed) return idValue;
+    return `${parsed.prefix.charAt(0).toUpperCase() + parsed.prefix.slice(1)} ${parsed.number}`;
+};

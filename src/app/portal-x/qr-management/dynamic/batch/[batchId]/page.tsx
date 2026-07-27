@@ -341,6 +341,11 @@ export default function BatchManagementPage() {
                                         Apply Destination to Entire Batch
                                     </button>
                                 </div>
+                                <div className="flex mt-1">
+                                    <button className="btn btn-outline w-full justify-center bg-[#1e293b] hover:bg-[#334155] border border-[#334155] text-slate-200" onClick={() => router.push(`/portal-x/qr-management/dynamic/${selectedQr._id}/builder`)}>
+                                        <Palette size={16} className="mr-2" /> Open Builder for {selectedQr.label}
+                                    </button>
+                                </div>
                             </div>
                         ) : (
                             <p className="text-slate-400">Select a QR from the list.</p>
