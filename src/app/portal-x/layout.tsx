@@ -44,6 +44,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     const navigation = [
         { name: 'QR Management', href: '/portal-x/qr-management', icon: QrCode },
         { name: 'Categories', href: '/portal-x/qr-category', icon: LayoutDashboard },
+        { name: 'Users', href: '/portal-x/users', icon: Users },
     ];
 
     return (
