@@ -16,6 +16,7 @@ api.interceptors.response.use(
         if (
             error.response?.status === 401 &&
             typeof window !== 'undefined' &&
+            window.location.pathname.startsWith('/portal-x') &&
             !window.location.pathname.includes('/portal-x/login') &&
             !isRedirecting
         ) {
