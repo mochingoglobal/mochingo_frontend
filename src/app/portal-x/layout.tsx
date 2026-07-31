@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { QrCode, LogOut, Loader2, LayoutDashboard, Users, Briefcase } from 'lucide-react';
+import { QrCode, LogOut, Loader2, LayoutDashboard, Users, Briefcase, Activity } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -43,6 +43,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
     const navigation = [
         { name: 'QR Management', href: '/portal-x/qr-management', icon: QrCode },
+        { name: 'Analytics', href: '/portal-x/analytics', icon: Activity },
         { name: 'Categories', href: '/portal-x/qr-category', icon: LayoutDashboard },
         { name: 'Users', href: '/portal-x/users', icon: Users },
         { name: 'Staff', href: '/portal-x/staff', icon: Briefcase },
