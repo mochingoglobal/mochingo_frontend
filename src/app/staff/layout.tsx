@@ -3,10 +3,10 @@
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { QrCode, LogOut, Loader2, LayoutDashboard, Users, Briefcase } from 'lucide-react';
+import { Briefcase, LogOut, Loader2, QrCode, Camera, History } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+export default function StaffLayout({ children }: { children: React.ReactNode }) {
     const router = useRouter();
     const pathname = usePathname();
     const { isAuthenticated, isLoading, checkAuth, logout, admin } = useAuthStore();
@@ -19,45 +19,45 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     }, [checkAuth]);
 
     useEffect(() => {
-        if (!isLoading && !isAuthenticated && pathname !== '/portal-x/login') {
-            router.replace('/portal-x/login');
+        if (!isLoading && !isAuthenticated && pathname !== '/staff/login') {
+            router.replace('/staff/login');
+        } else if (!isLoading && isAuthenticated && admin?.role !== 'sales_staff' && pathname !== '/staff/login') {
+            // Real admins trying to access staff portal, send them back
+            router.replace('/portal-x/qr-management');
         }
-    }, [isLoading, isAuthenticated, pathname, router]);
+    }, [isLoading, isAuthenticated, admin, pathname, router]);
 
     if (!mounted || isLoading) {
         return (
-            <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0a0d16' }}>
-                <Loader2 size={32} className="animate-spin" style={{ color: '#6366f1' }} />
+            <div className="min-h-screen bg-[#0a0d16] flex items-center justify-center">
+                <Loader2 size={32} className="animate-spin text-indigo-500" />
             </div>
         );
     }
 
-    if (!isAuthenticated && pathname !== '/portal-x/login') {
+    if (!isAuthenticated && pathname !== '/staff/login') {
         return null;
     }
 
-    // Don't wrap login page in sidebar
-    if (pathname === '/portal-x/login') {
+    if (pathname === '/staff/login') {
         return <>{children}</>;
     }
 
     const navigation = [
-        { name: 'QR Management', href: '/portal-x/qr-management', icon: QrCode },
-        { name: 'Categories', href: '/portal-x/qr-category', icon: LayoutDashboard },
-        { name: 'Users', href: '/portal-x/users', icon: Users },
-        { name: 'Staff', href: '/portal-x/staff', icon: Briefcase },
+        { name: 'Scan QR Code', href: '/staff/dashboard', icon: Camera },
+        { name: 'My Assignments', href: '/staff/history', icon: History },
     ];
 
     return (
         <div className="min-h-screen bg-[#0a0d16] text-slate-100 flex flex-col md:flex-row">
             {/* Mobile Header */}
             <div className="md:hidden flex items-center justify-between p-4 border-b border-white/5 bg-[#161b27]/90 backdrop-blur-md sticky top-0 z-20">
-                <Link href="/portal-x/qr-management" className="flex items-center gap-2 text-white font-bold text-lg">
+                <div className="flex items-center gap-2 text-white font-bold text-lg">
                     <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center">
-                        <QrCode size={16} />
+                        <Briefcase size={16} />
                     </div>
-                    Mochingo
-                </Link>
+                    Sales Portal
+                </div>
                 <button 
                     onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                     className="p-2 text-slate-300 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
@@ -86,12 +86,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
             `}>
                 <div className="p-6 border-b border-white/5 hidden md:block">
-                    <Link href="/portal-x/qr-management" className="flex items-center gap-2 text-white font-bold text-lg">
+                    <div className="flex items-center gap-2 text-white font-bold text-lg">
                         <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center">
-                            <QrCode size={16} />
+                            <Briefcase size={16} />
                         </div>
-                        Mochingo
-                    </Link>
+                        Sales Portal
+                    </div>
                 </div>
 
                 <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
@@ -136,7 +136,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             {/* Main Content */}
             <main className="flex-1 flex flex-col min-w-0 h-[calc(100vh-65px)] md:h-screen">
                 <div className="flex-1 overflow-auto p-4 sm:p-6 md:p-8">
-                    <div className="max-w-6xl mx-auto">
+                    <div className="max-w-4xl mx-auto">
                         {children}
                     </div>
                 </div>
