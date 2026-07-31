@@ -20,7 +20,8 @@ export default function StaffLayout({ children }: { children: React.ReactNode })
 
     useEffect(() => {
         if (!isLoading && !isAuthenticated && pathname !== '/staff/login') {
-            router.replace('/staff/login');
+            const currentUrl = typeof window !== 'undefined' ? encodeURIComponent(window.location.pathname + window.location.search) : encodeURIComponent(pathname);
+            router.replace(`/staff/login?redirect=${currentUrl}`);
         } else if (!isLoading && isAuthenticated && admin?.role !== 'sales_staff' && pathname !== '/staff/login') {
             // Real admins trying to access staff portal, send them back
             router.replace('/portal-x/qr-management');

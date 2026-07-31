@@ -21,7 +21,13 @@ export default function StaffLoginPage() {
 
     useEffect(() => {
         if (!isLoading && isAuthenticated && admin?.role === 'sales_staff') {
-            router.replace('/staff/dashboard');
+            const searchParams = new URLSearchParams(window.location.search);
+            const redirectUrl = searchParams.get('redirect');
+            if (redirectUrl && redirectUrl.startsWith('/staff')) {
+                router.replace(redirectUrl);
+            } else {
+                router.replace('/staff/dashboard');
+            }
         } else if (!isLoading && isAuthenticated && (admin?.role === 'admin' || admin?.role === 'super_admin')) {
             router.replace('/portal-x/qr-management'); // Redirect real admins out of here
         }

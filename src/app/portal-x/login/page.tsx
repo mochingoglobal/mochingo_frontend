@@ -20,7 +20,13 @@ export default function AdminLoginPage() {
         setLoading(true);
         try {
             await login(email.trim(), password);
-            router.replace('/portal-x/qr-management');
+            const searchParams = new URLSearchParams(window.location.search);
+            const redirectUrl = searchParams.get('redirect');
+            if (redirectUrl && redirectUrl.startsWith('/portal-x')) {
+                router.replace(redirectUrl);
+            } else {
+                router.replace('/portal-x/qr-management');
+            }
         } catch (err: any) {
             setError(err?.response?.data?.message || 'Invalid credentials. Please try again.');
         } finally {
