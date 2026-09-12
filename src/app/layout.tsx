@@ -16,6 +16,15 @@ export const metadata: Metadata = {
     title: { default: 'Mochingo — Dynamic QR Platform', template: '%s | Mochingo' },
     description: 'Create, manage and track dynamic QR codes for your business.',
     keywords: ['QR code', 'dynamic QR', 'QR management', 'Mochingo'],
+    icons: {
+        icon: [
+            { url: '/favicons/favicon.svg', type: 'image/svg+xml' },
+            { url: '/favicons/favicon.ico', sizes: 'any' }
+        ],
+        apple: '/favicons/apple-touch-icon.png',
+    },
+    manifest: '/site.webmanifest',
+    themeColor: '#000000'
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
