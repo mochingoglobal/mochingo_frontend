@@ -69,7 +69,7 @@ export default function SingleQRPage() {
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: 24, alignItems: 'start' }}>
-                <div className="card bg-[#161b27] border border-[#1e293b] rounded-xl shadow-lg shadow-black/20" style={{ padding: 24 }}>
+                <div className="card bg-[rgba(242, 237, 231, 0.05)] border border-[#1e293b] rounded-xl shadow-lg shadow-black/20" style={{ padding: 24 }}>
                     <h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 24 }}>Edit Details</h2>
                     
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
@@ -93,14 +93,14 @@ export default function SingleQRPage() {
                             </div>
                         </div>
                         <div style={{ marginTop: 8 }}>
-                            <button className="btn btn-primary bg-indigo-600 hover:bg-indigo-700 text-white border-none shadow-md shadow-indigo-500/20" onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending}>
+                            <button className="btn btn-primary bg-mochingo-warm-oat text-mochingo-rich-black hover:bg-indigo-700 text-mochingo-warm-oat border-none shadow-md shadow-indigo-500/20" onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending}>
                                 {saveMutation.isPending ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />} Save Changes
                             </button>
                         </div>
                     </div>
                 </div>
 
-                <div className="card bg-[#161b27] border border-[#1e293b] rounded-xl shadow-lg shadow-black/20" style={{ padding: 24 }}>
+                <div className="card bg-[rgba(242, 237, 231, 0.05)] border border-[#1e293b] rounded-xl shadow-lg shadow-black/20" style={{ padding: 24 }}>
                     <h2 style={{ fontSize: 16, fontWeight: 600, marginBottom: 16 }}>Stats & Actions</h2>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                         <div>
@@ -129,7 +129,7 @@ export default function SingleQRPage() {
                             </select>
                         </div>
                         <button 
-                            className="btn btn-primary bg-indigo-600 hover:bg-indigo-700 text-white border-none shadow-md shadow-indigo-500/20" 
+                            className="btn btn-primary bg-mochingo-warm-oat text-mochingo-rich-black hover:bg-indigo-700 text-mochingo-warm-oat border-none shadow-md shadow-indigo-500/20" 
                             style={{ width: '100%', marginBottom: '8px' }}
                             onClick={() => router.push(`/portal-x/qr-management/dynamic/${id}/builder`)}
                         >

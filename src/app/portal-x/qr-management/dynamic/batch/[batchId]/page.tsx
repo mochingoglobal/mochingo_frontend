@@ -227,20 +227,20 @@ export default function BatchManagementPage() {
                             <option key={cat._id} value={cat._id}>{cat.name}</option>
                         ))}
                     </select>
-                    {updateCategoryMutation.isPending && <Loader2 size={16} className="animate-spin text-indigo-500 shrink-0" />}
+                    {updateCategoryMutation.isPending && <Loader2 size={16} className="animate-spin text-mochingo-warm-oat shrink-0" />}
                 </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-6 items-start">
                 {/* List */}
-                <div className="card bg-[#161b27] border border-[#1e293b] rounded-xl shadow-lg shadow-black/20 p-3 max-h-[400px] lg:max-h-[calc(100vh-140px)] overflow-y-auto">
+                <div className="card bg-[rgba(242, 237, 231, 0.05)] border border-[#1e293b] rounded-xl shadow-lg shadow-black/20 p-3 max-h-[400px] lg:max-h-[calc(100vh-140px)] overflow-y-auto">
                     <div className="flex flex-col gap-2">
                         {data.dynamic_qrs.map(qr => (
                             <button
                                 key={qr._id}
                                 onClick={() => setSelectedId(qr._id)}
                                 className={`flex flex-col gap-1 text-left p-3 rounded-lg cursor-pointer border transition-colors ${
-                                    selectedId === qr._id ? 'bg-indigo-500/10 border-indigo-500 text-white' : 'border-transparent text-slate-200 hover:bg-white/5'
+                                    selectedId === qr._id ? 'bg-indigo-500/10 border-indigo-500 text-mochingo-warm-oat' : 'border-transparent text-slate-200 hover:bg-white/5'
                                 }`}
                             >
                                 <div className="flex justify-between items-center">
@@ -257,7 +257,7 @@ export default function BatchManagementPage() {
                 <div className="flex flex-col gap-6">
                     
                     {/* Export Settings */}
-                    <div className="card bg-[#161b27] border border-[#1e293b] rounded-xl shadow-lg shadow-black/20 p-4 sm:p-6 ">
+                    <div className="card bg-[rgba(242, 237, 231, 0.05)] border border-[#1e293b] rounded-xl shadow-lg shadow-black/20 p-4 sm:p-6 ">
                         <h2 className="text-base font-semibold mb-4">Export Styling</h2>
                         <div className="flex flex-col sm:flex-row gap-4">
                             <div className="flex-1">
@@ -278,7 +278,7 @@ export default function BatchManagementPage() {
                     </div>
 
                     {/* Range Selection */}
-                    <div className="card bg-[#161b27] border border-[#1e293b] rounded-xl shadow-lg shadow-black/20 p-4 sm:p-6 ">
+                    <div className="card bg-[rgba(242, 237, 231, 0.05)] border border-[#1e293b] rounded-xl shadow-lg shadow-black/20 p-4 sm:p-6 ">
                         <h2 className="text-base font-semibold mb-4">Manage Range</h2>
                         <div className="flex flex-col sm:flex-row gap-4 sm:items-end">
                             <div className="flex-1 sm:flex-none">
@@ -297,7 +297,7 @@ export default function BatchManagementPage() {
                         </div>
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-5">
-                            <button className="btn btn-primary justify-center bg-indigo-600 hover:bg-indigo-700 text-white border-none shadow-md shadow-indigo-500/20" onClick={() => handleOpenBuilder('range')} disabled={!hasValidRange}>
+                            <button className="btn btn-primary justify-center bg-mochingo-warm-oat text-mochingo-rich-black hover:bg-indigo-700 text-mochingo-warm-oat border-none shadow-md shadow-indigo-500/20" onClick={() => handleOpenBuilder('range')} disabled={!hasValidRange}>
                                 <Palette size={16} /> Open Range Builder
                             </button>
                             <button className="btn btn-outline justify-center bg-[#1e293b] hover:bg-[#334155] border border-[#334155] text-slate-200" onClick={() => handleDownloadPdf('stand', 'range')} disabled={!hasValidRange}>
@@ -313,7 +313,7 @@ export default function BatchManagementPage() {
                     </div>
 
                     {/* Editor */}
-                    <div className="card bg-[#161b27] border border-[#1e293b] rounded-xl shadow-lg shadow-black/20 p-4 sm:p-6">
+                    <div className="card bg-[rgba(242, 237, 231, 0.05)] border border-[#1e293b] rounded-xl shadow-lg shadow-black/20 p-4 sm:p-6">
                         <h2 className="text-lg font-semibold mb-4">Edit Selected QR</h2>
                         {selectedQr ? (
                             <div className="flex flex-col gap-4">
@@ -334,7 +334,7 @@ export default function BatchManagementPage() {
                                     <input className="input bg-[#0f172a] border border-[#1e293b] text-slate-200" value={manualUrl} onChange={e => setManualUrl(e.target.value)} placeholder="https://" />
                                 </div>
                                 <div className="flex flex-col sm:flex-row gap-3 mt-2">
-                                    <button className="btn btn-primary flex-1 justify-center bg-indigo-600 hover:bg-indigo-700 text-white border-none shadow-md shadow-indigo-500/20" onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending}>
+                                    <button className="btn btn-primary flex-1 justify-center bg-mochingo-warm-oat text-mochingo-rich-black hover:bg-indigo-700 text-mochingo-warm-oat border-none shadow-md shadow-indigo-500/20" onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending}>
                                         {saveMutation.isPending ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />} Save Changes
                                     </button>
                                     <button className="btn btn-outline flex-1 justify-center bg-[#1e293b] hover:bg-[#334155] border border-[#334155] text-slate-200" onClick={() => applyTemplateMutation.mutate()} disabled={applyTemplateMutation.isPending}>
@@ -353,7 +353,7 @@ export default function BatchManagementPage() {
                     </div>
 
                     {/* Batch Actions */}
-                    <div className="card bg-[#161b27] border border-[#1e293b] rounded-xl shadow-lg shadow-black/20 p-4 sm:p-6">
+                    <div className="card bg-[rgba(242, 237, 231, 0.05)] border border-[#1e293b] rounded-xl shadow-lg shadow-black/20 p-4 sm:p-6">
                         <h2 className="text-lg font-semibold mb-4">Full Batch Actions</h2>
                         <div className="flex flex-col gap-4">
                             <div>
@@ -378,7 +378,7 @@ export default function BatchManagementPage() {
                                 <input className="input bg-[#0f172a] border border-[#1e293b] text-slate-200" value={batchTitle} onChange={e => setBatchTitle(e.target.value)} placeholder="e.g. Summer Campaign" />
                             </div>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
-                                <button className="btn btn-primary justify-center bg-indigo-600 hover:bg-indigo-700 text-white border-none shadow-md shadow-indigo-500/20" onClick={() => handleOpenBuilder('full')}>
+                                <button className="btn btn-primary justify-center bg-mochingo-warm-oat text-mochingo-rich-black hover:bg-indigo-700 text-mochingo-warm-oat border-none shadow-md shadow-indigo-500/20" onClick={() => handleOpenBuilder('full')}>
                                     <Palette size={16} /> Open Full Batch Builder
                                 </button>
                                 <button className="btn btn-outline justify-center bg-[#1e293b] hover:bg-[#334155] border border-[#334155] text-slate-200" onClick={() => handleDownloadPdf('stand', 'full')}>

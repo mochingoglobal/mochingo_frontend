@@ -137,7 +137,7 @@ export default function SalesDashboardPage() {
     if (!mounted) {
         return (
             <div className="flex justify-center p-12">
-                <Loader2 className="animate-spin text-indigo-500" size={32} />
+                <Loader2 className="animate-spin text-mochingo-rich-black" size={32} />
             </div>
         );
     }
@@ -149,21 +149,21 @@ export default function SalesDashboardPage() {
                 
                 {/* The Video Container */}
                 <div 
-                    className={`w-full aspect-[3/4] bg-black rounded-3xl overflow-hidden shadow-2xl relative border-4 border-[#161b27] ${!isScanning ? 'flex items-center justify-center' : ''}`}
+                    className={`w-full aspect-[3/4] bg-white rounded-3xl overflow-hidden shadow-xl relative border-4 border-mochingo-oat-line ${!isScanning ? 'flex items-center justify-center' : ''}`}
                 >
                     <div id="reader" className={`w-full h-full ${!isScanning ? 'hidden' : 'block'}`}></div>
                     
                     {!isScanning && !isProcessing && (
-                        <div className="text-center p-6">
-                            <div className="w-20 h-20 bg-indigo-500/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-indigo-500/30 shadow-[0_0_30px_rgba(99,102,241,0.2)]">
-                                <Camera size={32} className="text-indigo-400" />
+                        <div className="text-center p-6 bg-white w-full h-full flex flex-col items-center justify-center">
+                            <div className="w-20 h-20 bg-mochingo-warm-oat rounded-full flex items-center justify-center mx-auto mb-4 border border-mochingo-oat-line">
+                                <Camera size={32} className="text-mochingo-rich-black" />
                             </div>
-                            <h2 className="text-xl font-bold text-white mb-2">Ready to Scan</h2>
-                            <p className="text-slate-400 text-sm mb-6">Position the QR code within the frame to scan it instantly.</p>
+                            <h2 className="text-xl font-bold text-mochingo-rich-black mb-2">Ready to Scan</h2>
+                            <p className="text-slate-500 text-sm mb-6">Position the QR code within the frame to scan it instantly.</p>
                             
                             <button 
                                 onClick={startCamera}
-                                className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-xl font-medium transition-all transform hover:scale-105 active:scale-95 w-full shadow-lg shadow-indigo-600/30"
+                                className="bg-mochingo-rich-black hover:bg-black/80 text-white px-8 py-3 rounded-xl font-medium transition-all transform hover:scale-105 active:scale-95 w-full shadow-lg shadow-black/10"
                             >
                                 Open Camera
                             </button>
@@ -171,9 +171,9 @@ export default function SalesDashboardPage() {
                     )}
 
                     {isProcessing && (
-                        <div className="absolute inset-0 bg-black/80 flex flex-col items-center justify-center z-20 backdrop-blur-sm">
-                            <Loader2 className="animate-spin text-indigo-500 mb-3" size={36} />
-                            <p className="text-indigo-400 font-medium">Processing...</p>
+                        <div className="absolute inset-0 bg-white/90 flex flex-col items-center justify-center z-20 backdrop-blur-sm">
+                            <Loader2 className="animate-spin text-mochingo-rich-black mb-3" size={36} />
+                            <p className="text-mochingo-rich-black font-medium">Processing...</p>
                         </div>
                     )}
 
@@ -181,10 +181,10 @@ export default function SalesDashboardPage() {
                     {isScanning && !isProcessing && (
                         <div className="absolute inset-0 z-10 pointer-events-none border-[40px] border-black/40">
                             {/* Scanning bracket corners */}
-                            <div className="absolute top-0 left-0 w-12 h-12 border-t-4 border-l-4 border-indigo-500 rounded-tl-xl" />
-                            <div className="absolute top-0 right-0 w-12 h-12 border-t-4 border-r-4 border-indigo-500 rounded-tr-xl" />
-                            <div className="absolute bottom-0 left-0 w-12 h-12 border-b-4 border-l-4 border-indigo-500 rounded-bl-xl" />
-                            <div className="absolute bottom-0 right-0 w-12 h-12 border-b-4 border-r-4 border-indigo-500 rounded-br-xl" />
+                            <div className="absolute top-0 left-0 w-12 h-12 border-t-4 border-l-4 border-white rounded-tl-xl" />
+                            <div className="absolute top-0 right-0 w-12 h-12 border-t-4 border-r-4 border-white rounded-tr-xl" />
+                            <div className="absolute bottom-0 left-0 w-12 h-12 border-b-4 border-l-4 border-white rounded-bl-xl" />
+                            <div className="absolute bottom-0 right-0 w-12 h-12 border-b-4 border-r-4 border-white rounded-br-xl" />
                         </div>
                     )}
                 </div>
@@ -194,7 +194,7 @@ export default function SalesDashboardPage() {
                     {isScanning ? (
                         <button 
                             onClick={stopCamera}
-                            className="text-slate-400 hover:text-white text-sm font-medium px-4 py-2 bg-[#161b27] rounded-full border border-white/5 transition-colors"
+                            className="text-slate-600 hover:text-mochingo-rich-black text-sm font-medium px-4 py-2 bg-white rounded-full border border-mochingo-oat-line transition-colors shadow-sm"
                         >
                             Cancel
                         </button>
@@ -204,10 +204,10 @@ export default function SalesDashboardPage() {
 
                     <button 
                         onClick={() => fileInputRef.current?.click()}
-                        className="bg-[#161b27] hover:bg-[#1f2638] text-white p-4 rounded-full border border-white/10 shadow-lg transition-transform hover:scale-105 active:scale-95 flex items-center justify-center group"
+                        className="bg-white hover:bg-mochingo-warm-oat text-mochingo-rich-black p-4 rounded-full border border-mochingo-oat-line shadow-lg transition-transform hover:scale-105 active:scale-95 flex items-center justify-center group"
                         title="Upload from Gallery"
                     >
-                        <ImageIcon size={24} className="text-indigo-400 group-hover:text-indigo-300 transition-colors" />
+                        <ImageIcon size={24} className="text-mochingo-rich-black transition-colors" />
                     </button>
                 </div>
 

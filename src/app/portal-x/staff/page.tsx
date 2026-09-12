@@ -73,49 +73,49 @@ export default function StaffManagementPage() {
         <div className="space-y-6">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-                        <Briefcase className="text-indigo-500" />
+                    <h1 className="text-2xl font-bold text-mochingo-warm-oat flex items-center gap-2">
+                        <Briefcase className="text-mochingo-warm-oat" />
                         Sales Staff Management
                     </h1>
-                    <p className="text-slate-400 text-sm mt-1">Create and manage sales staff accounts.</p>
+                    <p className="text-mochingo-warm-oat/60 text-sm mt-1">Create and manage sales staff accounts.</p>
                 </div>
                 <button
                     onClick={() => setIsModalOpen(true)}
-                    className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 shadow-lg shadow-indigo-500/20"
+                    className="bg-mochingo-warm-oat hover:bg-mochingo-warm-oat/90 text-mochingo-rich-black px-4 py-2 rounded-lg font-bold transition-colors flex items-center gap-2 shadow-lg shadow-mochingo-warm-oat/10"
                 >
                     <Plus size={18} />
                     Add Staff
                 </button>
             </div>
 
-            <div className="bg-[#161b27] border border-white/5 rounded-xl overflow-hidden">
-                <div className="p-4 border-b border-white/5 bg-white/[0.02]">
+            <div className="bg-[rgba(242,237,231,0.02)] border border-mochingo-warm-oat/10 rounded-xl overflow-hidden shadow-sm">
+                <div className="p-4 border-b border-mochingo-warm-oat/10 bg-mochingo-warm-oat/5">
                     <div className="relative max-w-md">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-mochingo-warm-oat/40" size={18} />
                         <input
                             type="text"
                             placeholder="Search staff by name or email..."
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
-                            className="w-full bg-[#0a0d16] border border-white/10 rounded-lg pl-10 pr-4 py-2 text-sm text-white focus:outline-none focus:border-indigo-500 transition-colors"
+                            className="w-full bg-mochingo-rich-black border border-mochingo-warm-oat/10 rounded-lg pl-10 pr-4 py-2 text-sm text-mochingo-warm-oat placeholder:text-mochingo-warm-oat/40 focus:outline-none focus:border-mochingo-warm-oat/30 transition-colors"
                         />
                     </div>
                 </div>
 
                 {loading ? (
                     <div className="p-12 flex justify-center">
-                        <Loader2 className="animate-spin text-indigo-500" size={32} />
+                        <Loader2 className="animate-spin text-mochingo-warm-oat" size={32} />
                     </div>
                 ) : (
                     <>
                         {filteredStaff.length === 0 ? (
-                            <div className="px-6 py-12 text-center text-slate-500">
+                            <div className="px-6 py-12 text-center text-mochingo-warm-oat/50">
                                 No sales staff found.
                             </div>
                         ) : (
-                            <div className="divide-y divide-white/5">
+                            <div className="divide-y divide-mochingo-warm-oat/10">
                                 {/* Desktop Table Header */}
-                                <div className="hidden md:grid grid-cols-4 px-6 py-3 bg-[#0a0d16] text-xs uppercase text-slate-400 font-semibold">
+                                <div className="hidden md:grid grid-cols-4 px-6 py-3 bg-mochingo-warm-oat/5 text-xs uppercase text-mochingo-warm-oat/50 font-semibold border-b border-mochingo-warm-oat/10">
                                     <div>Name</div>
                                     <div>Email</div>
                                     <div>Status</div>
@@ -124,25 +124,25 @@ export default function StaffManagementPage() {
 
                                 {/* List Items (Cards on Mobile, Rows on Desktop) */}
                                 {filteredStaff.map((staff) => (
-                                    <div key={staff.id} className="flex flex-col md:grid md:grid-cols-4 gap-4 md:gap-0 p-4 md:px-6 md:py-4 hover:bg-white/[0.02] transition-colors items-start md:items-center">
+                                    <div key={staff.id} className="flex flex-col md:grid md:grid-cols-4 gap-4 md:gap-0 p-4 md:px-6 md:py-4 hover:bg-mochingo-warm-oat/5 transition-colors items-start md:items-center">
                                         <div className="flex flex-col min-w-0">
-                                            <span className="md:hidden text-xs text-slate-500 font-medium mb-1">Name</span>
-                                            <span className="font-medium text-white truncate">{staff.name}</span>
+                                            <span className="md:hidden text-xs text-mochingo-warm-oat/50 font-medium mb-1">Name</span>
+                                            <span className="font-medium text-mochingo-warm-oat truncate">{staff.name}</span>
                                         </div>
                                         <div className="flex flex-col min-w-0 w-full">
-                                            <span className="md:hidden text-xs text-slate-500 font-medium mb-1">Email</span>
-                                            <span className="text-slate-300 truncate text-sm md:text-base">{staff.email}</span>
+                                            <span className="md:hidden text-xs text-mochingo-warm-oat/50 font-medium mb-1">Email</span>
+                                            <span className="text-mochingo-warm-oat/70 truncate text-sm md:text-base">{staff.email}</span>
                                         </div>
                                         <div className="flex flex-col">
-                                            <span className="md:hidden text-xs text-slate-500 font-medium mb-1">Status</span>
+                                            <span className="md:hidden text-xs text-mochingo-warm-oat/50 font-medium mb-1">Status</span>
                                             <div>
                                                 <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${staff.is_active ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'}`}>
                                                     {staff.is_active ? 'Active' : 'Blocked'}
                                                 </span>
                                             </div>
                                         </div>
-                                        <div className="flex md:justify-end w-full md:w-auto mt-2 md:mt-0 pt-3 md:pt-0 border-t border-white/5 md:border-0 justify-between items-center">
-                                            <span className="md:hidden text-xs text-slate-500 font-medium">Actions</span>
+                                        <div className="flex md:justify-end w-full md:w-auto mt-2 md:mt-0 pt-3 md:pt-0 border-t border-mochingo-warm-oat/10 md:border-0 justify-between items-center">
+                                            <span className="md:hidden text-xs text-mochingo-warm-oat/50 font-medium">Actions</span>
                                             <div className="flex items-center">
                                                 <button
                                                     onClick={async () => {
@@ -180,9 +180,9 @@ export default function StaffManagementPage() {
 
             {isModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-                    <div className="bg-[#161b27] border border-white/10 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden">
-                        <div className="p-6 border-b border-white/5">
-                            <h3 className="text-xl font-bold text-white">Add Sales Staff</h3>
+                    <div className="bg-mochingo-rich-black border border-mochingo-warm-oat/10 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden">
+                        <div className="p-6 border-b border-mochingo-warm-oat/10">
+                            <h3 className="text-xl font-bold text-mochingo-warm-oat">Add Sales Staff</h3>
                         </div>
                         <form onSubmit={handleSubmit} className="p-6 space-y-4">
                             {error && (
@@ -191,35 +191,35 @@ export default function StaffManagementPage() {
                                 </div>
                             )}
                             <div>
-                                <label className="block text-sm font-medium text-slate-300 mb-1.5">Full Name</label>
+                                <label className="block text-sm font-medium text-mochingo-warm-oat/70 mb-1.5">Full Name</label>
                                 <input
                                     type="text"
                                     required
                                     value={formData.name}
                                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                    className="w-full bg-[#0a0d16] border border-white/10 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500 transition-colors"
+                                    className="w-full bg-[rgba(242,237,231,0.03)] border border-mochingo-warm-oat/10 rounded-xl px-4 py-2.5 text-mochingo-warm-oat focus:outline-none focus:border-mochingo-warm-oat/30 transition-colors"
                                     placeholder="Enter full name"
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-slate-300 mb-1.5">Email Address</label>
+                                <label className="block text-sm font-medium text-mochingo-warm-oat/70 mb-1.5">Email Address</label>
                                 <input
                                     type="email"
                                     required
                                     value={formData.email}
                                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                    className="w-full bg-[#0a0d16] border border-white/10 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500 transition-colors"
+                                    className="w-full bg-[rgba(242,237,231,0.03)] border border-mochingo-warm-oat/10 rounded-xl px-4 py-2.5 text-mochingo-warm-oat focus:outline-none focus:border-mochingo-warm-oat/30 transition-colors"
                                     placeholder="sales@example.com"
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-slate-300 mb-1.5">Password</label>
+                                <label className="block text-sm font-medium text-mochingo-warm-oat/70 mb-1.5">Password</label>
                                 <input
                                     type="password"
                                     required
                                     value={formData.password}
                                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                                    className="w-full bg-[#0a0d16] border border-white/10 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500 transition-colors"
+                                    className="w-full bg-[rgba(242,237,231,0.03)] border border-mochingo-warm-oat/10 rounded-xl px-4 py-2.5 text-mochingo-warm-oat focus:outline-none focus:border-mochingo-warm-oat/30 transition-colors"
                                     placeholder="Enter a secure password"
                                 />
                             </div>
@@ -227,16 +227,16 @@ export default function StaffManagementPage() {
                                 <button
                                     type="button"
                                     onClick={() => setIsModalOpen(false)}
-                                    className="flex-1 px-4 py-2.5 rounded-xl border border-white/10 text-slate-300 hover:bg-white/5 font-medium transition-colors"
+                                    className="flex-1 px-4 py-2.5 rounded-xl border border-mochingo-warm-oat/10 text-mochingo-warm-oat/70 hover:bg-mochingo-warm-oat/5 font-medium transition-colors"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={isSaving}
-                                    className="flex-1 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                    className="flex-1 px-4 py-2.5 rounded-xl bg-mochingo-warm-oat text-mochingo-rich-black font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 hover:bg-mochingo-warm-oat/90"
                                 >
-                                    {isSaving ? <Loader2 className="animate-spin" size={18} /> : 'Create Staff'}
+                                    {isSaving ? <Loader2 className="animate-spin text-mochingo-rich-black" size={18} /> : 'Create Staff'}
                                 </button>
                             </div>
                         </form>

@@ -87,7 +87,7 @@ export default function QRCategoryPage() {
 
             <div className="flex flex-col gap-6">
                 {/* Form */}
-            <div className="card bg-[#161b27] border border-[#1e293b] rounded-xl shadow-lg shadow-black/20 p-4 sm:p-5">
+            <div className="card bg-[rgba(242, 237, 231, 0.05)] border border-[#1e293b] rounded-xl shadow-lg shadow-black/20 p-4 sm:p-5">
                 <h3 className="text-base font-semibold mb-4">
                     {editingId ? 'Edit Category' : 'Create New Category'}
                 </h3>
@@ -116,7 +116,7 @@ export default function QRCategoryPage() {
                             </button>
                         )}
                         <button 
-                            className="btn btn-primary flex-1 md:flex-none justify-center h-[38px] bg-indigo-600 hover:bg-indigo-700 text-white border-none shadow-md shadow-indigo-500/20" 
+                            className="btn btn-primary flex-1 md:flex-none justify-center h-[38px] bg-mochingo-warm-oat text-mochingo-rich-black hover:bg-indigo-700 text-mochingo-warm-oat border-none shadow-md shadow-indigo-500/20" 
                             onClick={handleSubmit} 
                             disabled={!name.trim() || createMutation.isPending || updateMutation.isPending}
                         >
@@ -139,7 +139,7 @@ export default function QRCategoryPage() {
             </div>
 
             {/* List */}
-            <div className="card bg-[#161b27] border border-[#1e293b] rounded-xl shadow-lg shadow-black/20 p-4 sm:p-5">
+            <div className="card bg-[rgba(242, 237, 231, 0.05)] border border-[#1e293b] rounded-xl shadow-lg shadow-black/20 p-4 sm:p-5">
                 <h3 className="text-base font-semibold mb-4">Categories</h3>
                 <div className="table-wrapper">
                     <table>

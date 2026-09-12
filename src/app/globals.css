@@ -1,5 +1,46 @@
 @import "tailwindcss";
 
+@theme {
+    --color-mochingo-warm-oat: var(--mochingo-warm-oat);
+    --color-mochingo-rich-black: var(--mochingo-rich-black);
+    --color-mochingo-oat-line: var(--mochingo-oat-line);
+    --font-mochingo: var(--mochingo-font);
+}
+
+:root {
+    --mochingo-warm-oat: #F2EDE7;
+    --mochingo-rich-black: #000000;
+    --mochingo-oat-line: #D8D1C8;
+    --mochingo-font: "Satoshi", "Inter", sans-serif;
+    
+    --primary: var(--mochingo-rich-black);
+    --primary-hover: #333333;
+    --background: var(--mochingo-warm-oat);
+    --foreground: var(--mochingo-rich-black);
+    --card: #ffffff;
+    --card-border: var(--mochingo-oat-line);
+    --muted: #666666;
+    --muted-bg: rgba(0,0,0,0.05);
+    --danger: #ef4444;
+}
+
+.dark {
+    --primary: var(--mochingo-warm-oat);
+    --primary-hover: #e2e8f0;
+    --background: var(--mochingo-rich-black);
+    --foreground: var(--mochingo-warm-oat);
+    --card: #0f172a;
+    --card-border: #1e293b;
+    --muted: #94a3b8;
+    --muted-bg: rgba(255, 255, 255, 0.05);
+}
+
+body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--mochingo-font);
+}
+
 @layer components {
 /* ── Scrollbar ── */
 ::-webkit-scrollbar {
@@ -34,7 +75,7 @@
 
 /* ── Card ── */
 .card {
-    background: var(--card);
+    background-color: var(--card);
     border: 1px solid var(--card-border);
     border-radius: 12px;
 }
@@ -75,42 +116,42 @@
 }
 
 .btn-primary {
-    background: var(--primary);
-    color: white;
+    background-color: var(--primary);
+    color: var(--background);
 }
 
 .btn-primary:hover:not(:disabled) {
-    background: var(--primary-hover);
+    background-color: var(--primary-hover);
 }
 
 .btn-outline {
-    background: transparent;
+    background-color: transparent;
     color: var(--foreground);
     border: 1px solid var(--card-border);
 }
 
 .btn-outline:hover:not(:disabled) {
-    background: var(--muted-bg);
+    background-color: var(--muted-bg);
 }
 
 .btn-ghost {
-    background: transparent;
+    background-color: transparent;
     color: var(--muted);
 }
 
 .btn-ghost:hover:not(:disabled) {
-    background: var(--muted-bg);
+    background-color: var(--muted-bg);
     color: var(--foreground);
 }
 
 .btn-danger {
-    background: rgba(239, 68, 68, 0.15);
+    background-color: rgba(239, 68, 68, 0.15);
     color: var(--danger);
     border: 1px solid rgba(239, 68, 68, 0.3);
 }
 
 .btn-danger:hover:not(:disabled) {
-    background: rgba(239, 68, 68, 0.25);
+    background-color: rgba(239, 68, 68, 0.25);
 }
 
 .btn-sm {
@@ -128,7 +169,7 @@
 .input {
     width: 100%;
     padding: 9px 12px;
-    background: #0d111c;
+    background-color: var(--card);
     border: 1px solid var(--card-border);
     border-radius: 8px;
     color: var(--foreground);
@@ -229,9 +270,9 @@
 
 /* ── Glass card ── */
 .glass {
-    background: rgba(22, 27, 39, 0.8);
+    background: rgba(255, 255, 255, 0.8);
     backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 /* ── Table ── */
@@ -247,7 +288,7 @@ table {
 }
 
 thead tr {
-    background: rgba(255, 255, 255, 0.03);
+    background-color: rgba(0, 0, 0, 0.1);
 }
 
 thead th {
@@ -262,7 +303,7 @@ thead th {
 }
 
 tbody tr {
-    border-bottom: 1px solid rgba(30, 42, 58, 0.6);
+    border-bottom: 1px solid var(--card-border);
     transition: background 0.12s;
     cursor: pointer;
 }
@@ -272,7 +313,7 @@ tbody tr:last-child {
 }
 
 tbody tr:hover {
-    background: rgba(99, 102, 241, 0.04);
+    background-color: rgba(99, 102, 241, 0.08);
 }
 
 tbody td {

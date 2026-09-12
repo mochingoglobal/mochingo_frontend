@@ -128,7 +128,7 @@ function UserDetailModal({ userId, onClose }: { userId: string; onClose: () => v
             onClick={e => { if (e.target === e.currentTarget) onClose(); }}
         >
             <div style={{
-                background: '#161b27',
+                background: 'rgba(242, 237, 231, 0.05)',
                 border: '1px solid rgba(255,255,255,0.07)',
                 borderRadius: 20,
                 width: '100%', maxWidth: 620,

@@ -114,7 +114,7 @@ function CustomQRTab() {
 
     return (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="card bg-[#161b27] border border-[#1e293b] rounded-xl shadow-lg shadow-black/20" style={{ padding: 24 }}>
+            <div className="card bg-[rgba(242, 237, 231, 0.05)] border border-[#1e293b] rounded-xl shadow-lg shadow-black/20" style={{ padding: 24 }}>
                 <h2 style={{ fontSize: 18, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                     <Sparkles size={20} color="#8b5cf6" /> Custom QR Generator
                 </h2>
@@ -172,7 +172,7 @@ function CustomQRTab() {
                 </div>
             </div>
 
-            <div className="card bg-[#161b27] border border-[#1e293b] rounded-xl shadow-lg shadow-black/20" style={{ padding: 24 }}>
+            <div className="card bg-[rgba(242, 237, 231, 0.05)] border border-[#1e293b] rounded-xl shadow-lg shadow-black/20" style={{ padding: 24 }}>
                 <h2 style={{ fontSize: 18, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 8, marginBottom: 24 }}>
                     <QrCode size={20} color="#6366f1" /> Preview
                 </h2>
@@ -192,7 +192,7 @@ function CustomQRTab() {
                             <p style={{ fontSize: 12, color: '#94a3b8', wordBreak: 'break-all', textAlign: 'center', maxWidth: 300 }}>{url}</p>
                             <div style={{ display: 'flex', gap: 8, width: '100%', maxWidth: 300 }}>
                                 <button onClick={handleDownloadPng} className="btn btn-outline bg-[#1e293b] hover:bg-[#334155] border border-[#334155] text-slate-200" style={{ flex: 1 }}><Download size={14}/> PNG</button>
-                                <button onClick={handleDownloadJpeg} className="btn btn-primary bg-indigo-600 hover:bg-indigo-700 text-white border-none shadow-md shadow-indigo-500/20" style={{ flex: 1 }} disabled={isExportingJpeg}>
+                                <button onClick={handleDownloadJpeg} className="btn btn-primary bg-mochingo-warm-oat text-mochingo-rich-black hover:bg-indigo-700 text-mochingo-warm-oat border-none shadow-md shadow-indigo-500/20" style={{ flex: 1 }} disabled={isExportingJpeg}>
                                     {isExportingJpeg ? <Loader2 size={14} className="animate-spin" /> : <Download size={14}/>} JPEG
                                 </button>
                             </div>
@@ -265,7 +265,7 @@ function DynamicQRTab() {
     return (
         <div className="flex flex-col gap-6">
             {/* Create Bar */}
-            <div className="card bg-[#161b27] border border-[#1e293b] rounded-xl shadow-lg shadow-black/20 p-4 sm:p-5">
+            <div className="card bg-[rgba(242, 237, 231, 0.05)] border border-[#1e293b] rounded-xl shadow-lg shadow-black/20 p-4 sm:p-5">
                 <div className="flex flex-col md:flex-row md:items-end gap-4 flex-wrap">
                     <div className="flex-1 min-w-[200px]">
                         <label className="label">Group Label</label>
@@ -286,7 +286,7 @@ function DynamicQRTab() {
                     </div>
                     <div className="flex gap-3 w-full md:w-auto">
                         <button
-                            className="btn btn-primary flex-1 md:flex-none justify-center h-[38px] bg-indigo-600 hover:bg-indigo-700 text-white border-none shadow-md shadow-indigo-500/20"
+                            className="btn btn-primary flex-1 md:flex-none justify-center h-[38px] bg-mochingo-warm-oat text-mochingo-rich-black hover:bg-indigo-700 text-mochingo-warm-oat border-none shadow-md shadow-indigo-500/20"
                             onClick={() => createMutation.mutate()}
                             disabled={!label.trim() || createMutation.isPending}
                         >
@@ -304,7 +304,7 @@ function DynamicQRTab() {
             </div>
 
             {/* List */}
-            <div className="card bg-[#161b27] border border-[#1e293b] rounded-xl shadow-lg shadow-black/20 p-4 sm:p-5">
+            <div className="card bg-[rgba(242, 237, 231, 0.05)] border border-[#1e293b] rounded-xl shadow-lg shadow-black/20 p-4 sm:p-5">
                 <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-4">
                     <h3 className="text-base font-semibold">Dynamic QR Groups ({data?.total || 0})</h3>
                     <div className="relative w-full sm:w-[240px]">

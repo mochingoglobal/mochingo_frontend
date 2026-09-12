@@ -26,8 +26,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
     if (!mounted || isLoading) {
         return (
-            <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0a0d16' }}>
-                <Loader2 size={32} className="animate-spin" style={{ color: '#6366f1' }} />
+            <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--mochingo-rich-black)' }}>
+                <Loader2 size={32} className="animate-spin text-mochingo-warm-oat" />
             </div>
         );
     }
@@ -50,18 +50,18 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     ];
 
     return (
-        <div className="min-h-screen bg-[#0a0d16] text-slate-100 flex flex-col md:flex-row">
+        <div className="min-h-screen bg-mochingo-rich-black text-mochingo-warm-oat flex flex-col md:flex-row dark">
             {/* Mobile Header */}
-            <div className="md:hidden flex items-center justify-between p-4 border-b border-white/5 bg-[#161b27]/90 backdrop-blur-md sticky top-0 z-20">
-                <Link href="/portal-x/qr-management" className="flex items-center gap-2 text-white font-bold text-lg">
-                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center">
+            <div className="md:hidden flex items-center justify-between p-4 border-b border-mochingo-warm-oat/10 bg-[rgba(242,237,231,0.05)] backdrop-blur-md sticky top-0 z-20">
+                <Link href="/portal-x/qr-management" className="flex items-center gap-2 text-mochingo-warm-oat font-bold text-lg">
+                    <div className="w-8 h-8 rounded-lg bg-mochingo-warm-oat text-mochingo-rich-black flex items-center justify-center">
                         <QrCode size={16} />
                     </div>
                     Mochingo
                 </Link>
                 <button 
                     onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                    className="p-2 text-slate-300 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+                    className="p-2 text-mochingo-warm-oat/70 hover:text-mochingo-warm-oat hover:bg-mochingo-warm-oat/10 rounded-lg transition-colors"
                 >
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         {isMobileMenuOpen ? (
@@ -76,19 +76,19 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             {/* Sidebar Overlay (Mobile) */}
             {isMobileMenuOpen && (
                 <div 
-                    className="fixed inset-0 bg-black/60 z-30 md:hidden backdrop-blur-sm"
+                    className="fixed inset-0 bg-black/80 z-30 md:hidden backdrop-blur-sm"
                     onClick={() => setIsMobileMenuOpen(false)}
                 />
             )}
 
             {/* Sidebar */}
             <aside className={`
-                fixed inset-y-0 left-0 z-40 w-64 bg-[#0a0d16] md:bg-[#161b27]/50 border-r border-white/5 flex flex-col transition-transform duration-300 ease-in-out md:relative md:translate-x-0
+                fixed inset-y-0 left-0 z-40 w-64 bg-mochingo-rich-black md:bg-[rgba(242,237,231,0.03)] border-r border-mochingo-warm-oat/10 flex flex-col transition-transform duration-300 ease-in-out md:relative md:translate-x-0
                 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
             `}>
-                <div className="p-6 border-b border-white/5 hidden md:block">
-                    <Link href="/portal-x/qr-management" className="flex items-center gap-2 text-white font-bold text-lg">
-                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center">
+                <div className="p-6 border-b border-mochingo-warm-oat/10 hidden md:block">
+                    <Link href="/portal-x/qr-management" className="flex items-center gap-2 text-mochingo-warm-oat font-bold text-lg">
+                        <div className="w-8 h-8 rounded-lg bg-mochingo-warm-oat text-mochingo-rich-black flex items-center justify-center">
                             <QrCode size={16} />
                         </div>
                         Mochingo
@@ -104,7 +104,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                 href={item.href} 
                                 onClick={() => setIsMobileMenuOpen(false)}
                                 className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                                    isActive ? 'bg-indigo-500/10 text-indigo-400' : 'text-slate-400 hover:bg-white/5 hover:text-slate-200'
+                                    isActive ? 'bg-mochingo-warm-oat/15 text-mochingo-warm-oat' : 'text-mochingo-warm-oat/60 hover:bg-mochingo-warm-oat/10 hover:text-mochingo-warm-oat'
                                 }`}
                             >
                                 <item.icon size={18} />
@@ -114,14 +114,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     })}
                 </nav>
 
-                <div className="p-4 border-t border-white/5">
+                <div className="p-4 border-t border-mochingo-warm-oat/10">
                     <div className="flex items-center gap-3 mb-4 px-2">
-                        <div className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 text-xs font-semibold shrink-0">
+                        <div className="w-8 h-8 rounded-full bg-mochingo-warm-oat/10 flex items-center justify-center text-mochingo-warm-oat/70 text-xs font-semibold shrink-0">
                             {admin?.name?.charAt(0).toUpperCase()}
                         </div>
                         <div className="min-w-0">
-                            <p className="text-slate-100 text-[13px] font-semibold truncate">{admin?.name}</p>
-                            <p className="text-slate-500 text-[11px] truncate">{admin?.email}</p>
+                            <p className="text-mochingo-warm-oat text-[13px] font-semibold truncate">{admin?.name}</p>
+                            <p className="text-mochingo-warm-oat/50 text-[11px] truncate">{admin?.email}</p>
                         </div>
                     </div>
                     <button

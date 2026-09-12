@@ -120,7 +120,7 @@ export default function ScanAssignPage() {
                 {!scannedUrl ? (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 24, alignItems: 'center' }}>
                         <div style={{
-                            width: '100%', maxWidth: 400, aspectRatio: '1/1', background: '#0a0d16',
+                            width: '100%', maxWidth: 400, aspectRatio: '1/1', background: 'var(--mochingo-rich-black)',
                             borderRadius: 16, overflow: 'hidden', position: 'relative',
                             border: '2px solid var(--card-border)'
                         }}>
