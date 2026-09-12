@@ -13,6 +13,7 @@ import { createStyledQRCodeCanvas } from '@/lib/qrCodeGenerator';
 import { formatDateTime, getStatusColor } from '@/lib/utils';
 import type { ListDynamicQRsResponse, DynamicQRGroupInventoryItem } from '@/types/qr.types';
 import type { DynamicQRCategory } from '@/types/category.types';
+import VerifyQRTab from './VerifyQRTab';
 
 // ─── Custom QR Tab ────────────────────────────────────────────────────────────
 
@@ -192,7 +193,7 @@ function CustomQRTab() {
                             <p style={{ fontSize: 12, color: '#94a3b8', wordBreak: 'break-all', textAlign: 'center', maxWidth: 300 }}>{url}</p>
                             <div style={{ display: 'flex', gap: 8, width: '100%', maxWidth: 300 }}>
                                 <button onClick={handleDownloadPng} className="btn btn-outline bg-[#1e293b] hover:bg-[#334155] border border-[#334155] text-slate-200" style={{ flex: 1 }}><Download size={14}/> PNG</button>
-                                <button onClick={handleDownloadJpeg} className="btn btn-primary bg-mochingo-warm-oat text-mochingo-rich-black hover:bg-indigo-700 text-mochingo-warm-oat border-none shadow-md shadow-indigo-500/20" style={{ flex: 1 }} disabled={isExportingJpeg}>
+                                <button onClick={handleDownloadJpeg} className="btn btn-primary bg-mochingo-warm-oat text-mochingo-rich-black hover:bg-indigo-700 hover:text-mochingo-warm-oat border-none shadow-md shadow-indigo-500/20" style={{ flex: 1 }} disabled={isExportingJpeg}>
                                     {isExportingJpeg ? <Loader2 size={14} className="animate-spin" /> : <Download size={14}/>} JPEG
                                 </button>
                             </div>
@@ -286,7 +287,7 @@ function DynamicQRTab() {
                     </div>
                     <div className="flex gap-3 w-full md:w-auto">
                         <button
-                            className="btn btn-primary flex-1 md:flex-none justify-center h-[38px] bg-mochingo-warm-oat text-mochingo-rich-black hover:bg-indigo-700 text-mochingo-warm-oat border-none shadow-md shadow-indigo-500/20"
+                            className="btn btn-primary flex-1 md:flex-none justify-center h-[38px] bg-mochingo-warm-oat text-mochingo-rich-black hover:bg-indigo-700 hover:text-mochingo-warm-oat border-none shadow-md shadow-indigo-500/20"
                             onClick={() => createMutation.mutate()}
                             disabled={!label.trim() || createMutation.isPending}
                         >
@@ -361,11 +362,12 @@ function DynamicQRTab() {
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 export default function QRManagementPage() {
-    const [tab, setTab] = useState<'custom' | 'dynamic' | 'users'>('custom');
+    const [tab, setTab] = useState<'custom' | 'dynamic' | 'verify' | 'users'>('custom');
 
     const tabs: { key: typeof tab; label: string }[] = [
         { key: 'custom', label: 'Custom QR' },
         { key: 'dynamic', label: 'Dynamic QR' },
+        { key: 'verify', label: 'Verify Batch' },
     ];
 
     return (
@@ -394,6 +396,7 @@ export default function QRManagementPage() {
 
             {tab === 'custom' && <CustomQRTab />}
             {tab === 'dynamic' && <DynamicQRTab />}
+            {tab === 'verify' && <VerifyQRTab />}
         </div>
     );
 }
