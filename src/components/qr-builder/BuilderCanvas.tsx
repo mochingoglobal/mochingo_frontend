@@ -1,5 +1,5 @@
 'use client';
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { BuilderHook } from './useBuilderState';
 import { SHADOW_PRESETS, TextElement, QRElement, ImageElement, PreviewMode } from './types';
 import DraggableElement from './DraggableElement';
@@ -445,6 +445,102 @@ export default function BuilderCanvas({ builder, previewMode, guidesEnabled = tr
                                         </DraggableElement>
                                     );
                                 })}
+
+                                {/* ── Item Number Badge (draggable preview) ── */}
+                                {background.showItemNumber && (() => {
+                                    const num = String(background.itemNumberStart ?? 1).padStart(4, '0');
+                                    const fs = (background.itemNumberFontSize ?? 11) * scale;
+                                    const padX = (background.itemNumberPadding ?? 8) * scale;
+                                    const padY = padX * 0.5;
+                                    const br = (background.itemNumberBorderRadius ?? 4) * scale;
+                                    const bw = (background.borderWidth ?? 0) * scale;
+
+                                    // Position: use stored coords or default to bottom-right
+                                    const hasPos = background.itemNumberX !== undefined && background.itemNumberY !== undefined;
+                                    const badgeLeft = hasPos
+                                        ? (background.itemNumberX! * scale)
+                                        : undefined;
+                                    const badgeTop = hasPos
+                                        ? (background.itemNumberY! * scale)
+                                        : undefined;
+                                    const badgeRight = hasPos ? undefined : bw + 6 * scale;
+                                    const badgeBottom = hasPos ? undefined : bw + 6 * scale;
+
+                                    return (
+                                        <div
+                                            title="Drag to reposition"
+                                            style={{
+                                                position: 'absolute',
+                                                left: badgeLeft,
+                                                top: badgeTop,
+                                                right: badgeRight,
+                                                bottom: badgeBottom,
+                                                background: background.itemNumberBgColor ?? '#000',
+                                                color: background.itemNumberTextColor ?? '#fff',
+                                                fontSize: fs,
+                                                fontFamily: 'monospace',
+                                                fontWeight: 700,
+                                                padding: `${padY}px ${padX}px`,
+                                                borderRadius: br,
+                                                letterSpacing: 1,
+                                                lineHeight: 1.4,
+                                                pointerEvents: 'auto',
+                                                zIndex: 300,
+                                                userSelect: 'none',
+                                                whiteSpace: 'nowrap',
+                                                cursor: 'move',
+                                                touchAction: 'none',
+                                                outline: '2px dashed transparent',
+                                                transition: 'outline-color 120ms',
+                                            }}
+                                            onPointerEnter={e => {
+                                                (e.currentTarget as HTMLElement).style.outlineColor = 'rgba(59,130,246,0.7)';
+                                            }}
+                                            onPointerLeave={e => {
+                                                (e.currentTarget as HTMLElement).style.outlineColor = 'transparent';
+                                            }}
+                                            onPointerDown={(e) => {
+                                                e.stopPropagation();
+                                                const el = e.currentTarget as HTMLElement;
+                                                el.setPointerCapture(e.pointerId);
+                                                el.style.outlineColor = 'rgba(59,130,246,0.9)';
+
+                                                // Compute current canvas position of badge top-left
+                                                const parentRect = el.parentElement!.getBoundingClientRect();
+                                                const elRect = el.getBoundingClientRect();
+                                                const startCanvasX = (elRect.left - parentRect.left) / scale;
+                                                const startCanvasY = (elRect.top - parentRect.top) / scale;
+                                                const startClientX = e.clientX;
+                                                const startClientY = e.clientY;
+
+                                                const onMove = (ev: PointerEvent) => {
+                                                    const dx = (ev.clientX - startClientX) / scale;
+                                                    const dy = (ev.clientY - startClientY) / scale;
+                                                    const newX = Math.max(0, Math.min(canvasWidth - 40, startCanvasX + dx));
+                                                    const newY = Math.max(0, Math.min(canvasHeight - 20, startCanvasY + dy));
+                                                    builder.updateBackground({
+                                                        itemNumberX: Math.round(newX),
+                                                        itemNumberY: Math.round(newY),
+                                                    });
+                                                };
+                                                const onUp = () => {
+                                                    el.style.outlineColor = 'transparent';
+                                                    el.removeEventListener('pointermove', onMove);
+                                                    el.removeEventListener('pointerup', onUp);
+                                                };
+                                                el.addEventListener('pointermove', onMove);
+                                                el.addEventListener('pointerup', onUp);
+                                            }}
+                                            onDoubleClick={() => {
+                                                // Double-click resets to auto bottom-right
+                                                builder.updateBackground({ itemNumberX: undefined, itemNumberY: undefined });
+                                            }}
+                                        >
+                                            {num}
+                                        </div>
+                                    );
+                                })()}
+
                             </div>
                         </div>
                     </div>

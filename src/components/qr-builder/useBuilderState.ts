@@ -589,6 +589,45 @@ export function useBuilderState(outletName: string, tableURL: string) {
             ctx.restore();
         }
 
+        // ── Item Number Badge ───────────────────────────────────
+        // Drawn LAST so it always appears on top of all elements
+        if (background.showItemNumber && tableNumber !== undefined) {
+            const numStr = String(tableNumber).padStart(4, '0');
+            const fs = (background.itemNumberFontSize ?? 11) * scale;
+            const padX = (background.itemNumberPadding ?? 8) * scale;
+            const padY = padX * 0.5;
+            const br = (background.itemNumberBorderRadius ?? 4) * scale;
+            const bw = (background.borderWidth ?? 0) * scale;
+
+            ctx.font = `700 ${fs}px monospace`;
+            const textW = ctx.measureText(numStr).width;
+            const boxW = textW + padX * 2;
+            const boxH = fs * 1.4 + padY * 2;
+
+            // Use stored drag position, or auto bottom-right
+            const hasPos = background.itemNumberX !== undefined && background.itemNumberY !== undefined;
+            const boxX = hasPos
+                ? (background.itemNumberX! * scale)
+                : (canvas.width - bw - boxW - 6 * scale);
+            const boxY = hasPos
+                ? (background.itemNumberY! * scale)
+                : (canvas.height - bw - boxH - 6 * scale);
+
+            // Background pill
+            ctx.fillStyle = background.itemNumberBgColor ?? '#000000';
+            ctx.beginPath();
+            ctx.roundRect(boxX, boxY, boxW, boxH, br);
+            ctx.fill();
+
+            // Text
+            ctx.fillStyle = background.itemNumberTextColor ?? '#ffffff';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.letterSpacing = '1px';
+            ctx.fillText(numStr, boxX + boxW / 2, boxY + boxH / 2);
+            ctx.letterSpacing = '0px';
+        }
+
         return canvas;
     }, [state]);
 
@@ -747,7 +786,9 @@ export function useBuilderState(outletName: string, tableURL: string) {
             }
 
             const canvasRenderW = dims.unit === 'pt' ? dims.width : 2000;
-            const canvas = await renderToCanvas(canvasRenderW, displayLabel ? i + 1 : undefined, entry.qrUrl);
+            // Pass the sequential item number (itemNumberStart + index) for the badge
+            const itemNum = (state.background.itemNumberStart ?? 1) + i;
+            const canvas = await renderToCanvas(canvasRenderW, itemNum, entry.qrUrl);
             if (!canvas) continue;
 
             pdf.addImage(canvas.toDataURL('image/png', 1.0), 'PNG', 0, 0, pageWidthMM, pageHeightMM, '', 'FAST');

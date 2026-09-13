@@ -376,6 +376,60 @@ export default function BuilderSidebar({ builder }: BuilderSidebarProps) {
                                 <Slider label="Bend" value={background.scanCornerBend ?? 10} min={0} max={32} onChange={v => updateBackground({ scanCornerBend: v })} unit="px" />
                             </>
                         )}
+
+                        <SectionDivider title="Item Number" />
+                        <Row className="justify-between">
+                            <div>
+                                <Label>Show Number Badge</Label>
+                                <p className="text-[10px] text-gray-500 mt-0.5">Prints a serial number in the bottom-right corner. Increments automatically per page in Bulk PDF.</p>
+                            </div>
+                            <button
+                                onClick={() => updateBackground({ showItemNumber: !background.showItemNumber })}
+                                className={`w-12 h-6 rounded-full transition-colors relative shrink-0 ${background.showItemNumber ? 'bg-blue-600' : 'bg-gray-600'}`}
+                            >
+                                <span className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-[#fcfcfc] transition-transform shadow ${background.showItemNumber ? 'translate-x-6' : ''}`} />
+                            </button>
+                        </Row>
+                        {background.showItemNumber && (
+                            <>
+                                <div>
+                                    <Label>Starting Number</Label>
+                                    <p className="text-[10px] text-gray-500 mb-1">e.g. 1 → prints as <span className="font-mono text-gray-300">0001</span>, 1000 → <span className="font-mono text-gray-300">1000</span></p>
+                                    <input
+                                        type="number"
+                                        min={0}
+                                        max={99999}
+                                        value={background.itemNumberStart ?? 1}
+                                        onChange={e => updateBackground({ itemNumberStart: Math.max(0, Number(e.target.value)) })}
+                                        className="w-full bg-gray-800 border border-gray-600 rounded px-2 py-1.5 text-sm text-white font-mono focus:outline-none focus:border-blue-500"
+                                    />
+                                </div>
+                                <Slider label="Font Size" value={background.itemNumberFontSize ?? 11} min={7} max={28} onChange={v => updateBackground({ itemNumberFontSize: v })} unit="px" />
+                                <ColorSwatch color={background.itemNumberBgColor ?? '#000000'} onChange={c => updateBackground({ itemNumberBgColor: c })} label="Badge BG" />
+                                <ColorSwatch color={background.itemNumberTextColor ?? '#ffffff'} onChange={c => updateBackground({ itemNumberTextColor: c })} label="Text Color" />
+                                <Slider label="Padding" value={background.itemNumberPadding ?? 8} min={2} max={24} onChange={v => updateBackground({ itemNumberPadding: v })} unit="px" />
+                                <Slider label="Radius" value={background.itemNumberBorderRadius ?? 4} min={0} max={20} onChange={v => updateBackground({ itemNumberBorderRadius: v })} unit="px" />
+                                {/* Position reset */}
+                                {(background.itemNumberX !== undefined || background.itemNumberY !== undefined) && (
+                                    <button
+                                        onClick={() => updateBackground({ itemNumberX: undefined, itemNumberY: undefined })}
+                                        className="w-full py-1.5 rounded text-xs text-amber-400 border border-amber-700/50 hover:bg-amber-900/20 transition-colors"
+                                    >
+                                        ↩ Reset to bottom-right
+                                    </button>
+                                )}
+                                <div className="bg-blue-950/40 border border-blue-800/50 rounded-lg p-2.5 space-y-1">
+                                    <p className="text-[10px] text-blue-300 leading-relaxed">
+                                        ✦ <strong>Drag</strong> the badge on the canvas to place it anywhere. <strong>Double-click</strong> it to snap back to bottom-right.
+                                    </p>
+                                    <p className="text-[10px] text-blue-300 leading-relaxed">
+                                        ✦ Bulk PDF with 50 pages starting at <span className="font-mono">{String(background.itemNumberStart ?? 1).padStart(4,'0')}</span> will number pages <span className="font-mono">{String(background.itemNumberStart ?? 1).padStart(4,'0')}</span> → <span className="font-mono">{String((background.itemNumberStart ?? 1) + 49).padStart(4,'0')}</span>
+                                    </p>
+                                </div>
+
+                            </>
+                        )}
+
                     </>
                 )}
 

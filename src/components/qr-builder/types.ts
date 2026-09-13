@@ -88,6 +88,16 @@ export interface BackgroundStyle {
     // PDF Export Settings
     exportWidthMM?: number;
     exportHeightMM?: number;
+    // Item number badge (for print sorting)
+    showItemNumber: boolean;
+    itemNumberStart: number;     // starting number (e.g. 1 → 0001)
+    itemNumberFontSize: number;  // px in canvas units
+    itemNumberBgColor: string;
+    itemNumberTextColor: string;
+    itemNumberPadding: number;   // px in canvas units (horizontal padding)
+    itemNumberBorderRadius: number; // px
+    itemNumberX?: number;        // canvas px from left — undefined = auto bottom-right
+    itemNumberY?: number;        // canvas px from top  — undefined = auto bottom-right
 }
 
 // ── Builder Global State ─────────────────────────────────────
@@ -149,6 +159,13 @@ export const DEFAULT_BACKGROUND: BackgroundStyle = {
     scanCornerThickness: 3,
     scanCornerBend: 10,
     scanCornerMode: 'qr',
+    showItemNumber: false,
+    itemNumberStart: 1,
+    itemNumberFontSize: 11,
+    itemNumberBgColor: '#000000',
+    itemNumberTextColor: '#ffffff',
+    itemNumberPadding: 8,
+    itemNumberBorderRadius: 4,
 };
 
 export const DEFAULT_QR_ELEMENT: Omit<QRElement, 'id' | 'x' | 'y'> = {
