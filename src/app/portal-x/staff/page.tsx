@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Briefcase, Plus, Search, Trash2, Edit2, Loader2 } from 'lucide-react';
+import { Briefcase, Plus, Search, Trash2, Edit2, Loader2, BarChart2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import api from '@/lib/api';
 
 interface Staff {
@@ -13,6 +14,7 @@ interface Staff {
 }
 
 export default function StaffManagementPage() {
+    const router = useRouter();
     const [staffList, setStaffList] = useState<Staff[]>([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
@@ -160,6 +162,13 @@ export default function StaffManagementPage() {
                                                     }`}
                                                 >
                                                     {staff.is_active ? 'Block' : 'Unblock'}
+                                                </button>
+                                                <button
+                                                    onClick={() => router.push(`/portal-x/staff/${staff.id}/analytics`)}
+                                                    className="p-2 text-indigo-400 hover:text-indigo-300 hover:bg-indigo-400/10 rounded-lg transition-colors mr-1"
+                                                    title="View Analytics"
+                                                >
+                                                    <BarChart2 size={18} />
                                                 </button>
                                                 <button
                                                     onClick={() => handleDelete(staff.id)}
