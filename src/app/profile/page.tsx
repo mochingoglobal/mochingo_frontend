@@ -1,14 +1,15 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Loader2, ArrowLeft, QrCode, Link as LinkIcon, Edit2, X, ScanLine, Link2, Copy } from 'lucide-react';
+import { Loader2, QrCode, Edit2, X, ScanLine, Link2, Search, Link as LinkIcon, Camera, MessageSquare, MapPin, Globe } from 'lucide-react';
 import type { AxiosError } from 'axios';
 import { useConsumerAuthStore } from '@/store/consumerAuthStore';
 import api from '@/lib/api';
 import { formatDateTime } from '@/lib/utils';
 import Link from 'next/link';
+import Image from 'next/image';
 import QRScanner from '@/components/QRScanner';
 
 interface ConsumerQR {
@@ -26,8 +27,38 @@ interface ApiErrorResponse {
     message?: string;
 }
 
+// Debounce hook
+function useDebounce<T>(value: T, delay: number): T {
+    const [debouncedValue, setDebouncedValue] = useState<T>(value);
+    useEffect(() => {
+        const handler = setTimeout(() => setDebouncedValue(value), delay);
+        return () => clearTimeout(handler);
+    }, [value, delay]);
+    return debouncedValue;
+}
+
+// Helper to determine icon based on destination URL
+function getDestinationIcon(url: string | undefined | null) {
+    if (!url) return <LinkIcon size={20} />;
+    const lowerUrl = url.toLowerCase();
+    if (lowerUrl.includes('instagram.com')) return <Camera size={20} />;
+    if (lowerUrl.includes('wa.me') || lowerUrl.includes('whatsapp.com')) return <MessageSquare size={20} />;
+    if (lowerUrl.includes('search.google.com') || lowerUrl.includes('g.page')) return <MapPin size={20} />;
+    return <Globe size={20} />;
+}
+
+// Helper to extract service name
+function getServiceName(url: string | undefined | null) {
+    if (!url) return 'Unassigned';
+    const lowerUrl = url.toLowerCase();
+    if (lowerUrl.includes('instagram.com')) return 'Instagram';
+    if (lowerUrl.includes('wa.me') || lowerUrl.includes('whatsapp.com')) return 'WhatsApp';
+    if (lowerUrl.includes('search.google.com') || lowerUrl.includes('g.page')) return 'Google';
+    return 'Website';
+}
+
 export default function ProfileDashboard() {
-    const { user, isAuthenticated, token } = useConsumerAuthStore();
+    const { user, isAuthenticated, token, logout } = useConsumerAuthStore();
     const router = useRouter();
     const queryClient = useQueryClient();
 
@@ -37,11 +68,19 @@ export default function ProfileDashboard() {
         return () => cancelAnimationFrame(frameId);
     }, []);
 
+    // Editing State
     const [editingId, setEditingId] = useState<string | null>(null);
     const [editUrl, setEditUrl] = useState('');
 
     // Scanner State
     const [isScanning, setIsScanning] = useState(false);
+
+    // Search State
+    const [searchTerm, setSearchTerm] = useState('');
+    const debouncedSearchTerm = useDebounce(searchTerm, 300);
+
+    // Dropdown State
+    const [showDropdown, setShowDropdown] = useState(false);
 
     // Post-scan modal state
     const [scannedToken, setScannedToken] = useState<string | null>(null);
@@ -52,16 +91,31 @@ export default function ProfileDashboard() {
     const [isOwnQR, setIsOwnQR] = useState(false);
     const [ownQRId, setOwnQRId] = useState<string | null>(null);
 
+    // Keyboard shortcut for search
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape' && searchTerm) {
+                setSearchTerm('');
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [searchTerm]);
+
     useEffect(() => {
         if (isHydrated && !isAuthenticated) {
             router.push('/');
         }
     }, [isHydrated, isAuthenticated, router]);
 
-    const { data: qrs, isLoading } = useQuery({
-        queryKey: ['my-qrs'],
+    // Fetch QRs using React Query, now passing search term
+    const { data: qrs, isLoading, isFetching } = useQuery({
+        queryKey: ['my-qrs', debouncedSearchTerm],
         queryFn: async () => {
-            const res = await api.get('/consumer/qr', {
+            const endpoint = debouncedSearchTerm 
+                ? `/consumer/qr?q=${encodeURIComponent(debouncedSearchTerm)}`
+                : '/consumer/qr';
+            const res = await api.get(endpoint, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             return res.data.data.qrs;
@@ -123,7 +177,10 @@ export default function ProfileDashboard() {
         setIsResolvingToken(true);
         setScannedCategory(null);
         
-        const myExistingQR = (qrs as ConsumerQR[] || []).find(qr => qr.token === extractedToken);
+        // Use queryClient to get the cached QRs in case `qrs` is currently filtered by search
+        const currentQrs: ConsumerQR[] = queryClient.getQueryData(['my-qrs', '']) || [];
+        const myExistingQR = currentQrs.find(qr => qr.token === extractedToken);
+        
         if (myExistingQR) {
             setIsOwnQR(true);
             setOwnQRId(myExistingQR.id);
@@ -147,14 +204,12 @@ export default function ProfileDashboard() {
                     const parsedUrl = new URL(redirect_url);
                     const pathParts = parsedUrl.pathname.split('/').filter(Boolean);
                     if (pathParts.length > 0 && pathParts[0] !== 'setup' && pathParts[0] !== 'dq') {
-                        // Extract category slug from the path (e.g. 'instagram', 'google%20review')
                         const rawCategory = decodeURIComponent(pathParts[0]);
-                        // Format it: 'google review' -> 'Google Review', 'instagram' -> 'Instagram'
                         const formatted = rawCategory.split(/[- ]+/).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
                         setScannedCategory(formatted);
                     }
                 } catch (e) {
-                    // Ignore parse errors, fallback to generic
+                    // Ignore
                 }
             }
         } catch (e) {
@@ -166,262 +221,297 @@ export default function ProfileDashboard() {
 
     if (!isHydrated) {
         return (
-            <div className="min-h-screen bg-[#fafafa] flex items-center justify-center">
-                <Loader2 size={32} className="animate-spin text-indigo-500" />
+            <div className="min-h-screen bg-mochingo-warm-oat flex items-center justify-center">
+                <Loader2 size={32} className="animate-spin text-mochingo-rich-black" />
             </div>
         );
     }
 
     if (!isAuthenticated || !user) {
         return (
-            <div className="min-h-screen bg-[#fafafa] flex items-center justify-center">
-                <p className="text-slate-500">Redirecting...</p>
+            <div className="min-h-screen bg-mochingo-warm-oat flex items-center justify-center">
+                <p className="text-mochingo-rich-black/60 font-medium">Redirecting...</p>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-[#fafafa] flex flex-col font-sans selection:bg-indigo-600/30 selection:text-slate-900 overflow-x-hidden">
+        <div className="min-h-screen bg-mochingo-warm-oat text-mochingo-rich-black font-sans selection:bg-mochingo-rich-black selection:text-mochingo-warm-oat overflow-x-hidden">
             
             {/* ==========================================================
                 HEADER
                 ========================================================== */}
-            <header className="sticky top-0 z-40 w-full h-[68px] bg-[#fcfcfc]/80 backdrop-blur-2xl border-b border-slate-200">
-                <div className="max-w-6xl mx-auto w-full h-full flex justify-center">
-                    {/* Dashboard Content Container */}
-                    <div className="w-full max-w-[430px] sm:max-w-2xl lg:max-w-5xl px-5 sm:px-6 lg:px-8 h-full flex items-center relative">
-                        
-                        {/* Back Button */}
-                        <div className="absolute left-5 sm:left-6 flex">
-                            <Link 
-                                href="/" 
-                                className="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-full bg-[#fcfcfc] border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 hover:border-slate-300 transition-all active:scale-95"
-                                aria-label="Go back"
-                            >
-                                <ArrowLeft size={18} strokeWidth={2.5} />
-                            </Link>
-                        </div>
-                        
-                        {/* Title - Perfectly Centered */}
-                        <div className="flex-1 flex justify-center pointer-events-none">
-                            <h1 className="text-[15px] sm:text-base font-semibold text-slate-900 tracking-tight">My Dashboard</h1>
-                        </div>
-                        
-                        {/* Avatar */}
-                        <div className="absolute right-5 sm:right-6 flex">
-                            {user.profile_picture ? (
-                                <img 
-                                    src={user.profile_picture} 
-                                    alt="Profile" 
-                                    className="w-9 h-9 sm:w-10 sm:h-10 rounded-full border border-slate-200 object-cover shadow-sm" 
-                                    referrerPolicy="no-referrer" 
-                                />
-                            ) : (
-                                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-gradient-to-tr from-emerald-400 to-cyan-500 flex items-center justify-center text-white font-bold text-sm shadow-sm select-none">
-                                    {user.name[0].toUpperCase()}
+            <header className="sticky top-0 z-40 w-full h-[72px] bg-[#F2EDE7]/90 backdrop-blur-2xl border-b" style={{ borderColor: '#D8D1C8' }}>
+                <div className="max-w-7xl mx-auto w-full h-full px-6 md:px-12 flex items-center justify-between">
+                    
+                    {/* Logo */}
+                    <Link href="/" className="w-24 md:w-28 relative h-6 md:h-7 hover:opacity-80 transition-opacity">
+                        <Image
+                            src="/images/brand/mochingo-primary-black.svg"
+                            alt="Mochingo"
+                            fill
+                            className="object-contain object-left"
+                            priority
+                        />
+                    </Link>
+                    
+                    {/* Desktop Navigation */}
+                    <nav className="hidden md:flex items-center gap-8 text-[13px] font-bold tracking-wide">
+                        <Link href="/profile" className="border-b-2 border-mochingo-rich-black pb-1">Dashboard</Link>
+                        <span className="opacity-30 cursor-not-allowed pb-1" title="Coming soon">QR Codes</span>
+                        <span className="opacity-30 cursor-not-allowed pb-1" title="Coming soon">Analytics</span>
+                    </nav>
+                    
+                    {/* User Dropdown */}
+                    <div className="relative">
+                        <button 
+                            onClick={() => setShowDropdown(!showDropdown)}
+                            className="flex items-center gap-2 group"
+                        >
+                            <div className="w-9 h-9 rounded-full bg-mochingo-rich-black flex items-center justify-center text-mochingo-warm-oat font-bold text-sm select-none overflow-hidden group-hover:scale-105 transition-transform">
+                                {user.profile_picture ? (
+                                    <img src={user.profile_picture} alt="Profile" className="w-full h-full object-cover" />
+                                ) : (
+                                    user.name[0].toLowerCase()
+                                )}
+                            </div>
+                            <svg className="w-4 h-4 opacity-50 hidden md:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                        </button>
+
+                        {showDropdown && (
+                            <>
+                                <div className="fixed inset-0 z-40" onClick={() => setShowDropdown(false)} />
+                                <div className="absolute right-0 mt-3 w-56 bg-mochingo-warm-oat border rounded-xl shadow-2xl z-50 overflow-hidden" style={{ borderColor: '#D8D1C8' }}>
+                                    <div className="px-4 py-3 border-b" style={{ borderColor: 'rgba(216,209,200,0.5)' }}>
+                                        <p className="text-sm font-bold truncate">{user.name}</p>
+                                        <p className="text-xs opacity-60 truncate">{user.email}</p>
+                                    </div>
+                                    <div className="p-1">
+                                        <Link href="#" className="block px-3 py-2 text-sm font-medium hover:bg-black/5 rounded-lg transition-colors">Profile</Link>
+                                        <Link href="#" className="block px-3 py-2 text-sm font-medium hover:bg-black/5 rounded-lg transition-colors">Account Settings</Link>
+                                    </div>
+                                    <div className="p-1 border-t" style={{ borderColor: 'rgba(216,209,200,0.5)' }}>
+                                        <button 
+                                            onClick={() => {
+                                                api.post('/consumer/auth/logout').finally(() => {
+                                                    logout();
+                                                    router.push('/');
+                                                });
+                                            }}
+                                            className="w-full text-left px-3 py-2 text-sm font-medium hover:bg-black/5 rounded-lg transition-colors flex items-center gap-2"
+                                        >
+                                            Sign out
+                                        </button>
+                                    </div>
                                 </div>
-                            )}
-                        </div>
-                        
+                            </>
+                        )}
                     </div>
+                    
                 </div>
             </header>
 
             {/* ==========================================================
                 MAIN CONTENT
                 ========================================================== */}
-            <main className="flex-1 w-full max-w-6xl mx-auto flex justify-center overflow-hidden px-4 py-4 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
-                <div className="w-full max-w-[430px] sm:max-w-2xl lg:max-w-5xl mx-auto space-y-6 sm:space-y-8">
+            <main className="w-full max-w-7xl mx-auto px-6 md:px-12 py-12 md:py-16 flex flex-col lg:flex-row gap-12 lg:gap-20">
+                
+                {/* Left Column (Sticky on desktop) */}
+                <div className="w-full lg:w-[380px] shrink-0 space-y-12 lg:sticky lg:top-28 self-start">
                     
-                    {/* ----------------------------------------------------
-                        HERO SCAN CARD
-                        ---------------------------------------------------- */}
-                    <section>
-                        <div className="relative w-full rounded-2xl sm:rounded-3xl bg-gradient-to-br from-indigo-50 via-white to-cyan-50 border border-indigo-100 p-3.5 sm:p-6 lg:p-8 min-h-[220px] sm:min-h-[280px] flex flex-col justify-between overflow-hidden shadow-xl shadow-indigo-100/50">
-                            
-                            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-indigo-300/50 to-transparent pointer-events-none" />
-                            
-                            {/* Inner Content */}
-                            <div className="relative z-10 flex flex-col h-full">
-                                
-                                {/* Top Row: Icon & Badge */}
-                                <div className="flex items-start justify-between gap-3 mb-6 sm:mb-10">
-                                    <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-[18px] sm:rounded-2xl bg-indigo-100 text-indigo-600 flex items-center justify-center border border-indigo-200 backdrop-blur-md shadow-inner shrink-0">
-                                        <ScanLine size={26} strokeWidth={1.5} />
-                                    </div>
-                                    <div className="shrink-0">
-                                        <div className="inline-flex items-center gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full bg-emerald-50 border border-emerald-200 backdrop-blur-md">
-                                            <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)] animate-pulse shrink-0" />
-                                            <span className="text-[9px] sm:text-[11px] font-bold text-emerald-600 uppercase tracking-wider whitespace-nowrap">Ready to scan</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                {/* Bottom Row: Text & CTA */}
-                                <div className="mt-auto">
-                                    <h2 className="text-[21px] sm:text-3xl lg:text-4xl font-bold text-slate-900 mb-2 sm:mb-3 tracking-tight leading-tight">Scan New QR Code</h2>
-                                    <p className="text-[13px] sm:text-base text-slate-600/85 mb-4 sm:mb-7 max-w-2xl leading-relaxed">
-                                        Tap here to open your camera, scan a dynamic QR code, and assign a destination URL instantly.
-                                    </p>
-                                    <button 
-                                        onClick={() => setIsScanning(true)} 
-                                        className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 h-12 sm:h-14 px-5 sm:px-8 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[15px] sm:text-base shadow-lg shadow-indigo-600/20 transition-all active:scale-[0.98]"
-                                    >
-                                        <ScanLine size={20} strokeWidth={2.5} />
-                                        <span>Open Scanner</span>
-                                    </button>
-                                </div>
-                                
+                    {/* Intro */}
+                    <div>
+                        <p className="text-xs font-bold uppercase tracking-[0.18em] opacity-50 mb-4">
+                            YOUR DIGITAL TOUCHPOINTS
+                        </p>
+                        <h1 className="text-4xl md:text-[44px] font-black leading-[0.95] tracking-tight mb-5 max-w-[300px]">
+                            Your QR codes.<br />One simple<br />connection.
+                        </h1>
+                        <p className="text-sm font-medium opacity-75 max-w-[280px] leading-relaxed">
+                            Create, manage and connect your physical products to the digital world.
+                        </p>
+                    </div>
+
+                    {/* Scan Action */}
+                    <div className="bg-[#F2EDE7] border rounded-2xl p-6" style={{ borderColor: '#D8D1C8' }}>
+                        <div className="flex items-start gap-4 mb-5">
+                            <div className="w-12 h-12 rounded-xl bg-mochingo-rich-black/5 flex items-center justify-center shrink-0">
+                                <ScanLine size={24} />
                             </div>
-                        </div>
-                    </section>
-
-                    {/* ----------------------------------------------------
-                        ASSIGNED QRS SECTION
-                        ---------------------------------------------------- */}
-                    <section className="space-y-3.5 sm:space-y-5">
-                        
-                        {/* Section Header */}
-                        <div className="flex items-center justify-between gap-3">
-                            <h3 className="text-[11px] sm:text-sm font-bold text-slate-500 uppercase tracking-[0.18em] sm:tracking-widest">
-                                Assigned QR Codes
-                            </h3>
-                            {qrs && qrs.length > 0 && (
-                                <span className="inline-flex items-center justify-center min-w-7 px-2 py-0.5 sm:min-w-8 sm:px-2.5 sm:py-1 rounded-full bg-[#fcfcfc] border border-slate-200 text-[11px] sm:text-xs font-semibold text-slate-600">
-                                    {qrs.length}
-                                </span>
-                            )}
-                        </div>
-
-                        {/* Loading State */}
-                        {isLoading && (
-                            <div className="flex flex-col items-center justify-center py-20 gap-4">
-                                <Loader2 size={32} className="animate-spin text-indigo-500" />
-                                <p className="text-sm text-slate-500">Loading your QR codes...</p>
-                            </div>
-                        )}
-
-                        {/* Empty State */}
-                        {!isLoading && qrs?.length === 0 && (
-                            <div className="flex flex-col items-center justify-center py-20 sm:py-24 px-4 text-center rounded-3xl border border-dashed border-slate-200 bg-slate-50">
-                                <div className="w-20 h-20 bg-[#fcfcfc] rounded-2xl flex items-center justify-center border border-slate-200 mb-6 shadow-inner">
-                                    <QrCode size={36} className="text-slate-500" strokeWidth={1.5} />
-                                </div>
-                                <h4 className="text-lg font-semibold text-slate-900 mb-2">No QRs claimed yet</h4>
-                                <p className="text-sm text-slate-500 max-w-[280px] leading-relaxed">
-                                    Use the scanner above to claim your first dynamic QR code.
+                            <div>
+                                <h3 className="text-[13px] font-bold uppercase tracking-widest mb-1.5">Scan a new QR code</h3>
+                                <p className="text-[13px] opacity-70 leading-relaxed">
+                                    Add a new QR code to your collection.<br/>Scan a QR code and instantly assign its destination.
                                 </p>
                             </div>
-                        )}
+                        </div>
+                        <button 
+                            onClick={() => setIsScanning(true)}
+                            className="w-full h-14 bg-mochingo-rich-black text-mochingo-warm-oat rounded-xl font-bold text-sm tracking-wide flex items-center justify-center gap-3 hover:opacity-90 transition-opacity active:scale-[0.98]"
+                        >
+                            <ScanLine size={18} />
+                            Scan QR Code
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14M12 5l7 7-7 7"/></svg>
+                        </button>
+                    </div>
+                    
+                </div>
 
-                        {/* QR Cards List */}
-                        {!isLoading && qrs && qrs.length > 0 && (
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
-                                {qrs.map((qr: ConsumerQR) => (
-                                    <div 
-                                        key={qr.id} 
-                                        className="w-full min-w-0 bg-[#fcfcfc] border border-slate-200 rounded-2xl sm:rounded-3xl p-3 sm:p-5 flex flex-col gap-3 sm:gap-5 transition-all shadow-sm hover:shadow-md hover:border-slate-300 hover:bg-white"
+                {/* Right Column (QR List & Search) */}
+                <div className="flex-1 min-w-0">
+                    
+                    {/* Header Row */}
+                    <div className="flex items-center justify-between mb-6">
+                        <h2 className="text-[26px] md:text-3xl font-black tracking-tight">Your QR codes</h2>
+                        <span className="text-[13px] opacity-60 font-medium">{qrs?.length || 0} active</span>
+                    </div>
+
+                    {/* SEARCH BAR */}
+                    <div className="relative mb-6">
+                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            {isFetching && debouncedSearchTerm !== searchTerm ? (
+                                <Loader2 size={18} className="animate-spin opacity-50" />
+                            ) : (
+                                <Search size={18} className="opacity-50" />
+                            )}
+                        </div>
+                        <input
+                            type="text"
+                            placeholder="Search QR ID, name or destination"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="w-full h-[52px] pl-11 pr-10 bg-transparent border rounded-xl text-[15px] font-medium placeholder:opacity-40 outline-none transition-colors"
+                            style={{ borderColor: '#D8D1C8', color: 'var(--mochingo-rich-black)' }}
+                            onFocus={(e) => e.target.style.borderColor = 'var(--mochingo-rich-black)'}
+                            onBlur={(e) => e.target.style.borderColor = '#D8D1C8'}
+                        />
+                        {searchTerm && (
+                            <button
+                                onClick={() => setSearchTerm('')}
+                                className="absolute inset-y-0 right-0 pr-4 flex items-center opacity-40 hover:opacity-100 transition-opacity"
+                                aria-label="Clear search"
+                            >
+                                <X size={18} />
+                            </button>
+                        )}
+                    </div>
+
+                    {/* LOADING / EMPTY STATES */}
+                    {isLoading && !qrs ? (
+                        <div className="py-20 flex justify-center">
+                            <Loader2 size={28} className="animate-spin opacity-40" />
+                        </div>
+                    ) : qrs?.length === 0 ? (
+                        <div className="py-16 text-center">
+                            {debouncedSearchTerm ? (
+                                <>
+                                    <h4 className="text-[17px] font-bold mb-2">No QR code found</h4>
+                                    <p className="text-[14px] opacity-60">We couldn't find a QR code matching "{debouncedSearchTerm}".<br/>Try searching by QR ID, name or destination.</p>
+                                </>
+                            ) : (
+                                <>
+                                    <h4 className="text-[17px] font-bold mb-2">No QR codes yet</h4>
+                                    <p className="text-[14px] opacity-60">Create your first digital touchpoint.</p>
+                                    <button 
+                                        onClick={() => setIsScanning(true)}
+                                        className="mt-6 inline-flex h-12 px-6 items-center justify-center border border-mochingo-rich-black rounded-full font-bold text-sm hover:bg-mochingo-rich-black hover:text-mochingo-warm-oat transition-colors"
                                     >
-                                        
-                                        {/* Top Info Row */}
-                                        <div className="flex items-start gap-2.5 sm:gap-4 min-w-0">
-                                            {/* Icon */}
-                                            <div className="shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-[14px] sm:rounded-2xl bg-cyan-50 text-cyan-600 flex items-center justify-center border border-cyan-200">
-                                                <QrCode size={21} strokeWidth={1.5} />
-                                            </div>
-                                            
-                                            {/* Details */}
-                                            <div className="flex-1 min-w-0 flex flex-col justify-center min-h-10 sm:min-h-12">
-                                                {/* Title & Badge */}
-                                                <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mb-1 min-w-0">
-                                                    <h4 className="text-sm sm:text-base font-semibold text-slate-900 truncate leading-tight min-w-0">
-                                                        {qr.label}
-                                                    </h4>
-                                                    <span className="self-start sm:self-auto max-w-full overflow-hidden text-ellipsis whitespace-nowrap px-1.5 py-0.5 rounded-md bg-slate-100 text-cyan-600 text-[9px] sm:text-[10px] font-bold uppercase tracking-wider border border-slate-200">
-                                                        {qr.token}
-                                                    </span>
-                                                </div>
-                                                
-                                                {/* Metadata */}
-                                                <div className="flex items-center flex-wrap gap-x-1.5 sm:gap-x-2 gap-y-1 text-[10px] sm:text-xs text-slate-500">
-                                                    <span>Claimed {formatDateTime(qr.assigned_at).split(',')[0]}</span>
-                                                    <span className="hidden sm:inline-block">•</span>
-                                                    <span className="flex items-center gap-1.5">
-                                                        <span className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-emerald-500/80" />
-                                                        <span className="font-medium text-slate-500">{qr.scan_count}</span> {qr.scan_count === 1 ? 'scan' : 'scans'}
-                                                    </span>
+                                        Scan QR Code →
+                                    </button>
+                                </>
+                            )}
+                        </div>
+                    ) : (
+                        /* QR CARDS GRID */
+                        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                            {qrs.map((qr: ConsumerQR) => (
+                                <div 
+                                    key={qr.id} 
+                                    className="bg-transparent border rounded-xl p-5 flex flex-col justify-between hover:bg-white/40 transition-colors"
+                                    style={{ borderColor: '#D8D1C8' }}
+                                >
+                                    {/* Top Row */}
+                                    <div className="flex items-start gap-4 mb-4">
+                                        <div className="w-[52px] h-[52px] rounded-[14px] bg-mochingo-rich-black/5 flex items-center justify-center shrink-0">
+                                            {getDestinationIcon(qr.manual_redirect_url)}
+                                        </div>
+                                        <div className="flex-1 min-w-0 pt-0.5">
+                                            <div className="flex items-start justify-between gap-2">
+                                                <h4 className="text-base font-bold truncate leading-none mb-1">{qr.label}</h4>
+                                                <div className="flex items-center gap-1.5 shrink-0">
+                                                    <span className="w-1.5 h-1.5 rounded-full bg-[#10b981]" />
+                                                    <span className="text-[10px] font-bold uppercase tracking-widest opacity-60">Active</span>
                                                 </div>
                                             </div>
+                                            <p className="text-[12px] font-mono opacity-60 uppercase tracking-wide">
+                                                {qr.token.length > 20 ? `${qr.token.substring(0, 20)}...` : qr.token}
+                                            </p>
                                         </div>
-
-                                        {/* Separator Line */}
-                                        <div className="w-full h-px bg-slate-200" />
-
-                                        {/* Bottom Action Row (Edit/View) */}
-                                        <div className="w-full">
-                                            {editingId === qr.id ? (
-                                                
-                                                /* --- EDIT MODE --- */
-                                                <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full">
-                                                    <input 
-                                                        type="url" 
-                                                        value={editUrl} 
-                                                        onChange={(e) => setEditUrl(e.target.value)}
-                                                        placeholder="https://..."
-                                                        className="flex-1 h-11 sm:h-12 px-3 sm:px-4 rounded-xl bg-slate-50 border border-slate-200 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 text-slate-900 outline-none text-[12px] sm:text-sm font-mono min-w-0 transition-all" 
-                                                        autoFocus 
-                                                    />
-                                                    <div className="grid grid-cols-[1fr_44px] sm:grid-cols-[1fr_48px] sm:flex gap-2 shrink-0">
-                                                        <button 
-                                                            onClick={() => updateMutation.mutate({id: qr.id, url: editUrl})} 
-                                                            disabled={updateMutation.isPending || !editUrl} 
-                                                            className="h-11 sm:h-12 px-5 sm:px-6 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold flex items-center justify-center min-w-0 sm:min-w-[100px] transition-colors active:scale-95"
-                                                        >
-                                                            {updateMutation.isPending ? <Loader2 size={18} className="animate-spin" /> : "Save"}
-                                                        </button>
-                                                        <button 
-                                                            onClick={() => setEditingId(null)} 
-                                                            className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-[#fcfcfc] hover:bg-slate-50 border border-slate-200 text-slate-500 hover:text-slate-900 flex items-center justify-center transition-colors active:scale-95"
-                                                            aria-label="Cancel editing"
-                                                        >
-                                                            <X size={20} />
-                                                        </button>
-                                                    </div>
-                                                </div>
-
-                                            ) : (
-
-                                                /* --- VIEW MODE --- */
-                                                <div className="grid grid-cols-[minmax(0,1fr)_44px] sm:grid-cols-[minmax(0,1fr)_48px] gap-2 sm:gap-3 w-full group min-w-0">
-                                                    {/* URL Box */}
-                                                    <div className="min-w-0 flex items-center gap-2 sm:gap-3 h-11 sm:h-12 px-2.5 sm:px-4 rounded-xl bg-slate-50 border border-slate-200 group-hover:border-slate-300 transition-colors">
-                                                        <LinkIcon size={15} className="text-slate-600 shrink-0" />
-                                                        <span className="flex-1 min-w-0 truncate font-mono text-[11px] sm:text-[13px] text-slate-500 group-hover:text-slate-600 transition-colors">
-                                                            {qr.manual_redirect_url ? qr.manual_redirect_url : <span className="font-sans italic text-slate-600">No destination URL set</span>}
-                                                        </span>
-                                                    </div>
-                                                    
-                                                    {/* Edit Button */}
-                                                    <button 
-                                                        onClick={() => {
-                                                            setEditingId(qr.id);
-                                                            setEditUrl(qr.manual_redirect_url);
-                                                        }}
-                                                        className="w-11 h-11 sm:w-12 sm:h-12 flex items-center justify-center rounded-xl bg-[#fcfcfc] border border-slate-200 text-slate-500 hover:text-slate-900 hover:border-slate-300 hover:bg-slate-50 transition-all active:scale-95"
-                                                        aria-label="Edit destination URL"
-                                                    >
-                                                        <Edit2 size={18} />
-                                                    </button>
-                                                </div>
-
-                                            )}
-                                        </div>
-
                                     </div>
-                                ))}
-                            </div>
-                        )}
-                    </section>
+
+                                    {/* Destination Area */}
+                                    <div className="mb-6">
+                                        {editingId === qr.id ? (
+                                            <div className="flex items-center gap-2">
+                                                <input 
+                                                    type="url" 
+                                                    value={editUrl} 
+                                                    onChange={(e) => setEditUrl(e.target.value)}
+                                                    placeholder="https://..."
+                                                    className="flex-1 h-10 px-3 border rounded-lg bg-white/50 text-[13px] font-mono outline-none focus:border-black transition-colors min-w-0"
+                                                    style={{ borderColor: '#D8D1C8' }}
+                                                    autoFocus
+                                                    onKeyDown={(e) => {
+                                                        if (e.key === 'Enter' && editUrl) updateMutation.mutate({id: qr.id, url: editUrl});
+                                                        if (e.key === 'Escape') setEditingId(null);
+                                                    }}
+                                                />
+                                                <button 
+                                                    onClick={() => updateMutation.mutate({id: qr.id, url: editUrl})}
+                                                    disabled={updateMutation.isPending || !editUrl}
+                                                    className="h-10 px-4 bg-mochingo-rich-black text-mochingo-warm-oat rounded-lg text-xs font-bold disabled:opacity-50"
+                                                >
+                                                    {updateMutation.isPending ? <Loader2 size={14} className="animate-spin" /> : 'Save'}
+                                                </button>
+                                                <button 
+                                                    onClick={() => setEditingId(null)}
+                                                    className="w-10 h-10 flex items-center justify-center border rounded-lg hover:bg-black/5"
+                                                    style={{ borderColor: '#D8D1C8' }}
+                                                >
+                                                    <X size={16} />
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <div className="flex flex-col">
+                                                <span className="text-[13px] font-bold mb-0.5">{getServiceName(qr.manual_redirect_url)}</span>
+                                                <span className="text-[13px] font-mono opacity-60 truncate">
+                                                    {qr.manual_redirect_url || <span className="italic">Not assigned</span>}
+                                                </span>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Bottom Meta */}
+                                    <div className="flex items-center justify-between border-t pt-4" style={{ borderColor: 'rgba(216,209,200,0.5)' }}>
+                                        <div className="flex items-center gap-2 text-[12px] opacity-60">
+                                            <span>Claimed {formatDateTime(qr.assigned_at).split(',')[0]}</span>
+                                            <span className="w-1 h-1 rounded-full bg-current opacity-40 mx-1" />
+                                            <span>{qr.scan_count} scans</span>
+                                        </div>
+                                        <button 
+                                            onClick={() => {
+                                                setEditingId(qr.id);
+                                                setEditUrl(qr.manual_redirect_url || '');
+                                            }}
+                                            className="flex items-center gap-1.5 text-[12px] font-semibold hover:opacity-60 transition-opacity"
+                                        >
+                                            Edit <Edit2 size={12} />
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </main>
 
@@ -440,33 +530,29 @@ export default function ProfileDashboard() {
                 ========================================================== */}
             {scannedToken && (
                 <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-4 sm:p-0">
-                    {/* Backdrop */}
                     <div 
-                        className="absolute inset-0 bg-slate-100 backdrop-blur-sm animate-in fade-in duration-200" 
+                        className="absolute inset-0 bg-mochingo-rich-black/40 backdrop-blur-sm animate-in fade-in duration-200" 
                         onClick={() => { setScannedToken(null); setClaimUrl(''); setClaimError(null); setScannedCategory(null); }} 
                     />
                     
-                    {/* Modal Content */}
-                    <div className="relative w-full max-w-md bg-[#fcfcfc] border border-slate-200 rounded-[28px] sm:rounded-[24px] p-6 sm:p-8 shadow-2xl animate-in slide-in-from-bottom-8 sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-200">
+                    <div className="relative w-full max-w-md bg-mochingo-warm-oat border rounded-3xl p-6 sm:p-8 shadow-2xl animate-in slide-in-from-bottom-8 sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-200" style={{ borderColor: '#D8D1C8' }}>
                         
-                        {/* Mobile Pull Handle */}
                         <div className="flex justify-center mb-6 sm:hidden">
-                            <div className="w-12 h-1.5 bg-slate-100 rounded-full" />
+                            <div className="w-12 h-1.5 bg-black/10 rounded-full" />
                         </div>
                         
-                        {/* Modal Header */}
                         <div className="flex justify-between items-start mb-8">
                             <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 bg-emerald-50 border border-emerald-500/20 rounded-2xl flex items-center justify-center text-emerald-400 shadow-inner">
-                                    <Link2 size={24} strokeWidth={2} />
+                                <div className="w-12 h-12 bg-black/5 rounded-xl flex items-center justify-center">
+                                    <Link2 size={20} />
                                 </div>
                                 <div>
-                                    <h3 className="text-lg font-bold text-slate-900 tracking-tight">
-                                        {isOwnQR ? 'Update Your Destination' : scannedCategory ? `Assign ${scannedCategory}` : 'Assign Destination'}
+                                    <h3 className="text-lg font-bold tracking-tight">
+                                        {isOwnQR ? 'Update Destination' : scannedCategory ? `Assign ${scannedCategory}` : 'Assign Destination'}
                                     </h3>
                                     <div className="flex items-center gap-2 mt-1">
-                                        <span className="text-xs text-slate-500 font-medium">Token:</span>
-                                        <code className="px-2 py-0.5 rounded-md bg-[#fafafa] text-indigo-700 font-mono text-[11px] font-bold tracking-widest border border-slate-200 uppercase">
+                                        <span className="text-[11px] font-bold uppercase tracking-widest opacity-50">Token</span>
+                                        <code className="text-[12px] font-mono font-bold tracking-wider opacity-80 uppercase">
                                             {scannedToken}
                                         </code>
                                     </div>
@@ -474,86 +560,78 @@ export default function ProfileDashboard() {
                             </div>
                             <button 
                                 onClick={() => { setScannedToken(null); setClaimUrl(''); setClaimError(null); setScannedCategory(null); }} 
-                                className="w-8 h-8 rounded-full bg-[#fcfcfc] border border-slate-200 flex items-center justify-center text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+                                className="w-8 h-8 rounded-full hover:bg-black/5 flex items-center justify-center opacity-50 hover:opacity-100 transition-all"
                             >
                                 <X size={18} />
                             </button>
                         </div>
 
-                        {/* Modal Body */}
                         {isResolvingToken ? (
-                            <div className="flex flex-col items-center justify-center py-6">
-                                <Loader2 size={32} className="animate-spin text-indigo-500 mb-4" />
-                                <p className="text-sm text-slate-500 font-medium">Analyzing QR Code...</p>
+                            <div className="flex flex-col items-center justify-center py-8">
+                                <Loader2 size={24} className="animate-spin opacity-50 mb-4" />
+                                <p className="text-sm font-medium opacity-60">Analyzing QR Code...</p>
                             </div>
                         ) : (
                             <div className="space-y-6">
-                                
-                                {/* Input Field */}
                                 {isOwnQR && claimUrl?.includes('/pet/') ? (
-                                    <div className="space-y-4">
-                                        <div className="p-4 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-center">
-                                            <p className="text-sm font-medium text-indigo-700">This is your Pet Tag.</p>
-                                            <p className="text-xs text-slate-500 mt-1">You can update the pet's photo, medical records, and your contact information.</p>
-                                        </div>
+                                    <div className="p-5 rounded-2xl bg-black/5 text-center">
+                                        <p className="text-sm font-bold">This is your Pet Tag.</p>
+                                        <p className="text-xs opacity-70 mt-1 leading-relaxed">You can update the pet's photo, medical records, and your contact information.</p>
                                     </div>
                                 ) : (
                                     <div className="space-y-2">
-                                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest">
+                                        <label className="block text-[11px] font-bold uppercase tracking-widest opacity-60">
                                             {scannedCategory ? `${scannedCategory} URL` : 'Destination URL'}
                                         </label>
-                                    <input 
-                                        type="url"
-                                        value={claimUrl}
-                                        onChange={e => setClaimUrl(e.target.value)}
-                                        placeholder={
-                                            scannedCategory?.toLowerCase()?.includes('google') 
-                                                ? "https://g.page/review/..." 
-                                                : scannedCategory?.toLowerCase()?.includes('instagram') 
-                                                ? "https://instagram.com/yourprofile" 
-                                                : scannedCategory?.toLowerCase()?.includes('whatsapp')
-                                                ? "https://wa.me/1234567890 or https://chat.whatsapp.com/..."
-                                                : "https://..."
-                                        }
-                                        className="w-full h-14 px-4 rounded-xl bg-[#fafafa] border border-slate-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-slate-900 outline-none font-mono text-sm transition-all"
-                                        autoFocus
-                                    />
-                                    {scannedCategory && !claimError && (
-                                        <div className="mt-1">
-                                            <p className="text-xs text-slate-500">Assign your business {scannedCategory} URL to this QR code.</p>
-                                            {scannedCategory.toLowerCase()?.includes('whatsapp') && (
-                                                <div className="mt-2 flex items-center gap-2 flex-wrap">
-                                                    <span className="text-[11px] text-slate-500">Quick start:</span>
-                                                    <button 
-                                                        onClick={() => setClaimUrl('https://wa.me/')}
-                                                        className="flex items-center gap-1.5 px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-indigo-700 text-[11px] font-mono transition-colors"
-                                                    >
-                                                        https://wa.me/
-                                                        <Copy size={12} className="opacity-70" />
-                                                    </button>
-                                                    <button 
-                                                        onClick={() => setClaimUrl('https://chat.whatsapp.com/')}
-                                                        className="flex items-center gap-1.5 px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-indigo-700 text-[11px] font-mono transition-colors"
-                                                    >
-                                                        https://chat.whatsapp.com/
-                                                        <Copy size={12} className="opacity-70" />
-                                                    </button>
-                                                </div>
-                                            )}
-                                        </div>
-                                    )}
-                                    {claimError && (
-                                        <p className="text-sm text-red-400 mt-2 flex items-center gap-2">
-                                            <span className="w-1.5 h-1.5 rounded-full bg-red-400 shrink-0" />
-                                            <span>{claimError}</span>
-                                        </p>
-                                    )}
-                                </div>
+                                        <input 
+                                            type="url"
+                                            value={claimUrl}
+                                            onChange={e => setClaimUrl(e.target.value)}
+                                            placeholder={
+                                                scannedCategory?.toLowerCase()?.includes('google') 
+                                                    ? "https://g.page/review/..." 
+                                                    : scannedCategory?.toLowerCase()?.includes('instagram') 
+                                                    ? "https://instagram.com/yourprofile" 
+                                                    : scannedCategory?.toLowerCase()?.includes('whatsapp')
+                                                    ? "https://wa.me/1234567890"
+                                                    : "https://..."
+                                            }
+                                            className="w-full h-14 px-4 rounded-xl bg-transparent border text-sm font-mono outline-none focus:border-black transition-colors"
+                                            style={{ borderColor: '#D8D1C8' }}
+                                            autoFocus
+                                        />
+                                        {scannedCategory && !claimError && (
+                                            <div className="mt-1">
+                                                <p className="text-xs opacity-60 mb-2">Assign your business {scannedCategory} URL to this QR code.</p>
+                                                {scannedCategory.toLowerCase()?.includes('whatsapp') && (
+                                                    <div className="flex flex-wrap gap-2">
+                                                        <button 
+                                                            onClick={() => setClaimUrl('https://wa.me/')}
+                                                            className="px-2.5 py-1.5 rounded-lg bg-black/5 hover:bg-black/10 text-[11px] font-mono font-medium transition-colors"
+                                                        >
+                                                            wa.me/
+                                                        </button>
+                                                        <button 
+                                                            onClick={() => setClaimUrl('https://chat.whatsapp.com/')}
+                                                            className="px-2.5 py-1.5 rounded-lg bg-black/5 hover:bg-black/10 text-[11px] font-mono font-medium transition-colors"
+                                                        >
+                                                            chat.whatsapp.com/
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+                                        {claimError && (
+                                            <p className="text-xs text-red-600 font-medium mt-2 flex items-center gap-1.5">
+                                                <span className="w-1.5 h-1.5 rounded-full bg-red-600" />
+                                                {claimError}
+                                            </p>
+                                        )}
+                                    </div>
                                 )}
 
-                                {/* Submit Button */}
                                 {isOwnQR && claimUrl?.includes('/pet/') ? (
-                                    <Link href={`/pet-tag?token=${scannedToken}`} className="w-full h-14 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold text-[15px] transition-all flex items-center justify-center shadow-lg shadow-indigo-500/20 active:scale-[0.98]">
+                                    <Link href={`/pet-tag?token=${scannedToken}`} className="flex w-full h-14 bg-mochingo-rich-black text-mochingo-warm-oat rounded-xl font-bold text-[15px] items-center justify-center hover:opacity-90 transition-opacity active:scale-[0.98]">
                                         Edit Pet Profile
                                     </Link>
                                 ) : (
@@ -563,11 +641,11 @@ export default function ProfileDashboard() {
                                             if (scannedCategory?.toLowerCase()?.includes('whatsapp')) {
                                                 const url = claimUrl.trim();
                                                 if (url === 'https://wa.me/' || url === 'http://wa.me/') {
-                                                    setClaimError('Please enter your mobile number after the link.');
+                                                    setClaimError('Please enter your mobile number.');
                                                     return;
                                                 }
                                                 if (url === 'https://chat.whatsapp.com/' || url === 'http://chat.whatsapp.com/') {
-                                                    setClaimError('Please enter the group invite code after the link.');
+                                                    setClaimError('Please enter the group code.');
                                                     return;
                                                 }
                                             }
@@ -590,12 +668,11 @@ export default function ProfileDashboard() {
                                             }
                                         }} 
                                         disabled={claimMutation.isPending || updateMutation.isPending || !claimUrl}
-                                        className="w-full h-14 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold text-[15px] transition-all disabled:opacity-50 flex items-center justify-center shadow-lg shadow-indigo-500/20 active:scale-[0.98]"
+                                        className="w-full h-14 bg-mochingo-rich-black text-mochingo-warm-oat rounded-xl font-bold text-[15px] transition-all disabled:opacity-50 flex items-center justify-center active:scale-[0.98]"
                                     >
                                         {(claimMutation.isPending || updateMutation.isPending) ? <Loader2 size={20} className="animate-spin" /> : isOwnQR ? 'Update Destination' : 'Claim & Save'}
                                     </button>
                                 )}
-                                
                             </div>
                         )}
                     </div>

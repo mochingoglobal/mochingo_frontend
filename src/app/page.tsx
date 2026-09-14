@@ -32,20 +32,13 @@ export default function Home() {
             </div>
             {/* Desktop nav */}
             <nav className="hidden lg:flex items-center gap-8 text-sm font-semibold tracking-wide">
-              <Link href="#" className="hover:opacity-60 transition-opacity">Products</Link>
+              {/* <Link href="#" className="hover:opacity-60 transition-opacity">Products</Link>
               <Link href="#" className="hover:opacity-60 transition-opacity">Business</Link>
-              <Link href="#" className="hover:opacity-60 transition-opacity">Support</Link>
+              <Link href="#" className="hover:opacity-60 transition-opacity">Support</Link> */}
             </nav>
             {/* Desktop CTA + User */}
             <div className="hidden lg:flex items-center gap-3">
               <UserLoginButton />
-              <Link
-                href="/portal-x/login"
-                className="flex bg-mochingo-rich-black text-mochingo-warm-oat px-5 py-3 rounded-full text-sm font-bold tracking-wide hover:bg-mochingo-rich-black/90 transition-all items-center gap-2 group"
-              >
-                Get Started
-                <ArrowRight size={15} className="group-hover:translate-x-0.5 transition-transform" />
-              </Link>
             </div>
             {/* Mobile: user icon + hamburger */}
             <div className="lg:hidden flex items-center gap-2">
@@ -159,13 +152,12 @@ export default function Home() {
                 Designed with care, made with precision.
               </p>
               <div className="flex flex-wrap gap-4 md:gap-5 items-center">
-                <Link
-                  href="/portal-x/login"
+                <button
                   className="bg-mochingo-rich-black text-mochingo-warm-oat px-7 py-3.5 rounded-full font-bold text-sm tracking-wide hover:bg-mochingo-rich-black/90 transition-all flex items-center gap-3 group"
                 >
                   Explore Products
                   <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
-                </Link>
+                </button>
                 <button className="flex items-center gap-3 font-semibold text-sm hover:opacity-60 transition-opacity">
                   <div className="w-9 h-9 rounded-full border flex items-center justify-center" style={{ borderColor: 'rgba(0,0,0,0.3)' }}>
                     <Play className="w-3.5 h-3.5 ml-0.5" />
@@ -260,16 +252,15 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="px-6 md:px-12 py-16 md:py-24 border-t border-mochingo-oat-line/50 text-center flex flex-col items-center">
-        <div className="w-12 h-12 relative mb-8">
+        <Link href="/portal-x" className="w-12 h-12 relative mb-8 hover:opacity-80 transition-opacity">
           <Image src="/images/brand/mochingo-monogram-black.svg" alt="m." fill className="object-contain" />
-        </div>
+        </Link>
         <p className="font-semibold tracking-wide text-sm mb-2">SAME BRAND. BRIGHTER TOMORROW.</p>
         <p className="text-xs text-mochingo-rich-black/50 mb-8">© {new Date().getFullYear()} Mochingo. All rights reserved.</p>
         <div className="flex gap-6 text-sm font-semibold">
           <Link href="#" className="hover:opacity-70 transition-opacity">Products</Link>
           <Link href="#" className="hover:opacity-70 transition-opacity">About</Link>
           <Link href="#" className="hover:opacity-70 transition-opacity">Contact</Link>
-          <Link href="/portal-x/login" className="hover:opacity-70 transition-opacity text-mochingo-rich-black/50">Admin</Link>
         </div>
       </footer>
     </main>

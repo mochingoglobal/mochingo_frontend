@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Eye, EyeOff, Loader2, QrCode } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
@@ -8,11 +8,18 @@ import { useAuthStore } from '@/store/authStore';
 export default function AdminLoginPage() {
     const router = useRouter();
     const login = useAuthStore((s) => s.login);
+    const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPw, setShowPw] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+
+    useEffect(() => {
+        if (isAuthenticated) {
+            router.replace('/portal-x/qr-management');
+        }
+    }, [isAuthenticated, router]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
