@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { Loader2, ArrowLeft, Building2, User, Phone, MapPin, CheckCircle2, Link2, Search, Smartphone, Star, Camera, Globe } from 'lucide-react';
+import { Loader2, ArrowLeft, Building2, User, Phone, MapPin, Check, Link2, Smartphone, Star, Camera, Globe } from 'lucide-react';
 import api from '@/lib/api';
 import GooglePlaceSearch from '@/components/GooglePlaceSearch';
 
@@ -39,9 +39,11 @@ export default function StaffAssignPage() {
         api.get(`/qr/dynamic/${token}/resolve`)
             .then(res => {
                 const data = res.data.data;
+                if (!data || !data.qr) {
+                    throw new Error('QR code not found in the system.');
+                }
                 setQrDetails(data);
                 if (data.qr.status === 'assigned') {
-                    // Pre-fill data if already assigned (for re-assignment)
                     setFormData({
                         name: data.qr.owner_id?.name || '',
                         mobile_number: data.qr.owner_id?.mobile_number || '',
@@ -52,7 +54,7 @@ export default function StaffAssignPage() {
                 }
             })
             .catch(err => {
-                setError(err.response?.data?.message || 'Failed to fetch QR details');
+                setError(err.response?.data?.message || err.message || 'Failed to fetch QR details');
             })
             .finally(() => {
                 setIsLoading(false);
@@ -67,9 +69,6 @@ export default function StaffAssignPage() {
 
     const validate = () => {
         const errors: FieldErrors = {};
-        if (!formData.name.trim()) errors.name = 'Required';
-        if (!formData.mobile_number.trim()) errors.mobile_number = 'Required';
-        if (!formData.place.trim()) errors.place = 'Required';
         if (!formData.destination_url.trim()) errors.destination_url = 'Required';
         
         if (isWhatsapp) {
@@ -109,20 +108,32 @@ export default function StaffAssignPage() {
 
     if (isLoading) {
         return (
-            <div className="flex justify-center p-12">
-                <Loader2 className="animate-spin text-indigo-500" size={32} />
+            <div className="flex justify-center py-20">
+                <Loader2 className="animate-spin text-black" size={32} />
             </div>
         );
     }
 
     if (error && !qrDetails) {
         return (
-            <div className="p-6">
-                <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-xl text-center">
-                    {error}
+            <div className="flex flex-col items-center justify-center py-24 px-4 text-center max-w-lg mx-auto animate-fade-in">
+                <div className="w-16 h-16 bg-[#EAE2D8] rounded-full flex items-center justify-center mb-6 border" style={{ borderColor: '#D8D1C8' }}>
+                    <span className="text-2xl font-black text-black">?</span>
                 </div>
-                <button onClick={() => router.push('/staff/dashboard')} className="mt-4 text-indigo-400 hover:text-indigo-300 flex items-center justify-center gap-2 w-full">
-                    <ArrowLeft size={16} /> Back to Scanner
+                <p className="text-[11px] font-bold uppercase tracking-widest text-black/40 mb-2">
+                    SCAN FAILED
+                </p>
+                <h2 className="text-2xl font-black text-black mb-2">{token}</h2>
+                <p className="text-[14px] font-medium text-black/60 mb-10 leading-relaxed max-w-[280px]">
+                    This QR code could not be found in your database. It may have been deleted.
+                </p>
+                
+                <button
+                    onClick={() => router.push('/staff/dashboard')}
+                    className="w-full sm:w-auto bg-black text-white hover:bg-black/80 px-8 py-3.5 rounded-xl transition-all font-bold text-[14px] shadow-md active:scale-[0.98] flex items-center justify-center gap-2 mx-auto"
+                >
+                    <ArrowLeft size={18} />
+                    Scan Another QR
                 </button>
             </div>
         );
@@ -130,24 +141,28 @@ export default function StaffAssignPage() {
 
     if (success) {
         return (
-            <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
-                <div className="w-20 h-20 bg-emerald-500/10 rounded-full flex items-center justify-center mb-6">
-                    <CheckCircle2 size={40} className="text-emerald-500" />
+            <div className="flex flex-col items-center justify-center py-24 px-4 text-center max-w-lg mx-auto">
+                <div className="w-16 h-16 bg-[#EAE2D8] rounded-full flex items-center justify-center mb-6 border" style={{ borderColor: '#D8D1C8' }}>
+                    <Check size={28} className="text-black" />
                 </div>
-                <h2 className="text-2xl font-bold text-white mb-2">Successfully {isReassign ? 'Re-assigned' : 'Assigned'}!</h2>
-                <p className="text-slate-400 mb-8 max-w-sm">
-                    The QR code has been successfully linked and is now active for {formData.name}.
+                <p className="text-[11px] font-bold uppercase tracking-widest text-black/40 mb-2">
+                    QR ASSIGNED
                 </p>
-                <div className="flex gap-4">
+                <h2 className="text-2xl font-black text-black mb-1">{token}</h2>
+                <p className="text-sm font-medium text-black/60 mb-10 leading-relaxed">
+                    Successfully assigned to:<br/><span className="text-black font-bold">{formData.name}</span>
+                </p>
+                
+                <div className="flex flex-col sm:flex-row gap-4 w-full">
                     <button
                         onClick={() => router.push('/staff/dashboard')}
-                        className="bg-[#161b27] hover:bg-[#1f2638] text-white px-6 py-3 rounded-xl transition-colors border border-white/10"
+                        className="flex-1 bg-black text-white hover:bg-black/80 px-6 py-3.5 rounded-xl transition-all font-bold text-[14px] shadow-md active:scale-[0.98]"
                     >
                         Scan Another QR
                     </button>
                     <button
                         onClick={() => router.push('/staff/history')}
-                        className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl transition-colors"
+                        className="flex-1 bg-transparent border border-black/20 text-black hover:bg-black/5 px-6 py-3.5 rounded-xl transition-all font-bold text-[14px] active:scale-[0.98]"
                     >
                         View History
                     </button>
@@ -157,120 +172,124 @@ export default function StaffAssignPage() {
     }
 
     const CategoryIcon = isGoogle ? Star : isWhatsapp ? Smartphone : isInstagram ? Camera : Globe;
-    const categoryColor = isGoogle ? 'text-amber-500 bg-amber-500/10 border-amber-500/20' 
-                        : isWhatsapp ? 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20'
-                        : isInstagram ? 'text-pink-500 bg-pink-500/10 border-pink-500/20'
-                        : 'text-indigo-500 bg-indigo-500/10 border-indigo-500/20';
 
     return (
-        <div className="max-w-2xl mx-auto space-y-6">
-            <div className="flex items-center gap-4">
+        <div className="max-w-2xl mx-auto pb-12">
+            
+            {/* Header Area */}
+            <div className="mb-10">
                 <button 
                     onClick={() => router.back()}
-                    className="p-2 bg-[#161b27] border border-white/10 rounded-lg hover:bg-white/5 transition-colors text-slate-300 hover:text-white"
+                    className="w-10 h-10 rounded-full bg-white/50 border hover:bg-white flex items-center justify-center text-black mb-6 transition-colors shadow-sm"
+                    style={{ borderColor: '#D8D1C8' }}
                 >
-                    <ArrowLeft size={20} />
+                    <ArrowLeft size={18} />
                 </button>
-                <div>
-                    <h1 className="text-2xl font-bold text-white">
-                        {isReassign ? 'Re-assign QR Code' : 'Assign QR Code'}
-                    </h1>
-                    <div className="flex items-center gap-2 mt-1">
-                        <span className="text-slate-400 font-mono text-sm">{token}</span>
-                        <span className="w-1.5 h-1.5 rounded-full bg-slate-600"></span>
-                        <span className={`px-2 py-0.5 rounded text-xs font-semibold border ${categoryColor}`}>
-                            {qrDetails?.category_name || 'Standard QR'}
-                        </span>
-                    </div>
+                
+                <p className="text-[11px] font-bold uppercase tracking-widest text-black/40 mb-2">
+                    {isReassign ? 'QR CODE ALREADY ASSIGNED' : 'QR CODE FOUND'}
+                </p>
+                <h1 className="text-[28px] sm:text-[34px] font-black text-black leading-none mb-4">
+                    {token}
+                </h1>
+                
+                <div className="flex items-center gap-3">
+                    <span className={`px-2.5 py-1 rounded-[6px] text-[11px] font-bold uppercase tracking-widest border border-black/10 flex items-center gap-1.5 ${isReassign ? 'bg-black/5 text-black/70' : 'bg-black text-white'}`}>
+                        <CategoryIcon size={12} />
+                        {qrDetails?.category_name || 'Standard QR'}
+                    </span>
+                    <span className="text-[13px] font-bold text-black/50">
+                        Status: <span className={isReassign ? 'text-black' : 'text-[#10b981]'}>{isReassign ? 'ASSIGNED' : 'UNASSIGNED'}</span>
+                    </span>
                 </div>
             </div>
 
             {error && (
-                <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-xl">
+                <div className="bg-red-500/10 border border-red-500/20 text-red-600 font-medium text-sm p-4 rounded-xl mb-6 flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-red-600" />
                     {error}
                 </div>
             )}
 
-            <form onSubmit={handleSubmit} className="bg-[#161b27] border border-white/5 rounded-2xl p-6 sm:p-8 shadow-xl space-y-8">
+            {/* Assignment Form */}
+            <form onSubmit={handleSubmit} className="bg-white/40 border rounded-2xl p-6 sm:p-8" style={{ borderColor: '#D8D1C8' }}>
                 
-                {/* Customer Details */}
-                <div className="space-y-4">
-                    <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-4 border-b border-white/10 pb-2">
-                        Customer Details
-                    </h3>
-                    
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                            <label className="block text-sm font-medium text-slate-400 mb-1.5">Full Name *</label>
-                            <div className="relative">
-                                <User className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
-                                <input
-                                    type="text"
-                                    className={`w-full bg-[#0a0d16] border rounded-xl py-3 pl-10 pr-4 text-white focus:outline-none focus:ring-2 transition-colors ${fieldErrors.name ? 'border-red-500/50 focus:ring-red-500/20' : 'border-white/10 focus:border-indigo-500 focus:ring-indigo-500/20'}`}
-                                    value={formData.name}
-                                    onChange={e => {
-                                        setFormData(p => ({...p, name: e.target.value}));
-                                        if (fieldErrors.name) setFieldErrors(p => ({...p, name: undefined}));
-                                    }}
-                                />
-                            </div>
+                <h3 className="text-[16px] font-bold text-black mb-6">
+                    {isReassign ? 'Update assignment' : 'Assign to customer'}
+                </h3>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-8">
+                    <div>
+                        <label className="block text-[12px] font-bold text-black/70 mb-1.5 uppercase tracking-wide">Full Name</label>
+                        <div className="relative">
+                            <User className="absolute left-3.5 top-1/2 -translate-y-1/2 text-black/30" size={16} />
+                            <input
+                                type="text"
+                                className={`w-full bg-white border rounded-xl py-3 pl-10 pr-4 text-[14px] text-black focus:outline-none transition-colors shadow-sm ${fieldErrors.name ? 'border-red-500/50' : 'border-[#D8D1C8] focus:border-black'}`}
+                                value={formData.name}
+                                onChange={e => {
+                                    setFormData(p => ({...p, name: e.target.value}));
+                                    if (fieldErrors.name) setFieldErrors(p => ({...p, name: undefined}));
+                                }}
+                            />
                         </div>
-                        <div>
-                            <label className="block text-sm font-medium text-slate-400 mb-1.5">Mobile Number *</label>
-                            <div className="relative">
-                                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
-                                <input
-                                    type="tel"
-                                    className={`w-full bg-[#0a0d16] border rounded-xl py-3 pl-10 pr-4 text-white focus:outline-none focus:ring-2 transition-colors ${fieldErrors.mobile_number ? 'border-red-500/50 focus:ring-red-500/20' : 'border-white/10 focus:border-indigo-500 focus:ring-indigo-500/20'}`}
-                                    value={formData.mobile_number}
-                                    onChange={e => {
-                                        setFormData(p => ({...p, mobile_number: e.target.value}));
-                                        if (fieldErrors.mobile_number) setFieldErrors(p => ({...p, mobile_number: undefined}));
-                                    }}
-                                />
-                            </div>
+                    </div>
+                    <div>
+                        <label className="block text-[12px] font-bold text-black/70 mb-1.5 uppercase tracking-wide">Mobile Number</label>
+                        <div className="relative">
+                            <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 text-black/30" size={16} />
+                            <input
+                                type="tel"
+                                className={`w-full bg-white border rounded-xl py-3 pl-10 pr-4 text-[14px] text-black focus:outline-none transition-colors shadow-sm ${fieldErrors.mobile_number ? 'border-red-500/50' : 'border-[#D8D1C8] focus:border-black'}`}
+                                value={formData.mobile_number}
+                                onChange={e => {
+                                    setFormData(p => ({...p, mobile_number: e.target.value}));
+                                    if (fieldErrors.mobile_number) setFieldErrors(p => ({...p, mobile_number: undefined}));
+                                }}
+                            />
                         </div>
-                        <div>
-                            <label className="block text-sm font-medium text-slate-400 mb-1.5">Place / City *</label>
-                            <div className="relative">
-                                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
-                                <input
-                                    type="text"
-                                    className={`w-full bg-[#0a0d16] border rounded-xl py-3 pl-10 pr-4 text-white focus:outline-none focus:ring-2 transition-colors ${fieldErrors.place ? 'border-red-500/50 focus:ring-red-500/20' : 'border-white/10 focus:border-indigo-500 focus:ring-indigo-500/20'}`}
-                                    value={formData.place}
-                                    onChange={e => {
-                                        setFormData(p => ({...p, place: e.target.value}));
-                                        if (fieldErrors.place) setFieldErrors(p => ({...p, place: undefined}));
-                                    }}
-                                />
-                            </div>
+                    </div>
+                    <div>
+                        <label className="block text-[12px] font-bold text-black/70 mb-1.5 uppercase tracking-wide">Place / City</label>
+                        <div className="relative">
+                            <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 text-black/30" size={16} />
+                            <input
+                                type="text"
+                                className={`w-full bg-white border rounded-xl py-3 pl-10 pr-4 text-[14px] text-black focus:outline-none transition-colors shadow-sm ${fieldErrors.place ? 'border-red-500/50' : 'border-[#D8D1C8] focus:border-black'}`}
+                                value={formData.place}
+                                onChange={e => {
+                                    setFormData(p => ({...p, place: e.target.value}));
+                                    if (fieldErrors.place) setFieldErrors(p => ({...p, place: undefined}));
+                                }}
+                            />
                         </div>
-                        <div>
-                            <label className="block text-sm font-medium text-slate-400 mb-1.5">Business Name (Optional)</label>
-                            <div className="relative">
-                                <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
-                                <input
-                                    type="text"
-                                    className="w-full bg-[#0a0d16] border border-white/10 rounded-xl py-3 pl-10 pr-4 text-white focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-colors"
-                                    value={formData.business}
-                                    onChange={e => setFormData(p => ({...p, business: e.target.value}))}
-                                />
-                            </div>
+                    </div>
+                    <div>
+                        <label className="block text-[12px] font-bold text-black/70 mb-1.5 uppercase tracking-wide">Business Name</label>
+                        <div className="relative">
+                            <Building2 className="absolute left-3.5 top-1/2 -translate-y-1/2 text-black/30" size={16} />
+                            <input
+                                type="text"
+                                className="w-full bg-white border rounded-xl py-3 pl-10 pr-4 text-[14px] text-black focus:outline-none focus:border-black transition-colors border-[#D8D1C8] shadow-sm"
+                                value={formData.business}
+                                placeholder="Optional"
+                                onChange={e => setFormData(p => ({...p, business: e.target.value}))}
+                            />
                         </div>
                     </div>
                 </div>
 
-                {/* Destination Details */}
-                <div className="space-y-4 pt-2">
-                    <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-4 border-b border-white/10 pb-2 flex items-center gap-2">
-                        <CategoryIcon size={16} className={categoryColor.split(' ')[0]} />
-                        Destination Link
-                    </h3>
+                <div className="mb-8">
+                    <label className="block text-[12px] font-bold text-black/70 mb-2 uppercase tracking-wide flex items-center gap-1.5">
+                        <CategoryIcon size={14} />
+                        Destination Link *
+                    </label>
                     
                     {isGoogle ? (
-                        <div className="space-y-4 bg-[#0a0d16] p-4 rounded-xl border border-white/5">
-                            <label className="block text-sm font-medium text-slate-400">Search Google Maps Place *</label>
-                            <div className="bg-[#161b27] rounded-lg border border-white/10 p-1">
+                        <div className="space-y-4 bg-black/5 p-5 rounded-xl border border-black/5">
+                            <p className="text-[13px] font-medium text-black/70">Search Google Maps Place</p>
+                            
+                            <div className="bg-white rounded-xl shadow-sm overflow-hidden" style={{ borderColor: '#D8D1C8', borderWidth: 1 }}>
                                 <GooglePlaceSearch 
                                     onPlaceSelected={(placeId) => {
                                         setFormData(p => ({...p, destination_url: `https://search.google.com/local/writereview?placeid=${placeId}`}));
@@ -280,12 +299,12 @@ export default function StaffAssignPage() {
                                 />
                             </div>
                             
-                            <div className="pt-2 border-t border-white/5">
-                                <label className="block text-xs font-medium text-slate-500 mb-1.5">Or Enter Place ID Manually</label>
+                            <div className="pt-4 border-t border-black/10">
+                                <label className="block text-[11px] font-bold uppercase text-black/50 mb-2 tracking-wide">Or Enter URL Manually</label>
                                 <input
-                                    type="text"
-                                    className={`w-full bg-[#161b27] border rounded-xl py-3 px-4 text-white focus:outline-none transition-colors font-mono text-sm ${fieldErrors.destination_url ? 'border-red-500/50' : 'border-white/10 focus:border-indigo-500'}`}
-                                    placeholder="placeid="
+                                    type="url"
+                                    className={`w-full bg-white border rounded-xl py-2.5 px-4 text-black focus:outline-none transition-colors text-[13px] shadow-sm ${fieldErrors.destination_url ? 'border-red-500/50' : 'border-[#D8D1C8] focus:border-black'}`}
+                                    placeholder="https://g.page/r/..."
                                     value={formData.destination_url}
                                     onChange={e => {
                                         setFormData(p => ({...p, destination_url: e.target.value}));
@@ -296,14 +315,11 @@ export default function StaffAssignPage() {
                         </div>
                     ) : (
                         <div className="space-y-2">
-                            <label className="block text-sm font-medium text-slate-400">
-                                {qrDetails?.category_name} URL *
-                            </label>
                             <div className="relative">
-                                <Link2 className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
+                                <Link2 className="absolute left-3.5 top-1/2 -translate-y-1/2 text-black/30" size={16} />
                                 <input
                                     type="url"
-                                    className={`w-full bg-[#0a0d16] border rounded-xl py-3 pl-10 pr-4 text-white focus:outline-none focus:ring-2 transition-colors ${fieldErrors.destination_url ? 'border-red-500/50 focus:ring-red-500/20' : 'border-white/10 focus:border-indigo-500 focus:ring-indigo-500/20'}`}
+                                    className={`w-full bg-white border rounded-xl py-3.5 pl-10 pr-4 text-[14px] font-mono text-black focus:outline-none transition-colors shadow-sm ${fieldErrors.destination_url ? 'border-red-500/50' : 'border-[#D8D1C8] focus:border-black'}`}
                                     placeholder={
                                         isWhatsapp ? 'https://wa.me/1234567890' :
                                         isInstagram ? 'https://instagram.com/username' :
@@ -321,7 +337,7 @@ export default function StaffAssignPage() {
                                     <button
                                         type="button"
                                         onClick={() => setFormData(p => ({...p, destination_url: 'https://wa.me/'}))}
-                                        className="text-xs bg-white/5 hover:bg-white/10 text-slate-300 px-3 py-1.5 rounded-lg border border-white/5 transition-colors font-mono"
+                                        className="text-[12px] font-mono font-medium bg-black/5 hover:bg-black/10 text-black/70 px-3 py-1.5 rounded-lg border border-black/5 transition-colors"
                                     >
                                         https://wa.me/
                                     </button>
@@ -331,16 +347,16 @@ export default function StaffAssignPage() {
                     )}
                 </div>
 
-                <div className="pt-4 border-t border-white/10">
+                <div className="pt-2">
                     <button
                         type="submit"
                         disabled={isSubmitting}
-                        className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-xl transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                        className="w-full bg-black text-white font-bold py-4 rounded-xl transition-all hover:bg-black/90 flex items-center justify-center gap-2 disabled:opacity-50 active:scale-[0.98] shadow-md text-[14px]"
                     >
                         {isSubmitting ? (
-                            <><Loader2 size={20} className="animate-spin" /> Saving...</>
+                            <><Loader2 size={18} className="animate-spin" /> Saving...</>
                         ) : (
-                            <>{isReassign ? 'Save Changes' : 'Complete Assignment'} <ArrowLeft className="rotate-180" size={18} /></>
+                            <>{isReassign ? 'Update Assignment' : 'Assign QR Code'} &rarr;</>
                         )}
                     </button>
                 </div>

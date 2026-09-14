@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Loader2, History, QrCode, ExternalLink, Calendar, MapPin, User, Pencil } from 'lucide-react';
+import { Loader2, ChevronRight, QrCode } from 'lucide-react';
 import api from '@/lib/api';
 
 type HistoryItem = {
@@ -42,10 +42,29 @@ export default function StaffHistoryPage() {
             });
     }, []);
 
+    const formatTimeAgo = (dateString: string) => {
+        const diff = Math.floor((new Date().getTime() - new Date(dateString).getTime()) / 60000);
+        if (diff < 1) return 'Just now';
+        if (diff < 60) return `${diff} min ago`;
+        const hrs = Math.floor(diff / 60);
+        if (hrs < 24) return `${hrs} hr${hrs > 1 ? 's' : ''} ago`;
+        const days = Math.floor(hrs / 24);
+        return `${days} day${days > 1 ? 's' : ''} ago`;
+    };
+
+    const getDestinationCategory = (url: string) => {
+        if (!url) return 'Unknown';
+        const l = url.toLowerCase();
+        if (l.includes('instagram.com')) return 'Instagram';
+        if (l.includes('wa.me') || l.includes('whatsapp')) return 'WhatsApp';
+        if (l.includes('search.google.com') || l.includes('g.page')) return 'Google Review';
+        return 'Website';
+    };
+
     if (isLoading) {
         return (
-            <div className="flex justify-center p-12">
-                <Loader2 className="animate-spin text-indigo-500" size={32} />
+            <div className="flex justify-center py-20">
+                <Loader2 className="animate-spin text-black" size={32} />
             </div>
         );
     }
@@ -53,7 +72,7 @@ export default function StaffHistoryPage() {
     if (error) {
         return (
             <div className="p-6">
-                <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-xl text-center">
+                <div className="bg-red-500/10 border border-red-500/20 text-red-600 font-medium p-4 rounded-xl text-center">
                     {error}
                 </div>
             </div>
@@ -61,85 +80,97 @@ export default function StaffHistoryPage() {
     }
 
     return (
-        <div className="space-y-6">
-            <div className="flex items-center justify-between">
-                <div>
-                    <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-                        <History className="text-indigo-500" />
-                        My Assignments
-                    </h1>
-                    <p className="text-slate-400 text-sm mt-1">
-                        View and manage the QR codes you have assigned to customers.
-                    </p>
-                </div>
-                <div className="bg-[#161b27] border border-white/5 rounded-2xl px-6 py-3 text-center shadow-lg">
-                    <div className="text-3xl font-extrabold text-white">{count}</div>
-                    <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mt-1">Total Assigned</div>
+        <div className="max-w-6xl mx-auto pb-12">
+            {/* Header */}
+            <div className="mb-10">
+                <h1 className="text-[28px] sm:text-[34px] font-black text-black leading-none mb-3">
+                    My assignments
+                </h1>
+                <p className="text-[13px] font-medium text-black/60 max-w-sm">
+                    QR codes assigned by you.
+                </p>
+                <div className="mt-6 flex items-center gap-3">
+                    <div className="px-4 py-2 bg-black text-white rounded-lg inline-flex items-center gap-2">
+                        <span className="text-xl font-black leading-none">{count}</span>
+                        <span className="text-[10px] font-bold uppercase tracking-widest opacity-80">Total</span>
+                    </div>
                 </div>
             </div>
 
+            {/* List / Table */}
             {history.length === 0 ? (
-                <div className="bg-[#161b27] border border-white/5 rounded-2xl p-12 text-center flex flex-col items-center justify-center">
-                    <QrCode size={48} className="text-slate-600 mb-4" />
-                    <h3 className="text-lg font-medium text-white mb-2">No Assignments Yet</h3>
-                    <p className="text-slate-400 mb-6 max-w-md mx-auto">
+                <div className="py-20 text-center flex flex-col items-center justify-center bg-white/40 border rounded-2xl" style={{ borderColor: '#D8D1C8' }}>
+                    <QrCode size={40} className="text-black/20 mb-4" />
+                    <h3 className="text-[16px] font-bold text-black mb-2">No Assignments Yet</h3>
+                    <p className="text-[13px] text-black/60 mb-6 max-w-sm mx-auto leading-relaxed">
                         You haven't assigned any QR codes to customers yet. Go to the dashboard to scan and assign your first tag!
                     </p>
                     <button
                         onClick={() => router.push('/staff/dashboard')}
-                        className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-xl transition-colors font-medium"
+                        className="bg-black hover:bg-black/80 text-white px-6 py-3.5 rounded-xl transition-all font-bold text-[14px] shadow-md active:scale-[0.98]"
                     >
-                        Scan QR Code
+                        Scan QR Code &rarr;
                     </button>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {history.map((item) => (
-                        <div key={item._id} className="bg-[#161b27] border border-white/5 rounded-2xl p-5 hover:border-white/10 transition-colors group">
-                            <div className="flex justify-between items-start mb-4">
-                                <div>
-                                    <h3 className="font-bold text-white text-lg">{item.owner_id?.name || 'Unknown'}</h3>
-                                    {item.owner_id?.business && (
-                                        <p className="text-sm text-indigo-400 font-medium mt-0.5">{item.owner_id.business}</p>
-                                    )}
-                                </div>
-                                <span className="text-xs font-mono bg-white/5 text-slate-300 px-2 py-1 rounded">
-                                    {item.token}
-                                </span>
-                            </div>
+                <div className="w-full">
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left border-collapse">
+                            <thead>
+                                <tr className="border-b" style={{ borderColor: '#D8D1C8' }}>
+                                    <th className="py-4 text-[10px] font-bold uppercase tracking-widest text-black/40 pr-4">QR ID</th>
+                                    <th className="py-4 text-[10px] font-bold uppercase tracking-widest text-black/40 px-4 hidden sm:table-cell">CUSTOMER</th>
+                                    <th className="py-4 text-[10px] font-bold uppercase tracking-widest text-black/40 px-4 hidden md:table-cell">DESTINATION</th>
+                                    <th className="py-4 text-[10px] font-bold uppercase tracking-widest text-black/40 px-4 text-right sm:text-left">ASSIGNED AT</th>
+                                    <th className="py-4 text-[10px] font-bold uppercase tracking-widest text-black/40 pl-4 text-right hidden sm:table-cell">STATUS</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {history.map((item) => (
+                                    <tr 
+                                        key={item._id} 
+                                        className="border-b border-black/5 hover:bg-black/[0.02] transition-colors group cursor-pointer" 
+                                        onClick={() => router.push(`/staff/assign/${item.token}`)}
+                                    >
+                                        <td className="py-4 pr-4">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-8 h-8 rounded-lg bg-[#EAE2D8] flex items-center justify-center shrink-0">
+                                                    <QrCode size={14} className="text-black" />
+                                                </div>
+                                                <div>
+                                                    <div className="text-[13px] font-bold text-black">{item.token}</div>
+                                                    <div className="text-[11px] text-black/60 sm:hidden mt-0.5">{item.owner_id?.name || 'Unknown'}</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        
+                                        <td className="py-4 px-4 hidden sm:table-cell">
+                                            <div className="text-[13px] font-medium text-black">{item.owner_id?.name || 'Unknown'}</div>
+                                        </td>
+                                        
+                                        <td className="py-4 px-4 hidden md:table-cell">
+                                            <div className="text-[13px] font-medium text-black/70">{getDestinationCategory(item.manual_redirect_url)}</div>
+                                        </td>
+                                        
+                                        <td className="py-4 px-4 text-right sm:text-left">
+                                            <div className="text-[12px] font-medium text-black/60">{formatTimeAgo(item.assigned_at)}</div>
+                                        </td>
+                                        
+                                        <td className="py-4 pl-4 text-right hidden sm:table-cell">
+                                            <div className="inline-flex items-center gap-1.5">
+                                                <span className="w-1.5 h-1.5 rounded-full bg-[#10b981]" />
+                                                <span className="text-[12px] font-medium text-black/70">Assigned</span>
+                                            </div>
+                                        </td>
 
-                            <div className="space-y-2 mb-6">
-                                <div className="flex items-center gap-2 text-sm text-slate-400">
-                                    <MapPin size={14} className="shrink-0" />
-                                    <span className="truncate">{item.owner_id?.place || 'N/A'}</span>
-                                </div>
-                                <div className="flex items-center gap-2 text-sm text-slate-400">
-                                    <Calendar size={14} className="shrink-0" />
-                                    <span>
-                                        {new Date(item.assigned_at).toLocaleDateString('en-US', {
-                                            month: 'short', day: 'numeric', year: 'numeric'
-                                        })}
-                                    </span>
-                                </div>
-                                <div className="flex items-center gap-2 text-sm text-slate-400">
-                                    <ExternalLink size={14} className="shrink-0" />
-                                    <a href={item.manual_redirect_url} target="_blank" rel="noreferrer" className="truncate hover:text-indigo-400 transition-colors">
-                                        {item.manual_redirect_url}
-                                    </a>
-                                </div>
-                            </div>
-
-                            <div className="pt-4 border-t border-white/5">
-                                <button
-                                    onClick={() => router.push(`/staff/assign/${item.token}`)}
-                                    className="w-full flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 text-white py-2.5 rounded-xl transition-colors text-sm font-medium"
-                                >
-                                    <Pencil size={16} />
-                                    Re-assign details
-                                </button>
-                            </div>
-                        </div>
-                    ))}
+                                        <td className="py-4 pl-2 text-right sm:hidden">
+                                            <ChevronRight size={16} className="text-black/30 inline-block" />
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             )}
         </div>
