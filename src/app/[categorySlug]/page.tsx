@@ -7,6 +7,7 @@ import { Loader2, CheckCircle2, AlertCircle, Link2, Smartphone, Globe, LogIn, Co
 import { useConsumerAuthStore } from '@/store/consumerAuthStore';
 import api from '@/lib/api';
 import PetTagSetupWizard from '@/components/PetTagSetupWizard';
+import MultiLinkSetupWizard from '@/components/MultiLinkSetupWizard';
 import GooglePlaceSearch from '@/components/GooglePlaceSearch';
 import GoogleTranslateWidget from '@/components/GoogleTranslateWidget';
 
@@ -183,9 +184,14 @@ export function CategorySetupContent({ categorySlug }: { categorySlug: string })
     const isMissingDetails = needsName || needsMobile || needsPlace;
 
     const isGoogleCategory = decodedSlug.toLowerCase().includes('google');
+    const isMultiLink = decodedSlug?.toLowerCase() === 'all-in-one' || decodedSlug?.toLowerCase() === 'linktree' || decodedSlug?.toLowerCase() === 'links' || decodedSlug?.toLowerCase() === 'multi-link';
 
     if (decodedSlug?.toLowerCase() === 'pet-tag' || decodedSlug?.toLowerCase() === 'pet') {
         return <PetTagSetupWizard token={token} />;
+    }
+
+    if (isMultiLink) {
+        return <MultiLinkSetupWizard token={token} categoryName={formattedCategory} />;
     }
 
     const handleGoogleSuccess = async (credentialResponse: any) => {

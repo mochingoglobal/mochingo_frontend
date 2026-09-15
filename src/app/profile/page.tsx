@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Loader2, QrCode, Edit2, X, ScanLine, Link2, Search, Link as LinkIcon, Camera, MessageSquare, MapPin, Globe } from 'lucide-react';
+import { Loader2, QrCode, Edit2, X, ScanLine, Link2, Search, Link as LinkIcon, Camera, MessageSquare, MapPin, Globe, ChevronDown, Star } from 'lucide-react';
 import type { AxiosError } from 'axios';
 import { useConsumerAuthStore } from '@/store/consumerAuthStore';
 import api from '@/lib/api';
@@ -11,6 +11,7 @@ import { formatDateTime } from '@/lib/utils';
 import Link from 'next/link';
 import Image from 'next/image';
 import QRScanner from '@/components/QRScanner';
+import { IconWhatsApp, IconGoogle, IconInstagram } from '@/components/BrandIcons';
 
 interface ConsumerQR {
     id: string;
@@ -26,6 +27,15 @@ interface ConsumerQR {
 interface ApiErrorResponse {
     message?: string;
 }
+
+const PLATFORM_OPTIONS = [
+    { value: 'instagram', label: 'Instagram', icon: IconInstagram },
+    { value: 'whatsapp', label: 'WhatsApp', icon: IconWhatsApp },
+    { value: 'google_review', label: 'Google Review', icon: IconGoogle },
+    { value: 'website', label: 'Website', icon: Globe },
+    { value: 'location', label: 'Location Map', icon: MapPin },
+    { value: 'other', label: 'Other Link', icon: Link2 },
+];
 
 // Debounce hook
 function useDebounce<T>(value: T, delay: number): T {
@@ -68,9 +78,12 @@ export default function ProfileDashboard() {
         return () => cancelAnimationFrame(frameId);
     }, []);
 
-    // Editing State
+    // Edit Modal state (Existing QRs)
     const [editingId, setEditingId] = useState<string | null>(null);
     const [editUrl, setEditUrl] = useState('');
+    const [editingType, setEditingType] = useState<'single' | 'multi_link'>('single');
+    const [editMultiLinks, setEditMultiLinks] = useState<any[]>([]);
+    const [isSavingEdit, setIsSavingEdit] = useState(false);
 
     // Scanner State
     const [isScanning, setIsScanning] = useState(false);
@@ -90,6 +103,7 @@ export default function ProfileDashboard() {
     const [claimError, setClaimError] = useState<string | null>(null);
     const [isOwnQR, setIsOwnQR] = useState(false);
     const [ownQRId, setOwnQRId] = useState<string | null>(null);
+    const [openDropdownId, setOpenDropdownId] = useState<number | null>(null);
 
     // Track which QR link is copied
     const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -127,8 +141,8 @@ export default function ProfileDashboard() {
     });
 
     const updateMutation = useMutation({
-        mutationFn: async ({ id, url }: { id: string, url: string }) => {
-            await api.patch(`/consumer/qr/${id}`, { destination_url: url }, {
+        mutationFn: async ({ id, payload }: { id: string, payload: any }) => {
+            await api.patch(`/consumer/qr/${id}`, payload, {
                 headers: { Authorization: `Bearer ${token}` }
             });
         },
@@ -136,6 +150,8 @@ export default function ProfileDashboard() {
             queryClient.invalidateQueries({ queryKey: ['my-qrs'] });
             setEditingId(null);
             setEditUrl('');
+            setEditingType('single');
+            setEditMultiLinks([]);
         }
     });
 
@@ -454,7 +470,7 @@ export default function ProfileDashboard() {
 
                                     {/* Destination Area */}
                                     <div className="mb-6">
-                                        {editingId === qr.id ? (
+                                        {editingId === qr.id && editingType === 'single' ? (
                                             <div className="flex items-center gap-2">
                                                 <input 
                                                     type="url" 
@@ -465,14 +481,14 @@ export default function ProfileDashboard() {
                                                     style={{ borderColor: '#D8D1C8' }}
                                                     autoFocus
                                                     onKeyDown={(e) => {
-                                                        if (e.key === 'Enter' && editUrl) updateMutation.mutate({id: qr.id, url: editUrl});
+                                                        if (e.key === 'Enter' && editUrl) updateMutation.mutate({id: qr.id, payload: { destination_url: editUrl, qr_type: 'single' }});
                                                         if (e.key === 'Escape') setEditingId(null);
                                                     }}
                                                 />
                                                 <button 
-                                                    onClick={() => updateMutation.mutate({id: qr.id, url: editUrl})}
+                                                    onClick={() => updateMutation.mutate({id: qr.id, payload: { destination_url: editUrl, qr_type: 'single' }})}
                                                     disabled={updateMutation.isPending || !editUrl}
-                                                    className="h-10 px-4 bg-mochingo-rich-black text-mochingo-warm-oat rounded-lg text-xs font-bold disabled:opacity-50"
+                                                    className="h-10 px-4 bg-mochingo-rich-black text-mochingo-warm-oat rounded-lg text-xs font-bold disabled:opacity-50 flex items-center justify-center"
                                                 >
                                                     {updateMutation.isPending ? <Loader2 size={14} className="animate-spin" /> : 'Save'}
                                                 </button>
@@ -523,7 +539,12 @@ export default function ProfileDashboard() {
                                             <button 
                                                 onClick={() => {
                                                     setEditingId(qr.id);
-                                                    setEditUrl(qr.manual_redirect_url || '');
+                                                    setEditingType(qr.qr_type || 'single');
+                                                    if (qr.qr_type === 'multi_link') {
+                                                        setEditMultiLinks(qr.multi_links && qr.multi_links.length > 0 ? qr.multi_links : [{ id: '1', platform: 'website', url: '' }]);
+                                                    } else {
+                                                        setEditUrl(qr.manual_redirect_url || '');
+                                                    }
                                                 }}
                                                 className="flex items-center gap-1.5 text-[12px] font-semibold hover:opacity-60 transition-opacity"
                                             >
@@ -698,6 +719,138 @@ export default function ProfileDashboard() {
                                 )}
                             </div>
                         )}
+                    </div>
+                </div>
+            )}
+            {editingId && editingType === 'multi_link' && (
+                <div className="fixed inset-0 z-50 bg-[#f4f3f0] flex flex-col items-center overflow-y-auto p-4 sm:p-8">
+                    <div className="w-full max-w-[600px] mb-12 relative">
+                        <button 
+                            onClick={() => setEditingId(null)}
+                            className="absolute -right-4 top-0 p-2 text-slate-500 hover:text-black hover:bg-black/5 rounded-full transition-colors"
+                        >
+                            <X size={24} />
+                        </button>
+                        
+                        <div className="mb-8 mt-4">
+                            <h1 className="text-[28px] font-black tracking-tight mb-1 text-[#111]">Edit Your Links</h1>
+                            <p className="text-sm text-slate-500 font-medium">Update the destinations for your multi-link QR code. (Max 5)</p>
+                        </div>
+
+                        <div className="bg-white rounded-3xl p-6 shadow-sm border border-black/5">
+                            <div className="space-y-3 mb-6">
+                                {editMultiLinks.map((link, idx) => (
+                                    <div key={idx} className="flex gap-3 bg-[#faf9f8] p-4 rounded-2xl border border-black/5 items-start group">
+                                        <div className="cursor-grab opacity-30 hover:opacity-100 px-1 mt-2.5">
+                                            <span className="block w-1.5 h-1.5 bg-black/40 rounded-full mb-1"></span>
+                                            <span className="block w-1.5 h-1.5 bg-black/40 rounded-full mb-1"></span>
+                                            <span className="block w-1.5 h-1.5 bg-black/40 rounded-full"></span>
+                                        </div>
+                                        
+                                        <div className="flex-1 flex flex-col gap-3 min-w-0">
+                                            <div className="flex flex-col sm:flex-row gap-3">
+                                                <div className="relative shrink-0 sm:w-48">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setOpenDropdownId(openDropdownId === idx ? null : idx)}
+                                                        className={`w-full h-11 pl-9 pr-10 bg-white border rounded-xl text-[13px] font-bold focus:outline-none flex items-center text-left transition-colors ${openDropdownId === idx ? 'border-black' : 'border-black/10'}`}
+                                                    >
+                                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
+                                                            {(() => {
+                                                                const opt = PLATFORM_OPTIONS.find(p => p.value === link.platform) || PLATFORM_OPTIONS[5];
+                                                                const Icon = opt.icon;
+                                                                return <Icon size={16} />;
+                                                            })()}
+                                                        </div>
+                                                        <span className="flex-1 truncate">
+                                                            {PLATFORM_OPTIONS.find(p => p.value === link.platform)?.label || 'Other Link'}
+                                                        </span>
+                                                        <div className={`absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none transition-transform ${openDropdownId === idx ? 'rotate-180 text-black' : 'text-slate-400'}`}>
+                                                            <ChevronDown size={16} />
+                                                        </div>
+                                                    </button>
+
+                                                    {openDropdownId === idx && (
+                                                        <>
+                                                            <div className="fixed inset-0 z-40" onClick={() => setOpenDropdownId(null)} />
+                                                            <div className="absolute z-50 mt-1 w-full bg-white border border-black/10 rounded-xl shadow-xl py-1.5 overflow-hidden">
+                                                                {PLATFORM_OPTIONS.map(opt => (
+                                                                    <button
+                                                                        key={opt.value}
+                                                                        type="button"
+                                                                        onClick={() => {
+                                                                            const newLinks = [...editMultiLinks];
+                                                                            newLinks[idx].platform = opt.value;
+                                                                            setEditMultiLinks(newLinks);
+                                                                            setOpenDropdownId(null);
+                                                                        }}
+                                                                        className={`w-full text-left px-3 py-2 text-[13px] font-bold flex items-center gap-2.5 transition-colors ${link.platform === opt.value ? 'bg-black/5' : 'hover:bg-black/5'}`}
+                                                                    >
+                                                                        <opt.icon size={16} className={link.platform === opt.value ? 'text-black' : 'text-slate-500'} />
+                                                                        {opt.label}
+                                                                    </button>
+                                                                ))}
+                                                            </div>
+                                                        </>
+                                                    )}
+                                                </div>
+                                                <input
+                                                    type="text"
+                                                    value={link.label || ''}
+                                                    onChange={(e) => {
+                                                        const newLinks = [...editMultiLinks];
+                                                        newLinks[idx].label = e.target.value;
+                                                        setEditMultiLinks(newLinks);
+                                                    }}
+                                                    placeholder="Button Text"
+                                                    className="flex-1 h-11 px-4 bg-white border border-black/10 rounded-xl text-[13px] font-bold focus:outline-none focus:border-black min-w-0"
+                                                />
+                                            </div>
+                                            
+                                            <input
+                                                type="url"
+                                                value={link.url}
+                                                onChange={(e) => {
+                                                    const newLinks = [...editMultiLinks];
+                                                    newLinks[idx].url = e.target.value;
+                                                    setEditMultiLinks(newLinks);
+                                                }}
+                                                placeholder="Destination URL (https://...)"
+                                                className="w-full h-11 px-4 bg-white border border-black/10 rounded-xl text-[13px] font-medium focus:outline-none focus:border-black min-w-0"
+                                            />
+                                        </div>
+
+                                        <button
+                                            type="button"
+                                            onClick={() => setEditMultiLinks(editMultiLinks.filter((_, i) => i !== idx))}
+                                            className="w-10 h-10 mt-0.5 flex items-center justify-center shrink-0 rounded-xl text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                                        >
+                                            <X size={18} />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {editMultiLinks.length < 5 && (
+                                <button
+                                    onClick={() => setEditMultiLinks([...editMultiLinks, { id: Math.random().toString(), platform: 'website', url: '' }])}
+                                    className="w-full h-[52px] border-2 border-dashed border-black/10 rounded-2xl flex items-center justify-center gap-2 text-sm font-bold text-[#111] hover:bg-black/5 hover:border-black/20 transition-all active:scale-[0.99] mb-6"
+                                >
+                                    + Add another link
+                                </button>
+                            )}
+
+                            <button
+                                onClick={() => {
+                                    updateMutation.mutate({ id: editingId, payload: { qr_type: 'multi_link', multi_links: editMultiLinks.filter(l => l.url.trim()) } });
+                                    setEditingId(null);
+                                }}
+                                disabled={updateMutation.isPending || !editMultiLinks.some(l => l.url.trim())}
+                                className="w-full h-[56px] bg-[#111] text-[#f4f3f0] rounded-2xl flex items-center justify-center font-bold text-[15px] transition-all hover:bg-black active:scale-[0.99] disabled:opacity-50"
+                            >
+                                {updateMutation.isPending ? <Loader2 size={20} className="animate-spin" /> : 'Save Changes'}
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}

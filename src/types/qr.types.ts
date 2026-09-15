@@ -3,6 +3,12 @@
 export type DynamicQRStatus = 'assigned' | 'unassigned' | 'disabled';
 export type DynamicQRStatusWithMixed = DynamicQRStatus | 'missing' | 'mixed';
 
+export interface IMultiLink {
+    platform: string;
+    url: string;
+    label?: string;
+}
+
 export interface DynamicQR {
     _id: string;
     token: string;
@@ -13,7 +19,9 @@ export interface DynamicQR {
     batch_size: number | null;
     batch_sequence: number | null;
     status: DynamicQRStatus;
+    qr_type: 'single' | 'multi_link';
     manual_redirect_url: string | null;
+    multi_links: IMultiLink[];
     id_value: string | null;
     qr_url: string;
     resolved_url: string;
@@ -64,6 +72,8 @@ export interface ListDynamicQRsResponse {
 export interface ResolveQRResponse {
     token: string;
     status: DynamicQRStatusWithMixed;
+    qr_type?: 'single' | 'multi_link';
+    multi_links?: IMultiLink[];
     redirect_url: string;
 }
 
