@@ -136,6 +136,7 @@ export function CategorySetupContent({ categorySlug }: { categorySlug: string })
 
     // UX State: Show instructions before going to the assignment form
     const [showInstructions, setShowInstructions] = useState(true);
+    const [isLinkCopied, setIsLinkCopied] = useState(false);
 
     // Form fields — pre-filled from store if available
     const [name, setName] = useState('');
@@ -421,6 +422,30 @@ export function CategorySetupContent({ categorySlug }: { categorySlug: string })
                         >
                             <HelpCircle size={14} className="shrink-0 text-indigo-600" />
                             <span>How to configure?</span>
+                        </button>
+
+                        {/* Copy Dynamic Link */}
+                        <button
+                            type="button"
+                            onClick={() => {
+                                const link = `${window.location.origin}/dq/${token}`;
+                                navigator.clipboard.writeText(link);
+                                setIsLinkCopied(true);
+                                setTimeout(() => setIsLinkCopied(false), 2000);
+                            }}
+                            className="inline-flex items-center gap-1.5 bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200/80 px-3.5 py-1.5 rounded-full shadow-2xs font-bold text-xs transition-all transform active:scale-[0.97] cursor-pointer"
+                        >
+                            {isLinkCopied ? (
+                                <>
+                                    <CheckCircle2 size={14} className="shrink-0 text-emerald-500" />
+                                    <span className="text-emerald-600">Copied!</span>
+                                </>
+                            ) : (
+                                <>
+                                    <Link2 size={14} className="shrink-0 text-slate-500" />
+                                    <span>Copy Dynamic Link</span>
+                                </>
+                            )}
                         </button>
                     </div>
                 </div>

@@ -24,6 +24,7 @@ export default function StaffAssignPage() {
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+    const [isLinkCopied, setIsLinkCopied] = useState(false);
 
     const [formData, setFormData] = useState({
         name: '',
@@ -193,14 +194,47 @@ export default function StaffAssignPage() {
                     {token}
                 </h1>
                 
-                <div className="flex items-center gap-3">
-                    <span className={`px-2.5 py-1 rounded-[6px] text-[11px] font-bold uppercase tracking-widest border border-black/10 flex items-center gap-1.5 ${isReassign ? 'bg-black/5 text-black/70' : 'bg-black text-white'}`}>
-                        <CategoryIcon size={12} />
-                        {qrDetails?.category_name || 'Standard QR'}
-                    </span>
-                    <span className="text-[13px] font-bold text-black/50">
-                        Status: <span className={isReassign ? 'text-black' : 'text-[#10b981]'}>{isReassign ? 'ASSIGNED' : 'UNASSIGNED'}</span>
-                    </span>
+                <div className="flex flex-col gap-4">
+                    <div className="flex items-center gap-3">
+                        <span className={`px-2.5 py-1 rounded-[6px] text-[11px] font-bold uppercase tracking-widest border border-black/10 flex items-center gap-1.5 ${isReassign ? 'bg-black/5 text-black/70' : 'bg-black text-white'}`}>
+                            <CategoryIcon size={12} />
+                            {qrDetails?.category_name || 'Standard QR'}
+                        </span>
+                        <span className="text-[13px] font-bold text-black/50">
+                            Status: <span className={isReassign ? 'text-black' : 'text-[#10b981]'}>{isReassign ? 'ASSIGNED' : 'UNASSIGNED'}</span>
+                        </span>
+                    </div>
+
+                    <div className="flex items-center justify-between p-3 bg-white/40 border rounded-xl" style={{ borderColor: '#D8D1C8' }}>
+                        <div className="flex items-center gap-2 overflow-hidden">
+                            <Link2 size={16} className="text-black/40 shrink-0" />
+                            <span className="text-[13px] font-mono text-black/60 truncate">
+                                {`${window.location.origin}/dq/${token}`}
+                            </span>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={() => {
+                                navigator.clipboard.writeText(`${window.location.origin}/dq/${token}`);
+                                setIsLinkCopied(true);
+                                setTimeout(() => setIsLinkCopied(false), 2000);
+                            }}
+                            className={`shrink-0 ml-3 px-3 py-1.5 flex items-center gap-1.5 text-[12px] font-bold rounded-lg transition-colors ${
+                                isLinkCopied 
+                                    ? 'bg-emerald-500/10 text-emerald-600' 
+                                    : 'bg-black/5 hover:bg-black/10 text-black'
+                            }`}
+                        >
+                            {isLinkCopied ? (
+                                <>
+                                    <Check size={14} className="shrink-0" />
+                                    <span>Copied!</span>
+                                </>
+                            ) : (
+                                <span>Copy Link</span>
+                            )}
+                        </button>
+                    </div>
                 </div>
             </div>
 

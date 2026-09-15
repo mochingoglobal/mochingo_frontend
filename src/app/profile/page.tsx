@@ -91,6 +91,9 @@ export default function ProfileDashboard() {
     const [isOwnQR, setIsOwnQR] = useState(false);
     const [ownQRId, setOwnQRId] = useState<string | null>(null);
 
+    // Track which QR link is copied
+    const [copiedId, setCopiedId] = useState<string | null>(null);
+
     // Keyboard shortcut for search
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
@@ -498,15 +501,35 @@ export default function ProfileDashboard() {
                                             <span className="w-1 h-1 rounded-full bg-current opacity-40 mx-1" />
                                             <span>{qr.scan_count} scans</span>
                                         </div>
-                                        <button 
-                                            onClick={() => {
-                                                setEditingId(qr.id);
-                                                setEditUrl(qr.manual_redirect_url || '');
-                                            }}
-                                            className="flex items-center gap-1.5 text-[12px] font-semibold hover:opacity-60 transition-opacity"
-                                        >
-                                            Edit <Edit2 size={12} />
-                                        </button>
+                                        <div className="flex items-center gap-3">
+                                            <button 
+                                                onClick={() => {
+                                                    const link = `${window.location.origin}/dq/${qr.token}`;
+                                                    navigator.clipboard.writeText(link);
+                                                    setCopiedId(qr.id);
+                                                    setTimeout(() => setCopiedId(null), 2000);
+                                                }}
+                                                className={`flex items-center gap-1.5 text-[12px] font-semibold transition-colors ${
+                                                    copiedId === qr.id ? 'text-emerald-500' : 'text-mochingo-rich-black/70 hover:text-black'
+                                                }`}
+                                                title="Copy dynamic redirect link for NFC tags"
+                                            >
+                                                {copiedId === qr.id ? (
+                                                    <>Copied <CheckCircle2 size={12} /></>
+                                                ) : (
+                                                    <>Copy Link <Link2 size={12} /></>
+                                                )}
+                                            </button>
+                                            <button 
+                                                onClick={() => {
+                                                    setEditingId(qr.id);
+                                                    setEditUrl(qr.manual_redirect_url || '');
+                                                }}
+                                                className="flex items-center gap-1.5 text-[12px] font-semibold hover:opacity-60 transition-opacity"
+                                            >
+                                                Edit <Edit2 size={12} />
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             ))}
