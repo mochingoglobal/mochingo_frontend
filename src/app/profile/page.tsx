@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Loader2, QrCode, Edit2, X, ScanLine, Link2, Search, Link as LinkIcon, Camera, MessageSquare, MapPin, Globe, ChevronDown, Star } from 'lucide-react';
+import { Loader2, QrCode, Edit2, X, ScanLine, Link2, Search, Link as LinkIcon, Camera, MessageSquare, MapPin, Globe, ChevronDown, Star, CheckCircle2 } from 'lucide-react';
 import type { AxiosError } from 'axios';
 import { useConsumerAuthStore } from '@/store/consumerAuthStore';
 import api from '@/lib/api';
@@ -18,6 +18,8 @@ interface ConsumerQR {
     token: string;
     label: string;
     status: string;
+    qr_type?: 'single' | 'multi_link';
+    multi_links?: any[];
     manual_redirect_url: string;
     scan_count: number;
     created_at: string;
@@ -695,7 +697,7 @@ export default function ProfileDashboard() {
                                             }
                                             
                                             if (isOwnQR && ownQRId) {
-                                                updateMutation.mutate({ id: ownQRId, url: claimUrl }, {
+                                                updateMutation.mutate({ id: ownQRId, payload: { manual_redirect_url: claimUrl } }, {
                                                     onSuccess: () => {
                                                         setScannedToken(null);
                                                         setScannedCategory(null);
