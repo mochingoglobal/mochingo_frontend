@@ -20,6 +20,15 @@ import { FIELD_REGISTRY } from '@/types/onboarding.types';
 const uid = () => Math.random().toString(36).slice(2, 9);
 const MM_TO_PX_RENDER = 11.811; // 300 DPI for download
 
+interface ITemplate {
+    _id: string;
+    name: string;
+    cardW: number;
+    cardH: number;
+    frontFields: CanvasField[];
+    backFields: CanvasField[];
+}
+
 const CARD_PRESETS = [
     { label: 'ID Card — CR80  (85.6 × 54 mm)',  w: 85.6, h: 54  },
     { label: 'A6  (148 × 105 mm)',               w: 148,  h: 105 },
@@ -183,6 +192,10 @@ function BuilderInner() {
     // ── Dragging from toolbox ──────────────────────────────────────────────────
     const [draggingKey, setDraggingKey] = useState<string | null>(null);
 
+    // ── Template Save Modal ────────────────────────────────────────────────────
+    const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
+    const [templateName, setTemplateName] = useState('');
+
     // ── Download state ─────────────────────────────────────────────────────────
     const [isDownloading, setIsDownloading] = useState(false);
 
@@ -205,7 +218,43 @@ function BuilderInner() {
             api.patch('/admin/onboarding/mark-downloaded', { ids: records.map(r => r._id) }),
     });
 
-    // ── Template upload ────────────────────────────────────────────────────────
+    // ── Templates Query & Mutation ─────────────────────────────────────────────
+    const { data: templates = [], refetch: refetchTemplates } = useQuery<ITemplate[]>({
+        queryKey: ['id-card-templates'],
+        queryFn: async () => {
+            const res = await api.get<{ data: ITemplate[] }>('/admin/onboarding/templates');
+            return res.data.data;
+        }
+    });
+
+    const saveTemplate = useMutation({
+        mutationFn: async (name: string) => {
+            await api.post('/admin/onboarding/templates', {
+                name, cardW, cardH, frontFields, backFields
+            });
+        },
+        onSuccess: () => {
+            refetchTemplates();
+            setIsSaveModalOpen(false);
+            setTemplateName('');
+        },
+        onError: (err: any) => {
+            alert(err.response?.data?.message || 'Failed to save template');
+        }
+    });
+
+    const applyTemplate = (t: ITemplate) => {
+        setCardW(t.cardW);
+        setCardH(t.cardH);
+        setCustomW(String(t.cardW));
+        setCustomH(String(t.cardH));
+        // Remap ids to prevent key collisions if we load multiple times
+        setFrontFields(t.frontFields.map(f => ({ ...f, id: uid() })));
+        setBackFields(t.backFields.map(f => ({ ...f, id: uid() })));
+        setSelectedId(null);
+    };
+
+    // ── Template upload (background image) ─────────────────────────────────────
     const handleTemplateUpload = (e: React.ChangeEvent<HTMLInputElement>, which: 'front' | 'back') => {
         const file = e.target.files?.[0];
         if (!file) return;
@@ -426,7 +475,7 @@ function BuilderInner() {
             <div className="flex items-center justify-between px-4 py-2.5 border-b border-white/8 bg-[#0d1424] shrink-0 gap-2 flex-wrap">
 
                 {/* Back + title */}
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 pr-2 border-r border-[#334155]/50">
                     <button onClick={() => router.back()} className="p-2 rounded-lg hover:bg-white/5 text-slate-400 hover:text-slate-200 transition-colors">
                         <ArrowLeft size={17} />
                     </button>
@@ -434,6 +483,34 @@ function BuilderInner() {
                         <h1 className="text-white font-semibold text-sm leading-tight">ID Card Builder</h1>
                         <p className="text-slate-500 text-xs">{records.length === 1 ? records[0]?.name : `${records.length} people`}</p>
                     </div>
+                </div>
+
+                {/* Templates (Saved Alignments) */}
+                <div className="flex items-center gap-2">
+                    <span className="text-slate-500 text-[11px] font-medium uppercase tracking-wide hidden lg:block">Saved Layouts:</span>
+                    <select
+                        className="bg-[#1e293b] text-slate-200 border border-[#334155] rounded-md px-2 py-1.5 text-xs max-w-[140px] truncate"
+                        onChange={e => {
+                            if (!e.target.value) return;
+                            const t = templates.find(temp => temp._id === e.target.value);
+                            if (t) applyTemplate(t);
+                            e.target.value = ''; // Reset select so same can be loaded again
+                        }}
+                    >
+                        <option value="">-- Load Layout --</option>
+                        {templates.map(t => (
+                            <option key={t._id} value={t._id}>{t.name}</option>
+                        ))}
+                    </select>
+                    <button 
+                        onClick={() => {
+                            setTemplateName('');
+                            setIsSaveModalOpen(true);
+                        }}
+                        className="px-3 py-1.5 rounded-md text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 transition-colors"
+                    >
+                        Save Current
+                    </button>
                 </div>
 
                 {/* Card size */}
@@ -855,6 +932,47 @@ function BuilderInner() {
                     </div>
                 </div>
             </div>
+
+            {/* ── Save Template Modal ─────────────────────────────────────── */}
+            {isSaveModalOpen && (
+                <div className="fixed inset-0 bg-black/60 z-[100] flex items-center justify-center p-4 backdrop-blur-sm">
+                    <div className="bg-[#0f172a] border border-[#1e293b] rounded-xl shadow-2xl p-6 w-full max-w-sm">
+                        <h2 className="text-slate-200 text-lg font-semibold mb-2">Save Layout Template</h2>
+                        <p className="text-slate-400 text-sm mb-4">Enter a name for this template to easily load it later.</p>
+                        
+                        <input
+                            type="text"
+                            value={templateName}
+                            onChange={e => setTemplateName(e.target.value)}
+                            placeholder='e.g., "Doctor Standard"'
+                            className="w-full bg-[#1e293b] border border-[#334155] rounded-lg px-3 py-2 text-slate-200 text-sm focus:outline-none focus:border-indigo-500 mb-6"
+                            autoFocus
+                            onKeyDown={e => {
+                                if (e.key === 'Enter' && templateName.trim()) {
+                                    saveTemplate.mutate(templateName.trim());
+                                }
+                            }}
+                        />
+
+                        <div className="flex items-center justify-end gap-3">
+                            <button
+                                onClick={() => setIsSaveModalOpen(false)}
+                                className="px-4 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-slate-200 hover:bg-white/5 transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={() => saveTemplate.mutate(templateName.trim())}
+                                disabled={!templateName.trim() || saveTemplate.isPending}
+                                className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-indigo-600 hover:bg-indigo-500 text-white shadow-md disabled:opacity-50 transition-colors"
+                            >
+                                {saveTemplate.isPending ? <Loader2 size={16} className="animate-spin" /> : null}
+                                Save Template
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
