@@ -139,7 +139,7 @@ async function renderCardToCanvas(opts: {
             ctx.font          = `${st} ${wt} ${fs}px "${field.fontFamily ?? 'Arial'}", sans-serif`;
             ctx.fillStyle     = field.color ?? '#000000';
             ctx.textBaseline  = 'top';
-            const value = record[field.fieldKey];
+            const value = field.overrideText || record[field.fieldKey];
             ctx.fillText(String(value ?? ''), x, y);
         }
     }
@@ -653,7 +653,7 @@ function BuilderInner() {
                                             <select value={selectedField.fontFamily ?? 'Arial'}
                                                 onChange={e => updateField(selectedField.id, { fontFamily: e.target.value })}
                                                 className="input input-sm bg-[#0f172a] border border-[#1e293b] text-slate-200 w-full">
-                                                {['Arial', 'Helvetica', 'Georgia', 'Times New Roman', 'Courier New', 'Verdana', 'Inter'].map(f => (
+                                                {['Arial', 'Helvetica', 'Georgia', 'Times New Roman', 'Courier New', 'Verdana', 'Inter', 'Satoshi'].map(f => (
                                                     <option key={f} value={f}>{f}</option>
                                                 ))}
                                             </select>
@@ -673,6 +673,12 @@ function BuilderInner() {
                                                 className={`flex-1 flex items-center justify-center gap-1 py-1.5 rounded text-xs border transition-colors ${selectedField.italic ? 'bg-indigo-500/20 border-indigo-500/30 text-indigo-300' : 'bg-white/5 border-white/10 text-slate-400 hover:text-slate-200'}`}>
                                                 <Italic size={11} /> Italic
                                             </button>
+                                        </div>
+                                        <div className="mt-4 pt-4 border-t border-[#1e293b]">
+                                            <label className="text-slate-500 text-[10px] block mb-1">Custom Text (Overrides DB Data)</label>
+                                            <input type="text" placeholder="Type to override data..." value={selectedField.overrideText ?? ''}
+                                                onChange={e => updateField(selectedField.id, { overrideText: e.target.value })}
+                                                className="input input-sm bg-[#0f172a] border border-[#1e293b] text-slate-200 w-full" />
                                         </div>
                                     </>
                                 )}
@@ -862,9 +868,11 @@ function BuilderInner() {
                                     onMouseEnter={e => { if (!isSelected) (e.currentTarget as HTMLElement).style.outlineColor = 'rgba(99,102,241,0.35)'; }}
                                     onMouseLeave={e => { if (!isSelected) (e.currentTarget as HTMLElement).style.outlineColor = 'rgba(99,102,241,0)'; }}
                                 >
-                                    {previewRecord
-                                        ? String(value ?? `[${field.label}]`)
-                                        : `[${field.label}]`
+                                    {field.overrideText 
+                                        ? field.overrideText
+                                        : previewRecord
+                                            ? String(value ?? `[${field.label}]`)
+                                            : `[${field.label}]`
                                     }
                                     {isSelected && (
                                         <div

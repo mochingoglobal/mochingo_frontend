@@ -5,6 +5,7 @@ export type OnboardingStatus = 'new' | 'downloaded' | 'done';
 export interface IOnboardingRecord {
     _id: string;
     name: string;
+    professional_name?: string | null;
     qualification?: string | null;
     dob?: string | null;
     pulse_visit_id?: string | null;
@@ -36,6 +37,7 @@ export interface FieldDefinition {
 
 export const FIELD_REGISTRY: FieldDefinition[] = [
     { key: 'name',            label: 'Full Name',       type: 'text'  },
+    { key: 'professional_name',label: 'Professional Name',type: 'text'  },
     { key: 'qualification',   label: 'Qualification',   type: 'text'  },
     { key: 'dob',             label: 'Date of Birth',   type: 'text'  },
     { key: 'pulse_visit_id',  label: 'Pulse Visit ID',  type: 'text'  },
@@ -65,6 +67,7 @@ export interface CanvasField {
     widthPct?: number;
     heightPct?: number;
     borderRadius?: number;
+    overrideText?: string;
 }
 
 // ── API Response shapes ───────────────────────────────────────────────────────
