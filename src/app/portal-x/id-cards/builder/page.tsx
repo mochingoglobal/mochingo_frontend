@@ -111,7 +111,8 @@ async function renderCardToCanvas(opts: {
             if (value) {
                 try {
                     const qrcode = (await import('qrcode')).default;
-                    const qrDataUrl = await qrcode.toDataURL(value, { margin: 1 });
+                    const qrColor = field.color ?? '#000000';
+                    const qrDataUrl = await qrcode.toDataURL(value, { margin: 1, color: { dark: qrColor, light: '#ffffff00' } });
                     const img = await loadImg(qrDataUrl);
                     ctx.drawImage(img, x, y, w, h);
                 } catch {
@@ -138,14 +139,14 @@ async function renderCardToCanvas(opts: {
 
 // ── QR Code Component for Live Preview ────────────────────────────────────────
 
-function QRCodePreview({ text }: { text: string }) {
+function QRCodePreview({ text, color = '#000000' }: { text: string; color?: string }) {
     const [src, setSrc] = useState<string>('');
     
     useEffect(() => {
         if (!text) { setSrc(''); return; }
-        import('qrcode').then(m => m.default.toDataURL(text, { margin: 1 }))
+        import('qrcode').then(m => m.default.toDataURL(text, { margin: 1, color: { dark: color, light: '#ffffff00' } }))
             .then(setSrc).catch(() => setSrc(''));
-    }, [text]);
+    }, [text, color]);
     
     if (!src) return <div style={{ width: '100%', height: '100%', background: '#e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><QrCode size={20} color="#94a3b8" /></div>;
     return <img src={src} alt="QR" style={{ width: '100%', height: '100%', objectFit: 'contain', pointerEvents: 'none', display: 'block' }} />;
@@ -684,6 +685,15 @@ function BuilderInner() {
                                     </>
                                 )}
 
+                                {selectedField.type === 'qrcode' && (
+                                    <div>
+                                        <label className="text-slate-500 text-[10px] block mb-1">QR Color</label>
+                                        <input type="color" value={selectedField.color ?? '#000000'}
+                                            onChange={e => updateField(selectedField.id, { color: e.target.value })}
+                                            className="h-8 w-full rounded cursor-pointer border border-[#1e293b] bg-transparent" />
+                                    </div>
+                                )}
+
                                 {/* Fine-tune position */}
                                 <div>
                                     <label className="text-slate-500 text-[10px] block mb-1">Position (X % / Y %)</label>
@@ -771,7 +781,7 @@ function BuilderInner() {
                                         }}
                                     >
                                         {field.type === 'qrcode' ? (
-                                            <QRCodePreview text={value as string || 'https://mochingo.com'} />
+                                            <QRCodePreview text={value as string || 'https://mochingo.com'} color={field.color} />
                                         ) : value && typeof value === 'string' ? (
                                             <img
                                                 src={value}
