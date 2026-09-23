@@ -18,7 +18,7 @@ import { FIELD_REGISTRY } from '@/types/onboarding.types';
 // ── Constants ─────────────────────────────────────────────────────────────────
 
 const uid = () => Math.random().toString(36).slice(2, 9);
-const MM_TO_PX_RENDER = 11.811; // 300 DPI for download
+const MM_TO_PX_RENDER = 23.622; // 600 DPI for extremely crisp print quality
 
 interface ITemplate {
     _id: string;
@@ -452,9 +452,9 @@ function BuilderInner() {
             for (const { fc, bc } of cards) {
                 if (!first) doc.addPage([cardW, cardH] as any, orientation);
                 first = false;
-                doc.addImage(fc.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, cardW, cardH);
+                doc.addImage(fc.toDataURL('image/png'), 'PNG', 0, 0, cardW, cardH);
                 doc.addPage([cardW, cardH] as any, orientation);
-                doc.addImage(bc.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, cardW, cardH);
+                doc.addImage(bc.toDataURL('image/png'), 'PNG', 0, 0, cardW, cardH);
             }
             doc.save(`id-cards-${new Date().toISOString().slice(0, 10)}.pdf`);
             await markDownloaded.mutateAsync();
