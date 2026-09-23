@@ -64,6 +64,7 @@ export interface CanvasField {
     // Image sizing (for type: 'image') — as % of template dimensions
     widthPct?: number;
     heightPct?: number;
+    borderRadius?: number;
 }
 
 // ── API Response shapes ───────────────────────────────────────────────────────

@@ -85,25 +85,34 @@ async function renderCardToCanvas(opts: {
         if (field.type === 'image') {
             const w = ((field.widthPct  ?? 20) / 100) * widthPx;
             const h = ((field.heightPct ?? 20) / 100) * heightPx;
+            const brPct = field.borderRadius ?? 0;
+            const brPx = Math.min(w, h) * (brPct / 100);
+            
             const url = record[field.fieldKey] as string | undefined | null;
+            
+            ctx.save();
+            ctx.beginPath();
+            if (brPx > 0 && typeof ctx.roundRect === 'function') {
+                ctx.roundRect(x, y, w, h, brPx);
+            } else {
+                ctx.rect(x, y, w, h);
+            }
+            ctx.clip();
+
             if (url) {
                 try {
                     const proxiedUrl = await fetchProxyImage(url);
                     const img = await loadImg(proxiedUrl);
-                    ctx.save();
-                    ctx.beginPath();
-                    ctx.rect(x, y, w, h);
-                    ctx.clip();
                     ctx.drawImage(img, x, y, w, h);
-                    ctx.restore();
                 } catch {
                     ctx.fillStyle = '#cbd5e1';
-                    ctx.fillRect(x, y, w, h);
+                    ctx.fill();
                 }
             } else {
                 ctx.fillStyle = '#cbd5e1';
-                ctx.fillRect(x, y, w, h);
+                ctx.fill();
             }
+            ctx.restore();
         } else if (field.type === 'qrcode') {
             const w = ((field.widthPct  ?? 20) / 100) * widthPx;
             const h = ((field.heightPct ?? 20) / 100) * heightPx;
@@ -685,6 +694,15 @@ function BuilderInner() {
                                     </>
                                 )}
 
+                                {selectedField.type === 'image' && (
+                                    <div>
+                                        <label className="text-slate-500 text-[10px] block mb-1">Corner Curve (%)</label>
+                                        <input type="number" min="0" max="50" value={selectedField.borderRadius ?? 0}
+                                            onChange={e => updateField(selectedField.id, { borderRadius: Number(e.target.value) })}
+                                            className="input input-sm bg-[#0f172a] border border-[#1e293b] text-slate-200 w-full" />
+                                    </div>
+                                )}
+
                                 {selectedField.type === 'qrcode' && (
                                     <div>
                                         <label className="text-slate-500 text-[10px] block mb-1">QR Color</label>
@@ -786,10 +804,10 @@ function BuilderInner() {
                                             <img
                                                 src={value}
                                                 alt="photo"
-                                                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', pointerEvents: 'none' }}
+                                                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', pointerEvents: 'none', borderRadius: `${field.borderRadius ?? 0}%` }}
                                             />
                                         ) : (
-                                            <div style={{ width: '100%', height: '100%', background: '#e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                            <div style={{ width: '100%', height: '100%', background: '#e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: `${field.borderRadius ?? 0}%` }}>
                                                 <User size={Math.round(displayH * 0.08)} color="#94a3b8" />
                                             </div>
                                         )}
