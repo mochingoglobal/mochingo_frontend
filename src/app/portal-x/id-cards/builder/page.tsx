@@ -103,7 +103,23 @@ async function renderCardToCanvas(opts: {
                 try {
                     const proxiedUrl = await fetchProxyImage(url);
                     const img = await loadImg(proxiedUrl);
-                    ctx.drawImage(img, x, y, w, h);
+                    
+                    const imgAspect = img.width / img.height;
+                    const canvasAspect = w / h;
+                    let drawW = w;
+                    let drawH = h;
+                    let offsetX = 0;
+                    let offsetY = 0;
+
+                    if (imgAspect > canvasAspect) {
+                        drawW = h * imgAspect;
+                        offsetX = (w - drawW) / 2;
+                    } else {
+                        drawH = w / imgAspect;
+                        offsetY = (h - drawH) / 2;
+                    }
+                    
+                    ctx.drawImage(img, x + offsetX, y + offsetY, drawW, drawH);
                 } catch {
                     ctx.fillStyle = '#cbd5e1';
                     ctx.fill();
