@@ -65,8 +65,9 @@ async function renderCardToCanvas(opts: {
     widthPx: number;
     heightPx: number;
     previewW: number;
+    recordOverrides?: Record<string, Record<string, string>>;
 }): Promise<HTMLCanvasElement> {
-    const { templateDataUrl, fields, record, widthPx, heightPx, previewW } = opts;
+    const { templateDataUrl, fields, record, widthPx, heightPx, previewW, recordOverrides } = opts;
     const c = document.createElement('canvas');
     c.width  = widthPx;
     c.height = heightPx;
@@ -155,7 +156,10 @@ async function renderCardToCanvas(opts: {
             ctx.font          = `${st} ${wt} ${fs}px "${field.fontFamily ?? 'Arial'}", sans-serif`;
             ctx.fillStyle     = field.color ?? '#000000';
             ctx.textBaseline  = 'top';
-            const value = field.overrideText || record[field.fieldKey];
+            
+            const rOv = recordOverrides?.[record._id]?.[field.id];
+            const value = (rOv !== undefined && rOv !== '') ? rOv : record[field.fieldKey];
+            
             ctx.fillText(String(value ?? ''), x, y);
         }
     }
@@ -217,6 +221,9 @@ function BuilderInner() {
 
     // ── Dragging from toolbox ──────────────────────────────────────────────────
     const [draggingKey, setDraggingKey] = useState<string | null>(null);
+
+    // ── Record Overrides (Specific to person) ──────────────────────────────────
+    const [recordOverrides, setRecordOverrides] = useState<Record<string, Record<string, string>>>({});
 
     // ── Template Save Modal ────────────────────────────────────────────────────
     const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
@@ -433,8 +440,8 @@ function BuilderInner() {
     const buildAll = async () => {
         const out: { record: IOnboardingRecord; fc: HTMLCanvasElement; bc: HTMLCanvasElement }[] = [];
         for (const record of records) {
-            const fc = await renderCardToCanvas({ templateDataUrl: frontDataUrl, fields: frontFields, record, widthPx: renderW, heightPx: renderH, previewW: displayW });
-            const bc = await renderCardToCanvas({ templateDataUrl: backDataUrl,  fields: backFields,  record, widthPx: renderW, heightPx: renderH, previewW: displayW });
+            const fc = await renderCardToCanvas({ templateDataUrl: frontDataUrl, fields: frontFields, record, widthPx: renderW, heightPx: renderH, previewW: displayW, recordOverrides });
+            const bc = await renderCardToCanvas({ templateDataUrl: backDataUrl,  fields: backFields,  record, widthPx: renderW, heightPx: renderH, previewW: displayW, recordOverrides });
             out.push({ record, fc, bc });
         }
         return out;
@@ -691,9 +698,19 @@ function BuilderInner() {
                                             </button>
                                         </div>
                                         <div className="mt-4 pt-4 border-t border-[#1e293b]">
-                                            <label className="text-slate-500 text-[10px] block mb-1">Custom Text (Overrides DB Data)</label>
-                                            <input type="text" placeholder="Type to override data..." value={selectedField.overrideText ?? ''}
-                                                onChange={e => updateField(selectedField.id, { overrideText: e.target.value })}
+                                            <label className="text-slate-500 text-[10px] block mb-1">Custom Text (For this person only)</label>
+                                            <input type="text" placeholder="Type to override data..." 
+                                                value={previewRecord ? (recordOverrides[previewRecord._id]?.[selectedField.id] ?? '') : ''}
+                                                onChange={e => {
+                                                    if (!previewRecord) return;
+                                                    setRecordOverrides(prev => ({
+                                                        ...prev,
+                                                        [previewRecord._id]: {
+                                                            ...(prev[previewRecord._id] || {}),
+                                                            [selectedField.id]: e.target.value
+                                                        }
+                                                    }));
+                                                }}
                                                 className="input input-sm bg-[#0f172a] border border-[#1e293b] text-slate-200 w-full" />
                                         </div>
                                     </>
@@ -884,12 +901,11 @@ function BuilderInner() {
                                     onMouseEnter={e => { if (!isSelected) (e.currentTarget as HTMLElement).style.outlineColor = 'rgba(99,102,241,0.35)'; }}
                                     onMouseLeave={e => { if (!isSelected) (e.currentTarget as HTMLElement).style.outlineColor = 'rgba(99,102,241,0)'; }}
                                 >
-                                    {field.overrideText 
-                                        ? field.overrideText
-                                        : previewRecord
-                                            ? String(value ?? `[${field.label}]`)
-                                            : `[${field.label}]`
-                                    }
+                                    {(() => {
+                                        const rOv = previewRecord ? recordOverrides[previewRecord._id]?.[selectedField?.id === field.id ? selectedField.id : field.id] : undefined;
+                                        if (rOv !== undefined && rOv !== '') return rOv;
+                                        return previewRecord ? String(value ?? `[${field.label}]`) : `[${field.label}]`;
+                                    })()}
                                     {isSelected && (
                                         <div
                                             onMouseDown={e => handleResizeMouseDown(e, field.id, 'text')}
