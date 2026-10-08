@@ -58,15 +58,16 @@ function ActiveTab() {
     const [search, setSearch] = useState('');
     const [fromIdx, setFromIdx] = useState<string>('');
     const [toIdx, setToIdx] = useState<string>('');
+    const [category, setCategory] = useState('');
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
     const [page, setPage] = useState(1);
     const LIMIT = 100;
 
     const { data, isLoading, refetch } = useQuery({
-        queryKey: ['onboardings-active', page, search],
+        queryKey: ['onboardings-active', page, search, category],
         queryFn: async () => {
             const res = await api.get<{ data: OnboardingListResponse }>(
-                `/admin/onboarding?page=${page}&limit=${LIMIT}&search=${encodeURIComponent(search)}`
+                `/admin/onboarding?page=${page}&limit=${LIMIT}&search=${encodeURIComponent(search)}&category=${encodeURIComponent(category)}`
             );
             return res.data.data;
         },
@@ -141,6 +142,16 @@ function ActiveTab() {
                     />
                 </div>
 
+                {/* Category Filter */}
+                <div className="w-full sm:w-48">
+                    <input
+                        className="input bg-[#0f172a] border border-[#1e293b] text-slate-200 w-full text-sm"
+                        placeholder="Filter by Category"
+                        value={category}
+                        onChange={e => { setCategory(e.target.value); setPage(1); }}
+                    />
+                </div>
+
                 {/* Range selector */}
                 <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-slate-500 text-xs font-medium">Select range:</span>
@@ -186,6 +197,7 @@ function ActiveTab() {
                                 </th>
                                 <th style={{ width: 48 }}>#</th>
                                 <th>Name</th>
+                                <th>Category</th>
                                 <th>Qualification</th>
                                 <th>Reg No</th>
                                 <th>Service Area</th>
@@ -196,11 +208,11 @@ function ActiveTab() {
                         </thead>
                         <tbody>
                             {isLoading ? (
-                                <tr><td colSpan={9} style={{ textAlign: 'center', padding: 48 }}>
+                                <tr><td colSpan={10} style={{ textAlign: 'center', padding: 48 }}>
                                     <Loader2 size={24} className="animate-spin mx-auto text-indigo-400" />
                                 </td></tr>
                             ) : records.length === 0 ? (
-                                <tr><td colSpan={9} style={{ textAlign: 'center', padding: 48, color: '#64748b' }}>
+                                <tr><td colSpan={10} style={{ textAlign: 'center', padding: 48, color: '#64748b' }}>
                                     <AlertCircle size={32} className="mx-auto mb-2 opacity-30" />
                                     <p>No onboarding records yet</p>
                                 </td></tr>
@@ -230,6 +242,13 @@ function ActiveTab() {
                                                     }
                                                     <span className="font-medium text-sm">{record.name}</span>
                                                 </div>
+                                            </td>
+                                            <td className="text-slate-400 text-sm">
+                                                {record.category ? (
+                                                    <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-medium bg-slate-500/10 text-slate-400 border border-slate-500/20">
+                                                        {record.category}
+                                                    </span>
+                                                ) : '—'}
                                             </td>
                                             <td className="text-slate-400 text-sm">{record.qualification || '—'}</td>
                                             <td className="font-mono text-xs text-slate-300">{record.registration_no || '—'}</td>
@@ -332,14 +351,17 @@ function ActiveTab() {
 
 function DoneTab() {
     const router = useRouter();
+    const queryClient = useQueryClient();
     const [search, setSearch] = useState('');
+    const [category, setCategory] = useState('');
     const [page, setPage] = useState(1);
+    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
-    const { data, isLoading } = useQuery({
-        queryKey: ['onboardings-done', page, search],
+    const { data, isLoading, refetch } = useQuery({
+        queryKey: ['onboardings-done', page, search, category],
         queryFn: async () => {
             const res = await api.get<{ data: OnboardingListResponse }>(
-                `/admin/onboarding?status=done&page=${page}&limit=100&search=${encodeURIComponent(search)}`
+                `/admin/onboarding?status=done&page=${page}&limit=100&search=${encodeURIComponent(search)}&category=${encodeURIComponent(category)}`
             );
             return res.data.data;
         },
@@ -347,16 +369,65 @@ function DoneTab() {
 
     const records = data?.records ?? [];
 
+    const markActiveMutation = useMutation({
+        mutationFn: async (ids: string[]) => {
+            await api.patch('/admin/onboarding/mark-active', { ids });
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['onboardings-active'] });
+            queryClient.invalidateQueries({ queryKey: ['onboardings-done'] });
+            queryClient.invalidateQueries({ queryKey: ['onboarding-count'] });
+            setSelectedIds(new Set());
+        },
+    });
+
+    const toggleRow = (id: string) => {
+        setSelectedIds(prev => {
+            const next = new Set(prev);
+            next.has(id) ? next.delete(id) : next.add(id);
+            return next;
+        });
+    };
+
+    const toggleAll = () => {
+        if (selectedIds.size === records.length) {
+            setSelectedIds(new Set());
+        } else {
+            setSelectedIds(new Set(records.map(r => r._id)));
+        }
+    };
+
+    const selectedList = Array.from(selectedIds);
+    const allChecked = records.length > 0 && selectedIds.size === records.length;
+    const someChecked = selectedIds.size > 0 && selectedIds.size < records.length;
+
     return (
         <div className="flex flex-col gap-4">
-            <div className="relative w-full sm:w-64">
-                <Search size={14} className="absolute left-3 top-[11px] text-slate-500" />
-                <input
-                    className="input bg-[#0f172a] border border-[#1e293b] text-slate-200 pl-8 w-full text-sm"
-                    placeholder="Search…"
-                    value={search}
-                    onChange={e => { setSearch(e.target.value); setPage(1); }}
-                />
+            <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between flex-wrap">
+                <div className="relative w-full sm:w-64">
+                    <Search size={14} className="absolute left-3 top-[11px] text-slate-500" />
+                    <input
+                        className="input bg-[#0f172a] border border-[#1e293b] text-slate-200 pl-8 w-full text-sm"
+                        placeholder="Search…"
+                        value={search}
+                        onChange={e => { setSearch(e.target.value); setPage(1); }}
+                    />
+                </div>
+
+                <div className="w-full sm:w-48">
+                    <input
+                        className="input bg-[#0f172a] border border-[#1e293b] text-slate-200 w-full text-sm"
+                        placeholder="Filter by Category"
+                        value={category}
+                        onChange={e => { setCategory(e.target.value); setPage(1); }}
+                    />
+                </div>
+                
+                <div className="flex items-center gap-2 flex-wrap">
+                    <button onClick={() => refetch()} className="p-1.5 text-slate-500 hover:text-slate-300 transition-colors">
+                        <RefreshCw size={14} />
+                    </button>
+                </div>
             </div>
 
             <div className="card bg-[rgba(242,237,231,0.03)] border border-[#1e293b] rounded-xl overflow-hidden">
@@ -364,7 +435,15 @@ function DoneTab() {
                     <table>
                         <thead>
                             <tr>
+                                <th style={{ width: 40, paddingLeft: 16 }}>
+                                    <button onClick={toggleAll} className="text-slate-400 hover:text-slate-200 transition-colors">
+                                        {allChecked ? <CheckSquare size={16} className="text-indigo-400" /> :
+                                            someChecked ? <CheckSquare size={16} className="text-indigo-400/50" /> :
+                                                <Square size={16} />}
+                                    </button>
+                                </th>
                                 <th>Name</th>
+                                <th>Category</th>
                                 <th>Qualification</th>
                                 <th>Reg No</th>
                                 <th>Service Area</th>
@@ -375,42 +454,69 @@ function DoneTab() {
                         </thead>
                         <tbody>
                             {isLoading ? (
-                                <tr><td colSpan={7} style={{ textAlign: 'center', padding: 48 }}>
+                                <tr><td colSpan={9} style={{ textAlign: 'center', padding: 48 }}>
                                     <Loader2 size={24} className="animate-spin mx-auto text-indigo-400" />
                                 </td></tr>
                             ) : records.length === 0 ? (
-                                <tr><td colSpan={7} style={{ textAlign: 'center', padding: 48, color: '#64748b' }}>
+                                <tr><td colSpan={9} style={{ textAlign: 'center', padding: 48, color: '#64748b' }}>
                                     <CheckCircle2 size={32} className="mx-auto mb-2 opacity-30" />
                                     <p>No completed records</p>
                                 </td></tr>
                             ) : (
-                                records.map(record => (
-                                    <tr key={record._id}>
-                                        <td>
-                                            <div className="flex items-center gap-2">
-                                                {record.photo_url
-                                                    ? <img src={record.photo_url} alt="" className="w-7 h-7 rounded-full object-cover border border-white/10" />
-                                                    : <div className="w-7 h-7 rounded-full bg-white/5 flex items-center justify-center text-slate-500"><User size={12} /></div>
-                                                }
-                                                <span className="font-medium text-sm">{record.name}</span>
-                                            </div>
-                                        </td>
-                                        <td className="text-slate-400 text-sm">{record.qualification || '—'}</td>
-                                        <td className="font-mono text-xs text-slate-300">{record.registration_no || '—'}</td>
-                                        <td className="text-slate-400 text-sm">{record.service_area || '—'}</td>
-                                        <td className="text-slate-500 text-xs">{formatDateTime(record.created_at)}</td>
-                                        <td className="text-slate-500 text-xs">{record.done_at ? formatDateTime(record.done_at) : '—'}</td>
-                                        <td>
-                                            <button
-                                                onClick={() => router.push(`/portal-x/id-cards/builder?ids=${record._id}`)}
-                                                title="Open in builder"
-                                                className="p-1.5 rounded-md hover:bg-indigo-500/15 text-slate-500 hover:text-indigo-400 transition-colors"
-                                            >
-                                                <CreditCard size={14} />
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))
+                                records.map(record => {
+                                    const isSelected = selectedIds.has(record._id);
+                                    return (
+                                        <tr key={record._id} className={isSelected ? 'bg-indigo-500/5' : ''} style={{ cursor: 'default' }}>
+                                            <td style={{ paddingLeft: 16 }}>
+                                                <button onClick={() => toggleRow(record._id)} className="text-slate-400 hover:text-slate-200 transition-colors">
+                                                    {isSelected
+                                                        ? <CheckSquare size={16} className="text-indigo-400" />
+                                                        : <Square size={16} />}
+                                                </button>
+                                            </td>
+                                            <td>
+                                                <div className="flex items-center gap-2">
+                                                    {record.photo_url
+                                                        ? <img src={record.photo_url} alt="" className="w-7 h-7 rounded-full object-cover border border-white/10" />
+                                                        : <div className="w-7 h-7 rounded-full bg-white/5 flex items-center justify-center text-slate-500"><User size={12} /></div>
+                                                    }
+                                                    <span className="font-medium text-sm">{record.name}</span>
+                                                </div>
+                                            </td>
+                                            <td className="text-slate-400 text-sm">
+                                                {record.category ? (
+                                                    <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-medium bg-slate-500/10 text-slate-400 border border-slate-500/20">
+                                                        {record.category}
+                                                    </span>
+                                                ) : '—'}
+                                            </td>
+                                            <td className="text-slate-400 text-sm">{record.qualification || '—'}</td>
+                                            <td className="font-mono text-xs text-slate-300">{record.registration_no || '—'}</td>
+                                            <td className="text-slate-400 text-sm">{record.service_area || '—'}</td>
+                                            <td className="text-slate-500 text-xs">{formatDateTime(record.created_at)}</td>
+                                            <td className="text-slate-500 text-xs">{record.done_at ? formatDateTime(record.done_at) : '—'}</td>
+                                            <td>
+                                                <div className="flex items-center gap-1.5">
+                                                    <button
+                                                        onClick={() => router.push(`/portal-x/id-cards/builder?ids=${record._id}`)}
+                                                        title="Open in builder"
+                                                        className="p-1.5 rounded-md hover:bg-indigo-500/15 text-slate-500 hover:text-indigo-400 transition-colors"
+                                                    >
+                                                        <CreditCard size={14} />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => markActiveMutation.mutate([record._id])}
+                                                        disabled={markActiveMutation.isPending}
+                                                        title="Mark as active"
+                                                        className="p-1.5 rounded-md hover:bg-amber-500/15 text-slate-500 hover:text-amber-400 transition-colors"
+                                                    >
+                                                        <RefreshCw size={14} />
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    );
+                                })
                             )}
                         </tbody>
                     </table>
@@ -428,6 +534,31 @@ function DoneTab() {
                     </div>
                 )}
             </div>
+
+            {/* Floating Action Bar */}
+            {selectedList.length > 0 && (
+                <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-5 py-3 rounded-2xl shadow-2xl border border-amber-500/30 bg-[#0d1424] backdrop-blur-xl">
+                    <span className="text-amber-300 text-sm font-semibold flex items-center gap-2">
+                        <CheckSquare size={16} className="text-amber-400" />
+                        {selectedList.length} selected
+                    </span>
+                    <div className="w-px h-5 bg-white/10" />
+                    <button
+                        onClick={() => markActiveMutation.mutate(selectedList)}
+                        disabled={markActiveMutation.isPending}
+                        className="btn btn-sm bg-amber-600/20 hover:bg-amber-600/30 text-amber-400 border border-amber-500/20 h-8 px-4 text-xs font-semibold flex items-center gap-1.5"
+                    >
+                        {markActiveMutation.isPending ? <Loader2 size={13} className="animate-spin" /> : <RefreshCw size={13} />}
+                        Revert to Active
+                    </button>
+                    <button
+                        onClick={() => setSelectedIds(new Set())}
+                        className="text-slate-500 hover:text-slate-300 text-xs transition-colors px-1"
+                    >
+                        Clear
+                    </button>
+                </div>
+            )}
         </div>
     );
 }

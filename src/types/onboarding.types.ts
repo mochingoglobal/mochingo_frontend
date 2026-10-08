@@ -13,6 +13,7 @@ export interface IOnboardingRecord {
     service_area?: string | null;
     qr_link?: string | null;
     photo_url?: string | null;
+    category?: string | null;
     source_app?: string | null;
     status: OnboardingStatus;
     downloaded_at?: string | null;
@@ -45,6 +46,7 @@ export const FIELD_REGISTRY: FieldDefinition[] = [
     { key: 'service_area',    label: 'Service Area',    type: 'text'  },
     { key: 'qr_link',         label: 'QR Link',         type: 'qrcode'},
     { key: 'photo_url',       label: 'Photo',           type: 'image' },
+    { key: 'category',        label: 'Category',        type: 'text'  },
 ];
 
 // ── Canvas Field ──────────────────────────────────────────────────────────────
